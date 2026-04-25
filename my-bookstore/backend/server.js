@@ -1,14 +1,12 @@
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import cors from 'cors';
 
 import publicBooksRouter from './routes/public/books.js';
 import adminAuthRouter from './routes/admin/auth.js';
 import adminBooksRouter from './routes/admin/books.js';
 import adminAuthMiddleware from './middleware/adminAuth.js';
-
-dotenv.config();
 
 const app = express();
 
@@ -41,4 +39,9 @@ mongoose.connect(MONGO_URI)
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err);
+    process.exit(1);  // ← also add this so server doesn't hang on failed connection
   });
+
+mongoose.connection.on('disconnected', () => {
+  console.error('MongoDB disconnected');
+});

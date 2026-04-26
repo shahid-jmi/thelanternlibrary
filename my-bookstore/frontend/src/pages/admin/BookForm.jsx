@@ -5,6 +5,29 @@ import { adminCreateBook, adminUpdateBook } from '../../api';
 const genres = ['fiction', 'non-fiction', 'poetry', 'religious', 'children', 'history', 'science', 'other'];
 const languages = ['english', 'urdu', 'persian', 'arabic', 'other'];
 
+const buildBookPayload = (formData) => {
+  const payload = {
+    title: {
+      en: formData.title.en.trim(),
+    },
+    description: {
+      en: formData.description.en.trim(),
+    },
+    author: formData.author.trim(),
+    price: Number(formData.price),
+    genre: formData.genre,
+    language: formData.language,
+  };
+
+  if (formData.title.ur.trim()) payload.title.ur = formData.title.ur.trim();
+  if (formData.title.fa.trim()) payload.title.fa = formData.title.fa.trim();
+  if (formData.description.ur.trim()) payload.description.ur = formData.description.ur.trim();
+  if (formData.description.fa.trim()) payload.description.fa = formData.description.fa.trim();
+  if (formData.coverImage.trim()) payload.coverImage = formData.coverImage.trim();
+
+  return payload;
+};
+
 const BookForm = ({ book, onSave, onCancel }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -24,7 +47,7 @@ const BookForm = ({ book, onSave, onCancel }) => {
     language: book?.language || '',
     coverImage: book?.coverImage || ''
   });
-  
+
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -53,16 +76,23 @@ const BookForm = ({ book, onSave, onCancel }) => {
     setLoading(true);
 
     try {
+      const payload = buildBookPayload(formData);
+
       if (book) {
-        await adminUpdateBook(book._id, formData);
+        await adminUpdateBook(book._id, payload);
       } else {
-        await adminCreateBook(formData);
+        await adminCreateBook(payload);
       }
       onSave();
     } catch (error) {
       console.error('Error saving book:', error);
-      if (error.response && error.response.data && error.response.data.errors) {
-        setErrors(error.response.data.errors.map(err => err.msg));
+      const responseData = error.response?.data;
+      if (responseData?.details?.length) {
+        setErrors(responseData.details.map(err => err.msg || err.message || 'Validation error'));
+      } else if (responseData?.errors?.length) {
+        setErrors(responseData.errors.map(err => err.msg || err.message || 'Validation error'));
+      } else if (responseData?.message) {
+        setErrors([responseData.message]);
       } else {
         setErrors(['An error occurred while saving']);
       }
@@ -89,7 +119,6 @@ const BookForm = ({ book, onSave, onCancel }) => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Titles */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.form.titleEn')} *</label>
@@ -105,7 +134,6 @@ const BookForm = ({ book, onSave, onCancel }) => {
             </div>
           </div>
 
-          {/* Core Info */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.form.author')} *</label>
@@ -138,7 +166,6 @@ const BookForm = ({ book, onSave, onCancel }) => {
           </div>
         </div>
 
-        {/* Descriptions */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.form.descEn')} *</label>

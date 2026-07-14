@@ -2,14 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import createCorsOptions from './config/cors.js';
 import authenticateAdmin from './common/middleware/authenticateAdmin.js';
+import requireSuperAdmin from './common/middleware/requireSuperAdmin.js';
 import errorHandler from './common/middleware/errorHandler.js';
 import notFound from './common/middleware/notFound.js';
 import authRouter from './modules/admin-auth/auth.routes.js';
 import { createAdminBookRouter, createPublicBookRouter } from './modules/books/book.routes.js';
+import { createAdminManagementRouter } from './modules/admins/admin.routes.js';
 
 const app = express();
 const publicBooksRouter = createPublicBookRouter();
 const adminBooksRouter = createAdminBookRouter();
+const adminManagementRouter = createAdminManagementRouter();
 
 app.use(cors(createCorsOptions()));
 app.use(express.json({ limit: '1mb' }));
@@ -21,10 +24,12 @@ app.get('/health', (req, res) => {
 app.use('/api/books', publicBooksRouter);
 app.use('/api/admin/auth', authRouter);
 app.use('/api/admin/books', authenticateAdmin, adminBooksRouter);
+app.use('/api/admin/admins', authenticateAdmin, requireSuperAdmin, adminManagementRouter);
 
 app.use('/api/v1/books', publicBooksRouter);
 app.use('/api/v1/admin/auth', authRouter);
 app.use('/api/v1/admin/books', authenticateAdmin, adminBooksRouter);
+app.use('/api/v1/admin/admins', authenticateAdmin, requireSuperAdmin, adminManagementRouter);
 
 app.use(notFound);
 app.use(errorHandler);

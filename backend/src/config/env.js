@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET', 'ADMIN_PASSWORD_HASH'];
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
 
 for (const key of requiredEnvVars) {
   if (!process.env[key]) {
@@ -29,7 +29,6 @@ const env = {
   port: parseNumber(process.env.PORT, 5000),
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
-  adminPasswordHash: process.env.ADMIN_PASSWORD_HASH,
   corsOrigins: parseOrigins(process.env.CORS_ORIGIN),
 };
 

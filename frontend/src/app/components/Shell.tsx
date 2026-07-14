@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Menu, X } from 'lucide-react';
+import { BookOpen, Menu, Moon, Sun, X } from 'lucide-react';
 import GrainTexture from './GrainTexture';
+import { useTheme } from '../theme/ThemeContext';
 
 export default function Shell({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const setLanguage = (language: 'en' | 'ur') => {
@@ -76,6 +78,17 @@ export default function Shell({ children }: { children: ReactNode }) {
                   </button>
                 ))}
               </div>
+              <button
+                onClick={toggleTheme}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border transition hover:bg-secondary"
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-4 w-4 text-[var(--icon-color)]" />
+                ) : (
+                  <Moon className="h-4 w-4 text-[var(--icon-color)]" />
+                )}
+              </button>
               <button
                 onClick={() => setIsMenuOpen((open) => !open)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border sm:hidden"

@@ -8,3 +8,10 @@
     radial-gradient(circle at 74% 78%, rgba(120, 138, 95, 0.22) 0%, transparent 44%),
     radial-gradient(circle at 52% 4%, rgba(166, 95, 74, 0.18) 0%, transparent 42%), #e8d9bc;
 }
+
+.dark .lantern-bg {
+  background:
+    radial-gradient(circle at 30% 20%, #382c1e 0%, transparent 50%),
+    radial-gradient(circle at 70% 75%, #1a1208 0%, transparent 44%),
+    radial-gradient(circle at 50% 5%, #302418 0%, transparent 42%), #2a2018;
+}

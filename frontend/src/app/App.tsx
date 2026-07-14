@@ -16,28 +16,49 @@ import {
   MessageCircle,
   Plus,
   Search,
+  Shield,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import GrainTexture from './components/GrainTexture';
 import {
+  ADMIN_ROLES,
+  AdminAccount,
   AdminBook,
+  AdminRole,
   BOOK_GENRES,
   BOOK_LANGUAGES,
   BookGenre,
   BookLanguage,
   BookPayload,
+  CreateAdminPayload,
   PublicBook,
+  createAdmin,
   createBook,
+  deactivateAdmin,
+  decodeAdminToken,
+  deleteAdmin,
   deleteBook,
   getAdminBooks,
+  getAdmins,
   getBook,
   getBooks,
   getErrorMessage,
   loginAdmin,
+  reactivateAdmin,
   toggleAvailability,
+  updateAdminRole,
   updateBook,
 } from './api';
+
+const ADMIN_TOKEN_KEY = 'bookstore-admin-token';
+
+function getCurrentAdmin() {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  if (!token) return null;
+  return decodeAdminToken(token);
+}
 
 const emptyPayload: BookPayload = {
   title: { en: '', ur: '', fa: '' },
@@ -67,6 +88,7 @@ export default function App() {
             <Route path="/book/:id" element={<BookDetailPage />} />
             <Route path="/admin" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/admins" element={<AdminManagementPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ErrorBoundary>
@@ -525,20 +547,21 @@ function BookDetailPage() {
 function AdminLoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('bookstore-admin-token')) navigate('/admin/dashboard', { replace: true });
+    if (localStorage.getItem(ADMIN_TOKEN_KEY)) navigate('/admin/dashboard', { replace: true });
   }, [navigate]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setSubmitting(true);
     try {
-      const data = await loginAdmin(password);
-      localStorage.setItem('bookstore-admin-token', data.token);
+      const data = await loginAdmin(email, password);
+      localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
       navigate('/admin/dashboard', { replace: true });
     } catch (requestError) {
       setError(getErrorMessage(requestError) || t('admin.login.error'));
@@ -554,6 +577,14 @@ function AdminLoginPage() {
           <Lock className="h-5 w-5 text-[var(--icon-color)]" />
           <h1 className="text-3xl tracking-[0.05em]">{t('admin.login.title')}</h1>
         </div>
+        <label className="mb-2 block text-sm">{t('admin.login.email')}</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          className="mb-4 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
+          required
+        />
         <label className="mb-2 block text-sm">{t('admin.login.password')}</label>
         <input
           type="password"
@@ -579,9 +610,10 @@ function AdminDashboardPage() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const isSuperAdmin = getCurrentAdmin()?.role === 'super_admin';
 
   const logout = () => {
-    localStorage.removeItem('bookstore-admin-token');
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
     navigate('/admin', { replace: true });
   };
 
@@ -595,7 +627,7 @@ function AdminDashboardPage() {
   };
 
   const loadBooks = async () => {
-    if (!localStorage.getItem('bookstore-admin-token')) {
+    if (!localStorage.getItem(ADMIN_TOKEN_KEY)) {
       navigate('/admin', { replace: true });
       return;
     }
@@ -664,6 +696,12 @@ function AdminDashboardPage() {
             <Plus className="h-4 w-4" />
             {t('admin.dashboard.addBook')}
           </button>
+          {isSuperAdmin && (
+            <Link to="/admin/admins" className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm">
+              <Users className="h-4 w-4" />
+              {t('admin.nav.manageAdmins')}
+            </Link>
+          )}
           <button onClick={logout} className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm">
             <LogOut className="h-4 w-4" />
             Logout
@@ -734,6 +772,246 @@ function AdminDashboardPage() {
         </table>
       </div>
     </PageFrame>
+  );
+}
+
+function AdminManagementPage() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const currentAdmin = getCurrentAdmin();
+  const [admins, setAdmins] = useState<AdminAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+
+  const handleAuthError = (requestError: unknown) => {
+    const status = (requestError as { response?: { status?: number } }).response?.status;
+    if (status === 401) {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+      navigate('/admin', { replace: true });
+      return true;
+    }
+    return false;
+  };
+
+  const loadAdmins = async () => {
+    if (!localStorage.getItem(ADMIN_TOKEN_KEY)) {
+      navigate('/admin', { replace: true });
+      return;
+    }
+    setLoading(true);
+    try {
+      setAdmins(await getAdmins());
+      setError('');
+    } catch (requestError) {
+      if (!handleAuthError(requestError)) setError(getErrorMessage(requestError));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAdmins();
+  }, []);
+
+  const addAdmin = async (payload: CreateAdminPayload) => {
+    try {
+      await createAdmin(payload);
+      setShowForm(false);
+      await loadAdmins();
+    } catch (requestError) {
+      if (handleAuthError(requestError)) return;
+      throw requestError;
+    }
+  };
+
+  const removeAdmin = async (admin: AdminAccount) => {
+    if (!window.confirm(`${t('admin.admins.delete')} ${admin.email}?`)) return;
+    try {
+      await deleteAdmin(admin._id);
+      await loadAdmins();
+    } catch (requestError) {
+      if (!handleAuthError(requestError)) setError(getErrorMessage(requestError));
+    }
+  };
+
+  const toggleActive = async (admin: AdminAccount) => {
+    try {
+      if (admin.isActive) {
+        await deactivateAdmin(admin._id);
+      } else {
+        await reactivateAdmin(admin._id);
+      }
+      await loadAdmins();
+    } catch (requestError) {
+      if (!handleAuthError(requestError)) setError(getErrorMessage(requestError));
+    }
+  };
+
+  const changeRole = async (admin: AdminAccount, role: AdminRole) => {
+    if (role === admin.role) return;
+    try {
+      await updateAdminRole(admin._id, role);
+      await loadAdmins();
+    } catch (requestError) {
+      if (!handleAuthError(requestError)) setError(getErrorMessage(requestError));
+    }
+  };
+
+  return (
+    <PageFrame>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Shield className="h-6 w-6 text-[var(--icon-color)]" />
+          <h1 className="text-4xl tracking-[0.05em]">{t('admin.admins.title')}</h1>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            {t('admin.admins.addAdmin')}
+          </button>
+          <Link to="/admin/dashboard" className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm">
+            <ArrowLeft className="h-4 w-4" />
+            {t('admin.admins.backToDashboard')}
+          </Link>
+        </div>
+      </div>
+
+      {error && <StatusMessage tone="error">{error}</StatusMessage>}
+      {loading && <StatusMessage>{t('admin.admins.loading')}</StatusMessage>}
+
+      {showForm && <AdminForm onCancel={() => setShowForm(false)} onSave={addAdmin} />}
+
+      <div className="overflow-x-auto rounded-sm border border-border bg-card">
+        <table className="w-full min-w-[760px] text-left text-sm rtl:text-right">
+          <thead className="border-b border-border bg-secondary">
+            <tr>
+              <th className="px-4 py-3">{t('admin.admins.email')}</th>
+              <th className="px-4 py-3">{t('admin.admins.role')}</th>
+              <th className="px-4 py-3">{t('admin.admins.status')}</th>
+              <th className="px-4 py-3">{t('admin.admins.lastLogin')}</th>
+              <th className="px-4 py-3">{t('admin.admins.actions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {admins.map((admin) => {
+              const isSelf = admin._id === currentAdmin?.sub;
+              return (
+                <tr key={admin._id} className="border-b border-border/70 last:border-0">
+                  <td className="px-4 py-3">
+                    {admin.email}
+                    {isSelf && <span className="ml-2 text-xs opacity-60 rtl:ml-0 rtl:mr-2">({t('admin.admins.you')})</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <RoleSelect value={admin.role} disabled={isSelf} onChange={(role) => changeRole(admin, role)} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => toggleActive(admin)}
+                      disabled={isSelf}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 disabled:opacity-50"
+                    >
+                      {admin.isActive && <Check className="h-3.5 w-3.5" />}
+                      {admin.isActive ? t('admin.admins.active') : t('admin.admins.inactive')}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    {admin.lastLoginAt ? new Date(admin.lastLoginAt).toLocaleString() : t('admin.admins.never')}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => removeAdmin(admin)}
+                      disabled={isSelf}
+                      className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3 text-destructive disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t('admin.admins.delete')}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </PageFrame>
+  );
+}
+
+function RoleSelect({ value, onChange, disabled }: { value: AdminRole; onChange: (role: AdminRole) => void; disabled?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <select
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value as AdminRole)}
+      className="h-9 rounded-sm border border-border bg-input-background px-2 text-sm outline-none focus:border-ring disabled:opacity-50"
+    >
+      {ADMIN_ROLES.map((role) => (
+        <option key={role} value={role}>
+          {t(`admin.admins.role.${role}`)}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function AdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (payload: CreateAdminPayload) => Promise<void> }) {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<AdminRole>('admin');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({ email, password, role });
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="mb-8 rounded-sm border border-border bg-card p-5">
+      <div className="grid gap-4 md:grid-cols-3">
+        <TextInput label={t('admin.admins.email')} value={email} onChange={setEmail} required />
+        <label className="block text-sm">
+          {t('admin.admins.password')}
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="mt-1 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
+            required
+            minLength={8}
+          />
+        </label>
+        <label className="block text-sm">
+          {t('admin.admins.role')}
+          <div className="mt-1">
+            <RoleSelect value={role} onChange={setRole} />
+          </div>
+        </label>
+      </div>
+      {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+      <div className="mt-5 flex gap-3">
+        <button disabled={saving} className="h-10 rounded-sm bg-primary px-5 text-sm text-primary-foreground disabled:opacity-60">
+          {t('admin.admins.save')}
+        </button>
+        <button type="button" onClick={onCancel} className="h-10 rounded-sm border border-border px-5 text-sm">
+          {t('admin.admins.cancel')}
+        </button>
+      </div>
+    </form>
   );
 }
 

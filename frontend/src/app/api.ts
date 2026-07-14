@@ -72,6 +72,42 @@ export interface BookFilters {
   available?: string;
 }
 
+export const ADMIN_ROLES = ['admin', 'super_admin'] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
+export interface AdminAccount {
+  _id: string;
+  email: string;
+  role: AdminRole;
+  isActive: boolean;
+  createdBy: string | null;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAdminPayload {
+  email: string;
+  password: string;
+  role: AdminRole;
+}
+
+interface AdminTokenClaims {
+  sub: string;
+  role: AdminRole;
+}
+
+export function decodeAdminToken(token: string): AdminTokenClaims | null {
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    if (typeof decoded.sub !== 'string' || typeof decoded.role !== 'string') return null;
+    return { sub: decoded.sub, role: decoded.role };
+  } catch {
+    return null;
+  }
+}
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
 });
@@ -108,8 +144,8 @@ export async function getBook(id: string, lang: string) {
   return data;
 }
 
-export async function loginAdmin(password: string) {
-  const { data } = await api.post<{ token: string }>('/admin/auth/login', { password });
+export async function loginAdmin(email: string, password: string) {
+  const { data } = await api.post<{ token: string }>('/admin/auth/login', { email, password });
   return data;
 }
 
@@ -138,6 +174,39 @@ export async function deleteBook(id: string) {
 
 export async function toggleAvailability(id: string, isAvailable: boolean) {
   const { data } = await api.patch<AdminBook>(`/admin/books/${id}/availability`, { isAvailable });
+  return data;
+}
+
+export async function getAdmins() {
+  const { data } = await api.get<AdminAccount[]>('/admin/admins');
+  if (!Array.isArray(data)) {
+    throw new Error('The admins API did not return a list. Check VITE_API_URL or start the backend server.');
+  }
+  return data;
+}
+
+export async function createAdmin(payload: CreateAdminPayload) {
+  const { data } = await api.post<AdminAccount>('/admin/admins', payload);
+  return data;
+}
+
+export async function deleteAdmin(id: string) {
+  const { data } = await api.delete<{ message: string }>(`/admin/admins/${id}`);
+  return data;
+}
+
+export async function deactivateAdmin(id: string) {
+  const { data } = await api.patch<AdminAccount>(`/admin/admins/${id}/deactivate`);
+  return data;
+}
+
+export async function reactivateAdmin(id: string) {
+  const { data } = await api.patch<AdminAccount>(`/admin/admins/${id}/reactivate`);
+  return data;
+}
+
+export async function updateAdminRole(id: string, role: AdminRole) {
+  const { data } = await api.patch<AdminAccount>(`/admin/admins/${id}/role`, { role });
   return data;
 }
 

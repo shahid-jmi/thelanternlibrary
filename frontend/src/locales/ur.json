@@ -48,14 +48,13 @@
   "admin.dashboard.unavailable": "دستیاب نہیں",
   "admin.form.titleEn": "عنوان (انگریزی)",
   "admin.form.titleUr": "عنوان (اردو)",
-  "admin.form.titleFa": "عنوان (فارسی)",
   "admin.form.descEn": "تفصیل (انگریزی)",
   "admin.form.descUr": "تفصیل (اردو)",
   "admin.form.author": "مصنف",
   "admin.form.price": "قیمت",
   "admin.form.genre": "صنف",
   "admin.form.language": "کتاب کی زبان",
-  "admin.form.coverImage": "کور تصویر کا یو آر ایل",
+  "admin.form.coverImage": "کور تصویر",
   "admin.form.save": "کتاب محفوظ کریں",
   "admin.form.cancel": "منسوخ کریں"
 }

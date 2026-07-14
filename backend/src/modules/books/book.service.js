@@ -24,7 +24,6 @@ const buildPublicBookQuery = ({ genre, language, available, search }) => {
     query.$or = [
       { 'title.en': { $regex: search, $options: 'i' } },
       { 'title.ur': { $regex: search, $options: 'i' } },
-      { 'title.fa': { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -54,11 +53,11 @@ export const listAdminBooks = async () => {
 };
 
 export const createBook = async (payload, file) => {
-  let coverImage = { url: PLACEHOLDER_COVER_URL, publicId: null };
+  let coverImage = { url: PLACEHOLDER_COVER_URL, key: null };
 
   if (file) {
     const uploaded = await uploadCoverImageAsset(file.buffer);
-    coverImage = { url: uploaded.secure_url, publicId: uploaded.public_id };
+    coverImage = { url: uploaded.url, key: uploaded.key };
   }
 
   const book = await bookRepository.createBook({ ...payload, coverImage });
@@ -73,12 +72,12 @@ export const updateBook = async (id, payload, file) => {
   }
 
   const updatePayload = { ...payload };
-  let previousPublicId = null;
+  let previousKey = null;
 
   if (file) {
     const uploaded = await uploadCoverImageAsset(file.buffer);
-    updatePayload.coverImage = { url: uploaded.secure_url, publicId: uploaded.public_id };
-    previousPublicId = existingBook.coverImage?.publicId ?? null;
+    updatePayload.coverImage = { url: uploaded.url, key: uploaded.key };
+    previousKey = existingBook.coverImage?.key ?? null;
   }
 
   const updatedBook = await bookRepository.updateBookById(id, updatePayload);
@@ -87,8 +86,8 @@ export const updateBook = async (id, payload, file) => {
     throw new NotFoundError('Book not found');
   }
 
-  if (previousPublicId) {
-    await deleteCoverImageAsset(previousPublicId);
+  if (previousKey) {
+    await deleteCoverImageAsset(previousKey);
   }
 
   return toAdminBookDto(updatedBook);
@@ -101,13 +100,13 @@ export const deleteBook = async (id) => {
     throw new NotFoundError('Book not found');
   }
 
-  const publicId = deletedBook.coverImage?.publicId;
+  const key = deletedBook.coverImage?.key;
 
-  if (publicId) {
+  if (key) {
     try {
-      await deleteCoverImageAsset(publicId);
+      await deleteCoverImageAsset(key);
     } catch (error) {
-      logger.error('Failed to delete Cloudinary cover image asset for deleted book', { publicId, error: error.message });
+      logger.error('Failed to delete R2 cover image object for deleted book', { key, error: error.message });
     }
   }
 };

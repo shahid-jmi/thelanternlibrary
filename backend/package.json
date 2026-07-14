@@ -8,11 +8,14 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/scripts/seed.js",
-    "create-super-admin": "node src/scripts/createSuperAdmin.js"
+    "create-super-admin": "node src/scripts/createSuperAdmin.js",
+    "migrate-cover-images": "node src/scripts/migrateCoverImages.js",
+    "remove-stale-persian-fields": "node src/scripts/removeStalePersianFields.js",
+    "rename-cover-image-public-id-to-key": "node src/scripts/renameCoverImagePublicIdToKey.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1087.0",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -20,7 +23,8 @@
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.0",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

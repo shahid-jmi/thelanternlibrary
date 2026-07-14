@@ -5,7 +5,6 @@ const localizedTextSchema = new mongoose.Schema(
   {
     en: { type: String, required: true, trim: true },
     ur: { type: String, trim: true },
-    fa: { type: String, trim: true },
   },
   { _id: false }
 );
@@ -13,7 +12,7 @@ const localizedTextSchema = new mongoose.Schema(
 const coverImageSchema = new mongoose.Schema(
   {
     url: { type: String, required: true },
-    publicId: { type: String, default: null },
+    key: { type: String, default: null },
   },
   { _id: false }
 );

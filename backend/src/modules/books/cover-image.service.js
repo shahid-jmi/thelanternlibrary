@@ -1,25 +1,39 @@
-import cloudinary from '../../config/cloudinary.js';
+import crypto from 'node:crypto';
+import sharp from 'sharp';
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import r2Client from '../../config/r2.js';
+import env from '../../config/env.js';
 
-const BOOK_COVERS_FOLDER = 'book-covers';
+const COVER_IMAGE_PREFIX = 'covers';
+const MAX_WIDTH_PX = 1200;
+const WEBP_QUALITY = 80;
 
-export const uploadCoverImageAsset = (buffer) =>
-  new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: BOOK_COVERS_FOLDER,
-        transformation: [{ quality: 'auto', fetch_format: 'auto' }],
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+const processCoverImage = (buffer) =>
+  sharp(buffer)
+    .resize({ width: MAX_WIDTH_PX, withoutEnlargement: true })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer();
 
-        resolve(result);
-      }
-    );
+export const uploadCoverImageAsset = async (buffer) => {
+  const processedBuffer = await processCoverImage(buffer);
+  const key = `${COVER_IMAGE_PREFIX}/${crypto.randomUUID()}.webp`;
 
-    uploadStream.end(buffer);
-  });
+  await r2Client.send(
+    new PutObjectCommand({
+      Bucket: env.r2BucketName,
+      Key: key,
+      Body: processedBuffer,
+      ContentType: 'image/webp',
+    })
+  );
 
-export const deleteCoverImageAsset = (publicId) => cloudinary.uploader.destroy(publicId);
+  return { url: `${env.r2PublicUrl}/${key}`, key };
+};
+
+export const deleteCoverImageAsset = (key) =>
+  r2Client.send(
+    new DeleteObjectCommand({
+      Bucket: env.r2BucketName,
+      Key: key,
+    })
+  );

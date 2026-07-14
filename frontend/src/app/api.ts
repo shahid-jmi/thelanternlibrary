@@ -12,11 +12,16 @@ export const BOOK_GENRES = [
 ] as const;
 
 export const BOOK_LANGUAGES = ['english', 'urdu', 'persian', 'arabic', 'other'] as const;
-export const TRANSLATION_LANGUAGES = ['en', 'ur', 'fa'] as const;
+export const TRANSLATION_LANGUAGES = ['en', 'ur'] as const;
 
 export type BookGenre = (typeof BOOK_GENRES)[number];
 export type BookLanguage = (typeof BOOK_LANGUAGES)[number];
 export type TranslationLanguage = (typeof TRANSLATION_LANGUAGES)[number];
+
+export interface CoverImage {
+  url: string;
+  publicId: string | null;
+}
 
 export interface PublicBook {
   _id: string;
@@ -26,7 +31,7 @@ export interface PublicBook {
   price: number;
   genre: BookGenre;
   language: BookLanguage;
-  coverImage?: string;
+  coverImage: CoverImage;
   isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
@@ -36,12 +41,10 @@ export interface AdminBook extends Omit<PublicBook, 'title' | 'description'> {
   title: {
     en: string;
     ur?: string;
-    fa?: string;
   };
   description: {
     en: string;
     ur?: string;
-    fa?: string;
   };
 }
 
@@ -49,18 +52,15 @@ export interface BookPayload {
   title: {
     en: string;
     ur?: string;
-    fa?: string;
   };
   description: {
     en: string;
     ur?: string;
-    fa?: string;
   };
   author: string;
   price: number;
   genre: BookGenre;
   language: BookLanguage;
-  coverImage?: string;
   isAvailable: boolean;
 }
 
@@ -157,13 +157,28 @@ export async function getAdminBooks() {
   return data;
 }
 
-export async function createBook(payload: BookPayload) {
-  const { data } = await api.post<AdminBook>('/admin/books', payload);
+function buildBookFormData(payload: BookPayload, coverImageFile: File | null) {
+  const formData = new FormData();
+  formData.append('title', JSON.stringify(payload.title));
+  formData.append('description', JSON.stringify(payload.description));
+  formData.append('author', payload.author);
+  formData.append('price', String(payload.price));
+  formData.append('genre', payload.genre);
+  formData.append('language', payload.language);
+  formData.append('isAvailable', String(payload.isAvailable));
+  if (coverImageFile) {
+    formData.append('coverImage', coverImageFile);
+  }
+  return formData;
+}
+
+export async function createBook(payload: BookPayload, coverImageFile: File | null) {
+  const { data } = await api.post<AdminBook>('/admin/books', buildBookFormData(payload, coverImageFile));
   return data;
 }
 
-export async function updateBook(id: string, payload: BookPayload) {
-  const { data } = await api.put<AdminBook>(`/admin/books/${id}`, payload);
+export async function updateBook(id: string, payload: BookPayload, coverImageFile: File | null) {
+  const { data } = await api.put<AdminBook>(`/admin/books/${id}`, buildBookFormData(payload, coverImageFile));
   return data;
 }
 

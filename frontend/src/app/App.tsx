@@ -61,13 +61,12 @@ function getCurrentAdmin() {
 }
 
 const emptyPayload: BookPayload = {
-  title: { en: '', ur: '', fa: '' },
-  description: { en: '', ur: '', fa: '' },
+  title: { en: '', ur: '' },
+  description: { en: '', ur: '' },
   author: '',
   price: 0,
   genre: 'fiction',
   language: 'english',
-  coverImage: '',
   isAvailable: true,
 };
 
@@ -448,8 +447,8 @@ function BookCard({ book }: { book: PublicBook }) {
   return (
     <Link to={`/book/${book._id}`} className="group block">
       <div className="mb-4 aspect-[2/3] overflow-hidden rounded-sm border border-border bg-card">
-        {book.coverImage ? (
-          <img src={book.coverImage} alt={book.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {book.coverImage?.url ? (
+          <img src={book.coverImage.url} alt={book.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center opacity-60">
             <BookOpen className="h-8 w-8" />
@@ -508,8 +507,8 @@ function BookDetailPage() {
       </Link>
       <section className="grid gap-10 lg:grid-cols-[minmax(260px,420px),1fr]">
         <div className="aspect-[2/3] overflow-hidden rounded-sm border border-border bg-card">
-          {book.coverImage ? (
-            <img src={book.coverImage} alt={book.title} className="h-full w-full object-cover" />
+          {book.coverImage?.url ? (
+            <img src={book.coverImage.url} alt={book.title} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center opacity-60">
               <BookOpen className="h-12 w-12" />
@@ -646,12 +645,12 @@ function AdminDashboardPage() {
     loadBooks();
   }, []);
 
-  const saveBook = async (payload: BookPayload) => {
+  const saveBook = async (payload: BookPayload, coverImageFile: File | null) => {
     try {
       if (editing) {
-        await updateBook(editing._id, payload);
+        await updateBook(editing._id, payload, coverImageFile);
       } else {
-        await createBook(payload);
+        await createBook(payload, coverImageFile);
       }
       setEditing(null);
       setShowForm(false);
@@ -1015,21 +1014,31 @@ function AdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (payloa
   );
 }
 
-function BookForm({ book, onCancel, onSave }: { book: AdminBook | null; onCancel: () => void; onSave: (payload: BookPayload) => Promise<void> }) {
+function BookForm({
+  book,
+  onCancel,
+  onSave,
+}: {
+  book: AdminBook | null;
+  onCancel: () => void;
+  onSave: (payload: BookPayload, coverImageFile: File | null) => Promise<void>;
+}) {
   const { t } = useTranslation();
   const [form, setForm] = useState<BookPayload>(() => bookToPayload(book));
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setForm(bookToPayload(book));
+    setCoverImageFile(null);
   }, [book]);
 
   const setField = (field: keyof BookPayload, value: string | number | boolean) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const setNested = (group: 'title' | 'description', field: 'en' | 'ur' | 'fa', value: string) => {
+  const setNested = (group: 'title' | 'description', field: 'en' | 'ur', value: string) => {
     setForm((current) => ({ ...current, [group]: { ...current[group], [field]: value } }));
   };
 
@@ -1038,11 +1047,13 @@ function BookForm({ book, onCancel, onSave }: { book: AdminBook | null; onCancel
     setSaving(true);
     setError('');
     try {
-      await onSave({
-        ...form,
-        price: Number(form.price),
-        coverImage: form.coverImage || '',
-      });
+      await onSave(
+        {
+          ...form,
+          price: Number(form.price),
+        },
+        coverImageFile
+      );
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -1055,7 +1066,6 @@ function BookForm({ book, onCancel, onSave }: { book: AdminBook | null; onCancel
       <div className="grid gap-4 md:grid-cols-2">
         <TextInput label={t('admin.form.titleEn')} value={form.title.en} onChange={(value) => setNested('title', 'en', value)} dir="ltr" required />
         <TextInput label={t('admin.form.titleUr')} value={form.title.ur || ''} onChange={(value) => setNested('title', 'ur', value)} dir="rtl" />
-        <TextInput label={t('admin.form.titleFa')} value={form.title.fa || ''} onChange={(value) => setNested('title', 'fa', value)} dir="rtl" />
         <TextInput label={t('admin.form.author')} value={form.author} onChange={(value) => setField('author', value)} required />
         <TextArea label={t('admin.form.descEn')} value={form.description.en} onChange={(value) => setNested('description', 'en', value)} dir="ltr" required />
         <TextArea label={t('admin.form.descUr')} value={form.description.ur || ''} onChange={(value) => setNested('description', 'ur', value)} dir="rtl" />
@@ -1073,7 +1083,18 @@ function BookForm({ book, onCancel, onSave }: { book: AdminBook | null; onCancel
         </label>
         <SelectInput label={t('admin.form.genre')} value={form.genre} onChange={(value) => setField('genre', value as BookGenre)} values={BOOK_GENRES} />
         <SelectInput label={t('admin.form.language')} value={form.language} onChange={(value) => setField('language', value as BookLanguage)} values={BOOK_LANGUAGES} />
-        <TextInput label={t('admin.form.coverImage')} value={form.coverImage || ''} onChange={(value) => setField('coverImage', value)} />
+        <label className="block text-sm">
+          {t('admin.form.coverImage')}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => setCoverImageFile(event.target.files?.[0] || null)}
+            className="mt-1 block w-full text-sm"
+          />
+          {book?.coverImage?.url && !coverImageFile && (
+            <img src={book.coverImage.url} alt="" className="mt-2 h-24 w-16 rounded-sm border border-border object-cover" />
+          )}
+        </label>
         <label className="flex items-center gap-3 pt-6 text-sm">
           <input type="checkbox" checked={form.isAvailable} onChange={(event) => setField('isAvailable', event.target.checked)} />
           {t('admin.dashboard.available')}
@@ -1179,18 +1200,15 @@ function bookToPayload(book: AdminBook | null): BookPayload {
     title: {
       en: book.title.en || '',
       ur: book.title.ur || '',
-      fa: book.title.fa || '',
     },
     description: {
       en: book.description.en || '',
       ur: book.description.ur || '',
-      fa: book.description.fa || '',
     },
     author: book.author || '',
     price: book.price || 0,
     genre: book.genre,
     language: book.language,
-    coverImage: book.coverImage || '',
     isAvailable: book.isAvailable,
   };
 }

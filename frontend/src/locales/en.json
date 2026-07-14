@@ -48,14 +48,13 @@
   "admin.dashboard.unavailable": "Unavailable",
   "admin.form.titleEn": "Title (English)",
   "admin.form.titleUr": "Title (Urdu)",
-  "admin.form.titleFa": "Title (Persian)",
   "admin.form.descEn": "Description (English)",
   "admin.form.descUr": "Description (Urdu)",
   "admin.form.author": "Author",
   "admin.form.price": "Price",
   "admin.form.genre": "Genre",
   "admin.form.language": "Book Language",
-  "admin.form.coverImage": "Cover Image URL",
+  "admin.form.coverImage": "Cover Image",
   "admin.form.save": "Save Book",
   "admin.form.cancel": "Cancel"
 }

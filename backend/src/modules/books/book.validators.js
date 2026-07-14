@@ -4,7 +4,6 @@ import { BOOK_GENRES, BOOK_LANGUAGES, TRANSLATION_LANGUAGES } from './book.const
 const localizedTextRules = (fieldName, label) => [
   body(`${fieldName}.en`).trim().notEmpty().withMessage(`English ${label} is required`),
   body(`${fieldName}.ur`).optional().isString().withMessage(`Urdu ${label} must be a string`),
-  body(`${fieldName}.fa`).optional().isString().withMessage(`Persian ${label} must be a string`),
 ];
 
 export const listPublicBooksValidators = [

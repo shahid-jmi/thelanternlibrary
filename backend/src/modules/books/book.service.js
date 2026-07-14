@@ -1,6 +1,9 @@
 import NotFoundError from '../../common/errors/NotFoundError.js';
+import logger from '../../common/utils/logger.js';
 import * as bookRepository from './book.repository.js';
 import { toAdminBookDto, toPublicBookDto } from './book.mapper.js';
+import { uploadCoverImageAsset, deleteCoverImageAsset } from './cover-image.service.js';
+import { PLACEHOLDER_COVER_URL } from './book.constants.js';
 
 const buildPublicBookQuery = ({ genre, language, available, search }) => {
   const query = {};
@@ -50,16 +53,42 @@ export const listAdminBooks = async () => {
   return books.map(toAdminBookDto);
 };
 
-export const createBook = async (payload) => {
-  const book = await bookRepository.createBook(payload);
+export const createBook = async (payload, file) => {
+  let coverImage = { url: PLACEHOLDER_COVER_URL, publicId: null };
+
+  if (file) {
+    const uploaded = await uploadCoverImageAsset(file.buffer);
+    coverImage = { url: uploaded.secure_url, publicId: uploaded.public_id };
+  }
+
+  const book = await bookRepository.createBook({ ...payload, coverImage });
   return toAdminBookDto(book);
 };
 
-export const updateBook = async (id, payload) => {
-  const updatedBook = await bookRepository.updateBookById(id, payload);
+export const updateBook = async (id, payload, file) => {
+  const existingBook = await bookRepository.findById(id);
+
+  if (!existingBook) {
+    throw new NotFoundError('Book not found');
+  }
+
+  const updatePayload = { ...payload };
+  let previousPublicId = null;
+
+  if (file) {
+    const uploaded = await uploadCoverImageAsset(file.buffer);
+    updatePayload.coverImage = { url: uploaded.secure_url, publicId: uploaded.public_id };
+    previousPublicId = existingBook.coverImage?.publicId ?? null;
+  }
+
+  const updatedBook = await bookRepository.updateBookById(id, updatePayload);
 
   if (!updatedBook) {
     throw new NotFoundError('Book not found');
+  }
+
+  if (previousPublicId) {
+    await deleteCoverImageAsset(previousPublicId);
   }
 
   return toAdminBookDto(updatedBook);
@@ -70,6 +99,16 @@ export const deleteBook = async (id) => {
 
   if (!deletedBook) {
     throw new NotFoundError('Book not found');
+  }
+
+  const publicId = deletedBook.coverImage?.publicId;
+
+  if (publicId) {
+    try {
+      await deleteCoverImageAsset(publicId);
+    } catch (error) {
+      logger.error('Failed to delete Cloudinary cover image asset for deleted book', { publicId, error: error.message });
+    }
   }
 };
 

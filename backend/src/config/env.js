@@ -1,6 +1,12 @@
 import 'dotenv/config';
 
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+const requiredEnvVars = [
+  'MONGO_URI',
+  'JWT_SECRET',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+];
 
 for (const key of requiredEnvVars) {
   if (!process.env[key]) {
@@ -30,6 +36,9 @@ const env = {
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
   corsOrigins: parseOrigins(process.env.CORS_ORIGIN),
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
 };
 
 export default env;

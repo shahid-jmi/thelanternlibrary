@@ -10,6 +10,14 @@ const localizedTextSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const coverImageSchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true },
+    publicId: { type: String, default: null },
+  },
+  { _id: false }
+);
+
 const bookSchema = new mongoose.Schema(
   {
     title: { type: localizedTextSchema, required: true },
@@ -17,7 +25,7 @@ const bookSchema = new mongoose.Schema(
     author: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
     genre: { type: String, enum: BOOK_GENRES, required: true },
-    coverImage: { type: String, trim: true },
+    coverImage: { type: coverImageSchema, required: true },
     isAvailable: { type: Boolean, default: true },
     language: { type: String, enum: BOOK_LANGUAGES, required: true },
   },

@@ -17,12 +17,12 @@ export const listAdminBooks = async (req, res) => {
 };
 
 export const createBook = async (req, res) => {
-  const book = await bookService.createBook(req.body);
+  const book = await bookService.createBook(req.body, req.file);
   res.status(201).json(book);
 };
 
 export const updateBook = async (req, res) => {
-  const book = await bookService.updateBook(req.params.id, req.body);
+  const book = await bookService.updateBook(req.params.id, req.body, req.file);
   res.json(book);
 };
 

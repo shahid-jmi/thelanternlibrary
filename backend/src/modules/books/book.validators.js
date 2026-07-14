@@ -21,11 +21,10 @@ export const upsertBookValidators = [
   ...localizedTextRules('title', 'title'),
   ...localizedTextRules('description', 'description'),
   body('author').trim().notEmpty().withMessage('Author is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
+  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number').toFloat(),
   body('genre').isIn(BOOK_GENRES).withMessage('Genre is invalid'),
   body('language').isIn(BOOK_LANGUAGES).withMessage('Language is invalid'),
-  body('coverImage').optional({ nullable: true }).isURL().withMessage('coverImage must be a valid URL'),
-  body('isAvailable').optional().isBoolean().withMessage('isAvailable must be a boolean'),
+  body('isAvailable').optional().isBoolean().withMessage('isAvailable must be a boolean').toBoolean(),
 ];
 
 export const updateAvailabilityValidators = [

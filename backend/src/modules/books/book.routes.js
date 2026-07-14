@@ -1,6 +1,8 @@
 import express from 'express';
 import asyncHandler from '../../common/utils/asyncHandler.js';
 import validate from '../../common/middleware/validate.js';
+import uploadCoverImage from '../../common/middleware/uploadCoverImage.js';
+import parseJsonFormFields from '../../common/middleware/parseJsonFormFields.js';
 import {
   bookIdValidator,
   listPublicBooksValidators,
@@ -30,8 +32,20 @@ export const createAdminBookRouter = () => {
   const router = express.Router();
 
   router.get('/', asyncHandler(listAdminBooks));
-  router.post('/', validate(upsertBookValidators), asyncHandler(createBook));
-  router.put('/:id', validate([...bookIdValidator, ...upsertBookValidators]), asyncHandler(updateBook));
+  router.post(
+    '/',
+    uploadCoverImage,
+    parseJsonFormFields(['title', 'description']),
+    validate(upsertBookValidators),
+    asyncHandler(createBook)
+  );
+  router.put(
+    '/:id',
+    uploadCoverImage,
+    parseJsonFormFields(['title', 'description']),
+    validate([...bookIdValidator, ...upsertBookValidators]),
+    asyncHandler(updateBook)
+  );
   router.delete('/:id', validate(bookIdValidator), asyncHandler(deleteBook));
   router.patch(
     '/:id/availability',

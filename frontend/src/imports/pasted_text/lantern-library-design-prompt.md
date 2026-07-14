@@ -7,6 +7,7 @@ Concept: A curated online book catalog that feels like a physical bookstore — 
 Overall Aesthetic
 The website follows a vintage editorial aesthetic — think old paper, candlelight, worn book covers, and the quiet atmosphere of an antique library. Every design decision should serve this feeling.
 The three core layers that build this aesthetic are:
+
 1. Paper-like background — warm, uneven, slightly blotchy color that mimics aged parchment or old paper. Not a flat color, not a gradient — something that breathes and has variation across the surface.
 2. Grain texture — a fractalNoise SVG grain overlaid on top of the background at 0.82 opacity, blended using mix-blend-mode: multiply. This is the most critical layer. It must be clearly visible and tactile — not subtle. It should feel like the surface of old paper or aged film. Technical values: baseFrequency: 0.85, numOctaves: 4, stitchTiles: stitch, background-size 200px x 200px.
 3. Bokeh orbs — soft, blurry, warm glowing circles of light scattered across the background. They use mix-blend-mode: screen so they glow into the surface rather than sitting on top. They animate slowly with a gentle floating drift — subtle, not distracting. They reference the brand name directly — Lantern Library — as if candlelight or lantern light is softly illuminating the page. Orb colors are warm amber and gold tones. They vary in size, opacity, blur intensity, and animation duration so they feel organic and not mechanical.
@@ -38,7 +39,6 @@ No glassmorphism. No backdrop-filter blur. No glowing white borders. No box shad
 Book cover image takes up the top portion of the card. Consistent aspect ratio across all cards.
 Card content: Title in serif, author in serif italic, price, availability status.
 
-
 Buttons
 
 Font: Georgia serif, uppercase, wide letter-spacing 0.15–0.18em
@@ -47,7 +47,6 @@ Border: 0.5px solid — warm brown in light mode, warm gold in dark mode
 Border-radius: 2px — barely rounded, almost sharp
 No filled buttons anywhere. All outline style.
 Hover state: very subtle background fill — rgba of the border color at low opacity
-
 
 Dividers & Decorative Elements
 Use thin decorative dividers between sections — not plain horizontal rules. Options:
@@ -69,7 +68,6 @@ Drop shadows that feel digital or modern
 Bright, saturated colors
 Gradient fills on buttons or cards
 Any UI pattern that feels like a SaaS app, e-commerce platform, or tech product
-
 
 The Feeling Test
 Before finalizing any design decision, ask: does this feel like it belongs in a candlelit library?

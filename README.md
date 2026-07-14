@@ -1,73 +1,70 @@
-# Multilingual Bookstore Catalog
+# The Lantern Library
 
-A full-stack headless catalog system for a bookstore with support for English and Urdu (RTL). It includes a public-facing catalog to browse books and order via WhatsApp, and a protected admin panel for managing the inventory.
+A full-stack, multilingual (English / Urdu with RTL) bookstore catalogue. Customers browse a curated catalogue and order via WhatsApp; admins manage inventory and admin accounts through a protected dashboard.
 
-## Tech Stack
-- **Frontend**: React, Vite, Tailwind CSS, react-i18next, React Router, Axios
-- **Backend**: Node.js, Express, MongoDB (Mongoose), JSON Web Tokens (JWT)
+## Repository layout
 
-## Local Development Setup
-
-### Backend
-1. Navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy the environment variables example and configure it:
-   ```bash
-   cp .env.example .env
-   ```
-   *(Ensure MongoDB is running locally or provide a remote URI in the .env file).*
-4. Seed the database with sample data:
-   ```bash
-   node seed.js
-   ```
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-### Frontend
-1. Navigate to the `frontend` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy the environment variables example and configure it:
-   ```bash
-   cp .env.example .env
-   ```
-4. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-
-## Environment Variables
-
-### Backend (`backend/.env`)
-- `MONGO_URI`: MongoDB connection string.
-- `PORT`: Port to run the server (default: 5000).
-- `JWT_SECRET`: Secret key for signing admin tokens.
-- `ADMIN_PASSWORD_HASH`: Bcrypt hash of the admin password.
-
-**How to generate an admin password hash:**
-Run the following in your terminal (replace `yourpassword` with your desired password):
-```bash
-node -e "require('bcryptjs').hash('yourpassword', 10).then(console.log)"
+```
+backend/    Express + TypeScript REST API (MongoDB, Cloudflare R2, JWT auth)
+frontend/   React + TypeScript SPA (Vite, Tailwind CSS v4, React Query, i18next)
 ```
 
-### Frontend (`frontend/.env`)
-- `VITE_API_URL`: The base URL for the backend API (e.g., `http://localhost:5000/api`).
-- `VITE_WHATSAPP_NUMBER`: The WhatsApp phone number for receiving orders (include country code, no `+` or spaces).
+Each package has its own README with full details:
 
-## Deployment
+- [backend/README.md](backend/README.md) — API reference, architecture, scripts
+- [frontend/README.md](frontend/README.md) — app structure, conventions
 
-- **Backend**: Deploy the `backend` directory to a Node.js hosting provider like Render or Heroku. Ensure you set all the environment variables from the backend `.env` in the platform's settings. Update CORS if necessary.
-- **Frontend**: Deploy the `frontend` directory to a static hosting provider like Vercel or Netlify. Set the `VITE_API_URL` to your live backend URL and configure `VITE_WHATSAPP_NUMBER`.
+## Tech stack
+
+| Layer      | Technology |
+| ---------- | ---------- |
+| Frontend   | React 18, Vite, TypeScript, Tailwind CSS v4, TanStack React Query, react-router 7, react-i18next |
+| Backend    | Node.js 20+, Express 4, TypeScript, Mongoose 8, zod, pino, helmet |
+| Database   | MongoDB |
+| Storage    | Cloudflare R2 (book cover images, processed with sharp) |
+| Auth       | JWT bearer tokens with token-version revocation, role-based access (admin / super_admin) |
+| API docs   | OpenAPI 3 — served at `/api/v1/docs` (Swagger UI) |
+| Tests      | Vitest (+ Supertest and mongodb-memory-server on the backend, Testing Library on the frontend) |
+| Quality    | ESLint (flat config, typescript-eslint), Prettier |
+
+## Quick start
+
+Prerequisites: Node.js >= 20, a local or remote MongoDB.
+
+### 1. Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env   # then fill in the values (see backend/README.md)
+npm run seed           # optional: sample books
+npm run create-super-admin
+npm run dev            # http://localhost:8000, docs at /api/v1/docs
+```
+
+### 2. Frontend
+
+```bash
+cd frontend
+npm install
+# .env.local: VITE_API_URL=http://localhost:8000/api/v1, VITE_WHATSAPP_NUMBER=...
+npm run dev            # http://localhost:5173
+```
+
+## Common commands
+
+Run these inside `backend/` or `frontend/`:
+
+| Command             | Purpose |
+| ------------------- | ------- |
+| `npm run dev`       | Start the dev server (hot reload) |
+| `npm run build`     | Production build |
+| `npm test`          | Run the test suite |
+| `npm run lint`      | ESLint |
+| `npm run typecheck` | TypeScript type check |
+| `npm run format`    | Prettier write |
+
+## Deployment notes
+
+- **Backend**: deploy `backend/` to any Node.js host. `npm run build` then `npm start`. All required env vars must be set — the server fails fast with a clear message if any are missing. `CORS_ORIGIN` is **mandatory in production** (comma-separated allowlist). Set `SENTRY_DSN` to enable error tracking.
+- **Frontend**: deploy `frontend/dist` to any static host. Set `VITE_API_URL` to the live API base (including `/api/v1`) and `VITE_WHATSAPP_NUMBER` at build time.

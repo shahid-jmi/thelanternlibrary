@@ -1,6 +1,9 @@
 export default function GrainTexture() {
   return (
-    <div className="fixed inset-0 pointer-events-none z-[1]" style={{ mixBlendMode: 'multiply', opacity: 0.82 }}>
+    <div
+      className="fixed inset-0 pointer-events-none z-[1]"
+      style={{ mixBlendMode: 'multiply', opacity: 0.82 }}
+    >
       <svg className="w-full h-full">
         <filter id="grainFilter">
           <feTurbulence

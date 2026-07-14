@@ -61,11 +61,11 @@
   --accent-foreground: #e8d5a8;
   --destructive: #d45f3f;
   --destructive-foreground: #e8d5a8;
-  --border: rgba(200, 160, 80, 0.20);
+  --border: rgba(200, 160, 80, 0.2);
   --input: transparent;
   --input-background: rgba(255, 220, 140, 0.08);
   --switch-background: rgba(192, 144, 80, 0.3);
-  --button-border: rgba(200, 160, 80, 0.40);
+  --button-border: rgba(200, 160, 80, 0.4);
   --vignette: rgba(5, 2, 0, 0.62);
   --icon-color: #c09050;
 
@@ -80,7 +80,7 @@
   --sidebar-primary-foreground: #2a2018;
   --sidebar-accent: rgba(255, 220, 140, 0.08);
   --sidebar-accent-foreground: #e8d5a8;
-  --sidebar-border: rgba(200, 160, 80, 0.20);
+  --sidebar-border: rgba(200, 160, 80, 0.2);
   --sidebar-ring: #c09050;
 }
 

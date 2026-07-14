@@ -1,0 +1,84 @@
+export const BOOK_GENRES = [
+  'fiction',
+  'non-fiction',
+  'poetry',
+  'religious',
+  'children',
+  'history',
+  'science',
+  'other',
+] as const;
+
+export const BOOK_LANGUAGES = ['english', 'urdu', 'persian', 'arabic', 'other'] as const;
+export const TRANSLATION_LANGUAGES = ['en', 'ur'] as const;
+
+export type BookGenre = (typeof BOOK_GENRES)[number];
+export type BookLanguage = (typeof BOOK_LANGUAGES)[number];
+export type TranslationLanguage = (typeof TRANSLATION_LANGUAGES)[number];
+
+export interface CoverImage {
+  url: string;
+  key: string | null;
+}
+
+export interface PublicBook {
+  _id: string;
+  title: string;
+  description: string;
+  author: string;
+  price: number;
+  genre: BookGenre;
+  language: BookLanguage;
+  coverImage: CoverImage;
+  isAvailable: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocalizedText {
+  en: string;
+  ur?: string;
+}
+
+export interface AdminBook extends Omit<PublicBook, 'title' | 'description'> {
+  title: LocalizedText;
+  description: LocalizedText;
+}
+
+export interface BookPayload {
+  title: LocalizedText;
+  description: LocalizedText;
+  author: string;
+  price: number;
+  genre: BookGenre;
+  language: BookLanguage;
+  isAvailable: boolean;
+}
+
+export interface BookFilters {
+  lang?: string;
+  search?: string;
+  genre?: string;
+  language?: string;
+  available?: string;
+}
+
+export const ADMIN_ROLES = ['admin', 'super_admin'] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
+export interface AdminAccount {
+  _id: string;
+  email: string;
+  role: AdminRole;
+  isActive: boolean;
+  createdBy: string | null;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAdminPayload {
+  email: string;
+  password: string;
+  role: AdminRole;
+}

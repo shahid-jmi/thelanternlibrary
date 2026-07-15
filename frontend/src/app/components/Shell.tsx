@@ -1,14 +1,18 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Menu, Moon, Sun, X } from 'lucide-react';
 import GrainTexture from './GrainTexture';
+import Bokeh from './Bokeh';
+import Footer from './Footer';
 import { useTheme } from '../theme/ThemeContext';
 
 export default function Shell({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isAdmin = pathname.startsWith('/admin');
 
   const setLanguage = (language: 'en' | 'ur') => {
     i18n.changeLanguage(language);
@@ -20,6 +24,14 @@ export default function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen relative overflow-x-hidden text-foreground">
       <div className="fixed inset-0 z-0 lantern-bg" />
+      {!isAdmin && <Bokeh />}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-[50]"
+        style={{
+          background: 'radial-gradient(ellipse at center, transparent 55%, var(--vignette) 100%)',
+        }}
+      />
       <GrainTexture />
       <div className="relative z-10">
         <nav className="sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-md">
@@ -34,31 +46,31 @@ export default function Shell({ children }: { children: ReactNode }) {
             </Link>
             <div className="flex items-center gap-2 sm:gap-5">
               <a
-                className="hidden text-sm opacity-70 transition hover:opacity-100 sm:inline"
+                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 sm:inline"
                 href="/#home"
               >
                 {t('nav.home')}
               </a>
               <a
-                className="hidden text-sm opacity-70 transition hover:opacity-100 sm:inline"
+                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 sm:inline"
                 href="/#catalog"
               >
                 {t('nav.catalog')}
               </a>
               <a
-                className="hidden text-sm opacity-70 transition hover:opacity-100 lg:inline"
+                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 lg:inline"
                 href="/#about"
               >
                 About
               </a>
               <a
-                className="hidden text-sm opacity-70 transition hover:opacity-100 lg:inline"
+                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 lg:inline"
                 href="/#contact"
               >
                 Contact
               </a>
               <Link
-                className="hidden text-sm opacity-70 transition hover:opacity-100 sm:inline"
+                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 sm:inline"
                 to="/admin"
               >
                 {t('nav.admin')}
@@ -103,35 +115,35 @@ export default function Shell({ children }: { children: ReactNode }) {
             <div className="border-t border-border/80 bg-background/95 px-4 py-3 sm:hidden">
               <div className="flex flex-col gap-1">
                 <a
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:opacity-100"
+                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   href="/#home"
                   onClick={closeMenu}
                 >
                   {t('nav.home')}
                 </a>
                 <a
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:opacity-100"
+                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   href="/#catalog"
                   onClick={closeMenu}
                 >
                   {t('nav.catalog')}
                 </a>
                 <a
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:opacity-100"
+                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   href="/#about"
                   onClick={closeMenu}
                 >
                   About
                 </a>
                 <a
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:opacity-100"
+                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   href="/#contact"
                   onClick={closeMenu}
                 >
                   Contact
                 </a>
                 <Link
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:opacity-100"
+                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   to="/admin"
                   onClick={closeMenu}
                 >
@@ -142,6 +154,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           )}
         </nav>
         {children}
+        {!isAdmin && <Footer />}
       </div>
     </div>
   );

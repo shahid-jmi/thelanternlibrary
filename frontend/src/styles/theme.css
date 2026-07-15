@@ -16,15 +16,17 @@
   --secondary-foreground: #2e1a08;
   --muted: #9a7040;
   --muted-foreground: rgba(46, 26, 8, 0.65);
-  --accent: #9a7040;
+  --accent: #8b6914;
   --accent-foreground: #2e1a08;
+  --ember: #8b3a2a;
+  --ember-foreground: #f5e6cc;
   --destructive: #8b3a1f;
   --destructive-foreground: #fff5e1;
-  --border: rgba(100, 65, 20, 0.22);
+  --border: rgba(100, 65, 20, 0.38);
   --input: transparent;
   --input-background: rgba(255, 245, 225, 0.4);
   --switch-background: rgba(154, 112, 64, 0.3);
-  --button-border: rgba(80, 45, 10, 0.45);
+  --button-border: rgba(80, 45, 10, 0.65);
   --vignette: rgba(100, 65, 20, 0.38);
   --icon-color: #7a4f1a;
 
@@ -57,15 +59,17 @@
   --secondary-foreground: #e8d5a8;
   --muted: #c09050;
   --muted-foreground: rgba(232, 213, 168, 0.65);
-  --accent: #c09050;
+  --accent: #c9913a;
   --accent-foreground: #e8d5a8;
+  --ember: #b5522f;
+  --ember-foreground: #f9ead2;
   --destructive: #d45f3f;
   --destructive-foreground: #e8d5a8;
-  --border: rgba(200, 160, 80, 0.2);
+  --border: rgba(200, 160, 80, 0.38);
   --input: transparent;
   --input-background: rgba(255, 220, 140, 0.08);
   --switch-background: rgba(192, 144, 80, 0.3);
-  --button-border: rgba(200, 160, 80, 0.4);
+  --button-border: rgba(200, 160, 80, 0.6);
   --vignette: rgba(5, 2, 0, 0.62);
   --icon-color: #c09050;
 
@@ -99,6 +103,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-ember: var(--ember);
+  --color-ember-foreground: var(--ember-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);

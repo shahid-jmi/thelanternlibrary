@@ -15,3 +15,77 @@
     radial-gradient(circle at 70% 75%, #1a1208 0%, transparent 44%),
     radial-gradient(circle at 50% 5%, #302418 0%, transparent 42%), #2a2018;
 }
+
+/* Bokeh orbs — lantern light glowing into the page (public pages only). */
+:root {
+  --bokeh-1: rgb(255, 210, 130);
+  --bokeh-2: rgb(255, 200, 100);
+  --bokeh-3: rgb(240, 180, 90);
+  --bokeh-4: rgb(255, 220, 150);
+  --bokeh-5: rgb(210, 170, 80);
+}
+
+.dark {
+  --bokeh-1: rgb(200, 150, 60);
+  --bokeh-2: rgb(180, 130, 50);
+  --bokeh-3: rgb(160, 110, 40);
+  --bokeh-4: rgb(210, 160, 70);
+  --bokeh-5: rgb(190, 140, 55);
+}
+
+.bokeh-orb {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: bokeh-drift ease-in-out infinite;
+}
+
+@keyframes bokeh-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+/* Duotone treatment so photography sits inside the warm palette. */
+.brand-photo {
+  filter: sepia(0.25) saturate(0.85) brightness(0.95) contrast(1.05);
+}
+
+/* Scroll-reveal — sections settle into place. */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.55s ease-out,
+    transform 0.55s ease-out;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .bokeh-orb {
+    animation: none;
+  }
+}

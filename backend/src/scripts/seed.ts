@@ -1,7 +1,7 @@
 import env from '../config/env.js';
 import { connectDatabase, disconnectDatabase } from '../config/db.js';
 import Book, { type BookAttrs } from '../modules/books/book.model.js';
-import { PLACEHOLDER_COVER_URL } from '../modules/books/book.constants.js';
+import { PLACEHOLDER_COVER_URL } from '../common/services/cover-image.service.js';
 
 const placeholderCover = { url: PLACEHOLDER_COVER_URL, key: null };
 

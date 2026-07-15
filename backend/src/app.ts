@@ -13,6 +13,14 @@ import errorHandler from './common/middleware/errorHandler.js';
 import notFound from './common/middleware/notFound.js';
 import authRouter from './modules/admin-auth/auth.routes.js';
 import { createAdminBookRouter, createPublicBookRouter } from './modules/books/book.routes.js';
+import {
+  createAdminProductRouter,
+  createPublicProductRouter,
+} from './modules/products/product.routes.js';
+import {
+  createAdminCategoryRouter,
+  createPublicCategoryRouter,
+} from './modules/categories/category.routes.js';
 import { createAdminManagementRouter } from './modules/admins/admin.routes.js';
 import openApiDocument from './docs/openapi.js';
 
@@ -36,8 +44,14 @@ const createApp = (): Express => {
   const apiV1 = express.Router();
 
   apiV1.use('/books', createPublicBookRouter());
+  apiV1.use('/products', createPublicProductRouter());
+  apiV1.use('/categories', createPublicCategoryRouter());
   apiV1.use('/admin/auth', authRouter);
   apiV1.use('/admin/books', authenticateAdmin, createAdminBookRouter());
+  apiV1.use('/admin/products', authenticateAdmin, createAdminProductRouter());
+  // Category reads are open to any admin; mutations are guarded per-route
+  // with requireSuperAdmin inside the router.
+  apiV1.use('/admin/categories', authenticateAdmin, createAdminCategoryRouter());
   apiV1.use('/admin/admins', authenticateAdmin, requireSuperAdmin, createAdminManagementRouter());
 
   apiV1.get('/docs.json', (req, res) => {

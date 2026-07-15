@@ -8,8 +8,12 @@ import {
   type AdminBookDto,
   type PublicBookDto,
 } from './book.mapper.js';
-import { uploadCoverImageAsset, deleteCoverImageAsset } from './cover-image.service.js';
-import { PLACEHOLDER_COVER_URL, type TranslationLanguage } from './book.constants.js';
+import {
+  PLACEHOLDER_COVER_URL,
+  uploadCoverImageAsset,
+  deleteCoverImageAsset,
+} from '../../common/services/cover-image.service.js';
+import type { TranslationLanguage } from './book.constants.js';
 import type { BookAttrs, CoverImage } from './book.model.js';
 import type { ListPublicBooksQuery, UpsertBookInput } from './book.validators.js';
 

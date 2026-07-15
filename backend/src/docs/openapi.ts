@@ -27,6 +27,16 @@ const adminIdParam = {
   description: 'MongoDB ObjectId of the admin',
 };
 
+const productIdParam = {
+  ...bookIdParam,
+  description: 'MongoDB ObjectId of the product',
+};
+
+const categoryIdParam = {
+  ...bookIdParam,
+  description: 'MongoDB ObjectId of the category',
+};
+
 const langQueryParam = {
   name: 'lang',
   in: 'query',
@@ -46,8 +56,16 @@ const openApiDocument = {
   servers: [{ url: '/api/v1' }],
   tags: [
     { name: 'Books', description: 'Public storefront catalogue' },
+    { name: 'Products', description: 'Public non-book catalogue (postcards, totes, etc.)' },
+    { name: 'Categories', description: 'Public product categories for storefront navigation' },
     { name: 'Auth', description: 'Admin authentication' },
     { name: 'Admin Books', description: 'Book management (admin token required)' },
+    { name: 'Admin Products', description: 'Product management (admin token required)' },
+    {
+      name: 'Admin Categories',
+      description:
+        'Category taxonomy. Any admin can list; create/update/delete require a super admin token.',
+    },
     { name: 'Admins', description: 'Admin account management (super admin token required)' },
   ],
   components: {
@@ -133,6 +151,114 @@ const openApiDocument = {
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
+      PublicCategory: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          name: { type: 'string', description: 'Localized to the requested lang' },
+          slug: { type: 'string' },
+          tagline: {
+            type: 'string',
+            nullable: true,
+            description: 'Localized to the requested lang',
+          },
+        },
+      },
+      AdminCategory: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          name: { $ref: '#/components/schemas/LocalizedText' },
+          slug: { type: 'string' },
+          tagline: {
+            allOf: [{ $ref: '#/components/schemas/LocalizedText' }],
+            nullable: true,
+          },
+          isActive: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CategoryPayload: {
+        type: 'object',
+        properties: {
+          name: { $ref: '#/components/schemas/LocalizedText' },
+          slug: {
+            type: 'string',
+            pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+            maxLength: 60,
+            description: 'Stable machine-safe identifier used for filtering',
+          },
+          tagline: { $ref: '#/components/schemas/LocalizedText' },
+          isActive: { type: 'boolean' },
+        },
+        required: ['name', 'slug'],
+      },
+      PublicProduct: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          name: { type: 'string', description: 'Localized to the requested lang' },
+          description: { type: 'string', description: 'Localized to the requested lang' },
+          price: { type: 'number', minimum: 0 },
+          category: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string', description: 'Localized to the requested lang' },
+              slug: { type: 'string' },
+            },
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
+          isAvailable: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      AdminProduct: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          name: { $ref: '#/components/schemas/LocalizedText' },
+          description: { $ref: '#/components/schemas/LocalizedText' },
+          price: { type: 'number', minimum: 0 },
+          category: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { $ref: '#/components/schemas/LocalizedText' },
+              slug: { type: 'string' },
+              isActive: { type: 'boolean' },
+            },
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
+          isAvailable: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      ProductFormPayload: {
+        type: 'object',
+        description:
+          'multipart/form-data payload. name and description are JSON-encoded LocalizedText strings.',
+        properties: {
+          name: { type: 'string', description: 'JSON-encoded LocalizedText' },
+          description: { type: 'string', description: 'JSON-encoded LocalizedText' },
+          category: {
+            type: 'string',
+            pattern: '^[a-fA-F\\d]{24}$',
+            description: 'ObjectId of an existing, active category',
+          },
+          price: { type: 'number', minimum: 0 },
+          isAvailable: { type: 'string', enum: ['true', 'false'] },
+          coverImage: {
+            type: 'string',
+            format: 'binary',
+            description: 'JPG, PNG, or WEBP up to 2MB',
+          },
+        },
+        required: ['name', 'description', 'category', 'price'],
+      },
       BookFormPayload: {
         type: 'object',
         description:
@@ -215,6 +341,81 @@ const openApiDocument = {
           },
           400: errorResponse('Validation failed'),
           404: errorResponse('Book not found'),
+        },
+      },
+    },
+    '/products': {
+      get: {
+        tags: ['Products'],
+        summary: 'List products in the public catalogue',
+        parameters: [
+          langQueryParam,
+          {
+            name: 'category',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', maxLength: 60 },
+            description: 'Category slug. Unknown or inactive categories return an empty list.',
+          },
+          {
+            name: 'available',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+          },
+          {
+            name: 'search',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', minLength: 1, maxLength: 100 },
+            description: 'Case-insensitive name search (English and Urdu names)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Matching products',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/PublicProduct' } },
+              },
+            },
+          },
+          400: errorResponse('Validation failed'),
+        },
+      },
+    },
+    '/products/{id}': {
+      get: {
+        tags: ['Products'],
+        summary: 'Get a single product',
+        parameters: [productIdParam, langQueryParam],
+        responses: {
+          200: {
+            description: 'The product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PublicProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          404: errorResponse('Product not found'),
+        },
+      },
+    },
+    '/categories': {
+      get: {
+        tags: ['Categories'],
+        summary: 'List active categories for storefront navigation',
+        parameters: [langQueryParam],
+        responses: {
+          200: {
+            description: 'Active categories',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/PublicCategory' } },
+              },
+            },
+          },
+          400: errorResponse('Validation failed'),
         },
       },
     },
@@ -367,6 +568,211 @@ const openApiDocument = {
           400: errorResponse('Validation failed'),
           401: errorResponse('Missing or invalid token'),
           404: errorResponse('Book not found'),
+        },
+      },
+    },
+    '/admin/products': {
+      get: {
+        tags: ['Admin Products'],
+        summary: 'List all products with full localized fields',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'All products',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/AdminProduct' } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+      post: {
+        tags: ['Admin Products'],
+        summary: 'Create a product (category must exist and be active)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: { $ref: '#/components/schemas/ProductFormPayload' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Created product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed / category missing or inactive'),
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+    },
+    '/admin/products/{id}': {
+      put: {
+        tags: ['Admin Products'],
+        summary: 'Update a product (category must exist and be active)',
+        security: [{ bearerAuth: [] }],
+        parameters: [productIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: { $ref: '#/components/schemas/ProductFormPayload' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed / category missing or inactive'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Product not found'),
+        },
+      },
+      delete: {
+        tags: ['Admin Products'],
+        summary: 'Delete a product (and its stored cover image)',
+        security: [{ bearerAuth: [] }],
+        parameters: [productIdParam],
+        responses: {
+          200: {
+            description: 'Deletion confirmation',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Product not found'),
+        },
+      },
+    },
+    '/admin/products/{id}/availability': {
+      patch: {
+        tags: ['Admin Products'],
+        summary: 'Toggle a product’s availability',
+        security: [{ bearerAuth: [] }],
+        parameters: [productIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { isAvailable: { type: 'boolean' } },
+                required: ['isAvailable'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Product not found'),
+        },
+      },
+    },
+    '/admin/categories': {
+      get: {
+        tags: ['Admin Categories'],
+        summary: 'List all categories, including inactive (any admin)',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'All categories',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/AdminCategory' } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+      post: {
+        tags: ['Admin Categories'],
+        summary: 'Create a category (super admin only)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Created category',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminCategory' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          403: errorResponse('Super admin access required'),
+          409: errorResponse('A category with this slug already exists'),
+        },
+      },
+    },
+    '/admin/categories/{id}': {
+      put: {
+        tags: ['Admin Categories'],
+        summary: 'Update a category (super admin only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [categoryIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated category',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminCategory' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          403: errorResponse('Super admin access required'),
+          404: errorResponse('Category not found'),
+          409: errorResponse('A category with this slug already exists'),
+        },
+      },
+      delete: {
+        tags: ['Admin Categories'],
+        summary: 'Delete a category with no products assigned (super admin only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [categoryIdParam],
+        responses: {
+          200: {
+            description: 'Deletion confirmation',
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { message: { type: 'string' } } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+          403: errorResponse('Super admin access required'),
+          404: errorResponse('Category not found'),
+          409: errorResponse('This category still has products assigned'),
         },
       },
     },

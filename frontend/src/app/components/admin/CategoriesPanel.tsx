@@ -7,6 +7,7 @@ import { useAdminCategories, useDeleteCategory, useSaveCategory } from '../../qu
 import { useAuth } from '../../auth/AuthContext';
 import StatusMessage from '../StatusMessage';
 import { TextInput } from '../FormControls';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 interface CategoryFormState {
   name: { en: string; ur: string };
@@ -60,16 +61,15 @@ export default function CategoriesPanel() {
           {isSuperAdmin ? t('admin.categories.hint') : t('admin.categories.readOnly')}
         </p>
         {isSuperAdmin && (
-          <button
+          <Button
             onClick={() => {
               setEditing(null);
               setShowForm(true);
             }}
-            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground"
           >
             <Plus className="h-4 w-4" />
             {t('admin.dashboard.addCategory')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -87,62 +87,58 @@ export default function CategoriesPanel() {
         />
       )}
 
-      <div className="overflow-x-auto rounded-sm border border-border bg-card">
-        <table className="w-full min-w-[720px] text-left text-sm rtl:text-right">
-          <thead className="border-b border-border bg-secondary">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">{t('admin.form.slug')}</th>
-              <th className="px-4 py-3">{t('admin.form.tagline')}</th>
-              <th className="px-4 py-3">{t('admin.admins.status')}</th>
-              {isSuperAdmin && <th className="px-4 py-3">{t('admin.admins.actions')}</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr key={category._id} className="border-b border-border/70 last:border-0">
-                <td className="px-4 py-3">{category.name.en}</td>
-                <td className="px-4 py-3 font-mono text-xs">{category.slug}</td>
-                <td className="max-w-xs truncate px-4 py-3 italic opacity-75">
-                  {category.tagline?.en || '—'}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded-sm border border-border px-3 py-1.5 ${
-                      category.isActive ? '' : 'opacity-55'
-                    }`}
-                  >
-                    {category.isActive ? t('admin.admins.active') : t('admin.admins.inactive')}
-                  </span>
-                </td>
-                {isSuperAdmin && (
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditing(category);
-                          setShowForm(true);
-                        }}
-                        className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t('admin.dashboard.edit')}
-                      </button>
-                      <button
-                        onClick={() => removeCategory(category)}
-                        className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3 text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {t('admin.dashboard.delete')}
-                      </button>
-                    </div>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHead>
+          <tr>
+            <Th>Name</Th>
+            <Th>{t('admin.form.slug')}</Th>
+            <Th>{t('admin.form.tagline')}</Th>
+            <Th>{t('admin.admins.status')}</Th>
+            {isSuperAdmin && <Th>{t('admin.admins.actions')}</Th>}
+          </tr>
+        </TableHead>
+        <tbody>
+          {categories.map((category) => (
+            <TableRow key={category._id}>
+              <Td>{category.name.en}</Td>
+              <Td className="font-mono text-xs">{category.slug}</Td>
+              <Td className="max-w-xs truncate italic opacity-75">
+                {category.tagline?.en || '—'}
+              </Td>
+              <Td>
+                <Badge active={category.isActive}>
+                  {category.isActive ? t('admin.admins.active') : t('admin.admins.inactive')}
+                </Badge>
+              </Td>
+              {isSuperAdmin && (
+                <Td>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditing(category);
+                        setShowForm(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                      {t('admin.dashboard.edit')}
+                    </Button>
+                    <Button
+                      variant="destructive-outline"
+                      size="sm"
+                      onClick={() => removeCategory(category)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {t('admin.dashboard.delete')}
+                    </Button>
+                  </div>
+                </Td>
+              )}
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
     </section>
   );
 }
@@ -265,19 +261,10 @@ function CategoryForm({
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">
-        <button
-          disabled={saving}
-          className="h-10 rounded-sm bg-primary px-5 text-sm text-primary-foreground disabled:opacity-60"
-        >
-          {t('admin.form.saveCategory')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-10 rounded-sm border border-border px-5 text-sm"
-        >
+        <Button disabled={saving}>{t('admin.form.saveCategory')}</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
           {t('admin.form.cancel')}
-        </button>
+        </Button>
       </div>
     </form>
   );

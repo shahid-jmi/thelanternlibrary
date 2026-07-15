@@ -19,6 +19,7 @@ import {
 import { formatPrice } from '../../lib/format';
 import StatusMessage from '../StatusMessage';
 import { SelectInput, TextArea, TextInput } from '../FormControls';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 const emptyPayload: BookPayload = {
   title: { en: '', ur: '' },
@@ -73,16 +74,15 @@ export default function BooksPanel() {
   return (
     <section>
       <div className="mb-6 flex justify-end">
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setShowForm(true);
           }}
-          className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground"
         >
           <Plus className="h-4 w-4" />
           {t('admin.dashboard.addBook')}
-        </button>
+        </Button>
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
@@ -99,62 +99,57 @@ export default function BooksPanel() {
         />
       )}
 
-      <div className="overflow-x-auto rounded-sm border border-border bg-card">
-        <table className="w-full min-w-[820px] text-left text-sm rtl:text-right">
-          <thead className="border-b border-border bg-secondary">
-            <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">{t('book.author')}</th>
-              <th className="px-4 py-3">{t('book.price')}</th>
-              <th className="px-4 py-3">{t('book.genre')}</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {books.map((book) => (
-              <tr key={book._id} className="border-b border-border/70 last:border-0">
-                <td className="px-4 py-3">{book.title.en}</td>
-                <td className="px-4 py-3">{book.author}</td>
-                <td className="px-4 py-3">{formatPrice(book.price)}</td>
-                <td className="px-4 py-3">{book.genre}</td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => flipAvailability(book)}
-                    className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-1.5"
-                  >
+      <Table>
+        <TableHead>
+          <tr>
+            <Th>Title</Th>
+            <Th>{t('book.author')}</Th>
+            <Th>{t('book.price')}</Th>
+            <Th>{t('book.genre')}</Th>
+            <Th>Status</Th>
+            <Th>Actions</Th>
+          </tr>
+        </TableHead>
+        <tbody>
+          {books.map((book) => (
+            <TableRow key={book._id}>
+              <Td>{book.title.en}</Td>
+              <Td>{book.author}</Td>
+              <Td>{formatPrice(book.price)}</Td>
+              <Td>{book.genre}</Td>
+              <Td>
+                <button onClick={() => flipAvailability(book)}>
+                  <Badge active={book.isAvailable} className="inline-flex items-center gap-2">
                     {book.isAvailable && <Check className="h-3.5 w-3.5" />}
                     {book.isAvailable
                       ? t('admin.dashboard.available')
                       : t('admin.dashboard.unavailable')}
-                  </button>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditing(book);
-                        setShowForm(true);
-                      }}
-                      className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3"
-                    >
-                      <Edit className="h-4 w-4" />
-                      {t('admin.dashboard.edit')}
-                    </button>
-                    <button
-                      onClick={() => removeBook(book)}
-                      className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {t('admin.dashboard.delete')}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </Badge>
+                </button>
+              </Td>
+              <Td>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(book);
+                      setShowForm(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('admin.dashboard.edit')}
+                  </Button>
+                  <Button variant="destructive-outline" size="sm" onClick={() => removeBook(book)}>
+                    <Trash2 className="h-4 w-4" />
+                    {t('admin.dashboard.delete')}
+                  </Button>
+                </div>
+              </Td>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
     </section>
   );
 }
@@ -311,19 +306,10 @@ function BookForm({
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">
-        <button
-          disabled={saving}
-          className="h-10 rounded-sm bg-primary px-5 text-sm text-primary-foreground disabled:opacity-60"
-        >
-          {t('admin.form.save')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-10 rounded-sm border border-border px-5 text-sm"
-        >
+        <Button disabled={saving}>{t('admin.form.save')}</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
           {t('admin.form.cancel')}
-        </button>
+        </Button>
       </div>
     </form>
   );

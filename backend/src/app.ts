@@ -1,4 +1,4 @@
-import express, { type Express } from 'express';
+import express, { type Express, type Router } from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
@@ -41,24 +41,31 @@ const createApp = (): Express => {
     res.json({ status: 'ok' });
   });
 
+  const registerApiRoutes = (router: Router): void => {
+    router.use('/books', createPublicBookRouter());
+    router.use('/products', createPublicProductRouter());
+    router.use('/categories', createPublicCategoryRouter());
+    router.use('/admin/auth', authRouter);
+    router.use('/admin/books', authenticateAdmin, createAdminBookRouter());
+    router.use('/admin/products', authenticateAdmin, createAdminProductRouter());
+    // Category reads are open to any admin; mutations are guarded per-route
+    // with requireSuperAdmin inside the router.
+    router.use('/admin/categories', authenticateAdmin, createAdminCategoryRouter());
+    router.use('/admin/admins', authenticateAdmin, requireSuperAdmin, createAdminManagementRouter());
+
+    router.get('/docs.json', (req, res) => {
+      res.json(openApiDocument);
+    });
+    router.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+  };
+
+  const api = express.Router();
   const apiV1 = express.Router();
 
-  apiV1.use('/books', createPublicBookRouter());
-  apiV1.use('/products', createPublicProductRouter());
-  apiV1.use('/categories', createPublicCategoryRouter());
-  apiV1.use('/admin/auth', authRouter);
-  apiV1.use('/admin/books', authenticateAdmin, createAdminBookRouter());
-  apiV1.use('/admin/products', authenticateAdmin, createAdminProductRouter());
-  // Category reads are open to any admin; mutations are guarded per-route
-  // with requireSuperAdmin inside the router.
-  apiV1.use('/admin/categories', authenticateAdmin, createAdminCategoryRouter());
-  apiV1.use('/admin/admins', authenticateAdmin, requireSuperAdmin, createAdminManagementRouter());
+  registerApiRoutes(api);
+  registerApiRoutes(apiV1);
 
-  apiV1.get('/docs.json', (req, res) => {
-    res.json(openApiDocument);
-  });
-  apiV1.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
-
+  app.use('/api', api);
   app.use('/api/v1', apiV1);
 
   app.use(notFound);

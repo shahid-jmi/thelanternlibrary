@@ -43,6 +43,17 @@ beforeEach(async () => {
   await clearTestDatabase();
 });
 
+describe('GET /api/books', () => {
+  it('supports the unversioned API alias for books', async () => {
+    await seedBooks();
+
+    const response = await request(app).get('/api/books');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(2);
+  });
+});
+
 describe('GET /api/v1/books', () => {
   it('returns all books with localized string titles', async () => {
     await seedBooks();

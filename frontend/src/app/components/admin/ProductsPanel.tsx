@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Edit, Plus, Trash2 } from 'lucide-react';
 import type { AdminCategory, AdminProduct, ProductPayload } from '../../api/types';
@@ -11,8 +11,11 @@ import {
 } from '../../queries/products';
 import { useAdminCategories } from '../../queries/categories';
 import { formatPrice } from '../../lib/format';
+import { validatePrice, validateRequired } from '../../lib/validation';
+import { useValidatedField } from '../../lib/useValidatedField';
 import StatusMessage from '../StatusMessage';
-import { TextArea, TextInput } from '../FormControls';
+import { FieldInput, FieldSelect, FieldTextArea } from '../FormField';
+import ImageUploadField from '../ImageUploadField';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function ProductsPanel() {
@@ -87,6 +90,7 @@ export default function ProductsPanel() {
 
       {showForm && (
         <ProductForm
+          key={editing?._id ?? 'new'}
           product={editing}
           categories={categories}
           onCancel={() => {
@@ -161,34 +165,6 @@ export default function ProductsPanel() {
   );
 }
 
-function productToPayload(
-  product: AdminProduct | null,
-  fallbackCategoryId: string
-): ProductPayload {
-  if (!product) {
-    return {
-      name: { en: '', ur: '' },
-      description: { en: '', ur: '' },
-      category: fallbackCategoryId,
-      price: 0,
-      isAvailable: true,
-    };
-  }
-  return {
-    name: {
-      en: product.name.en || '',
-      ur: product.name.ur || '',
-    },
-    description: {
-      en: product.description.en || '',
-      ur: product.description.ur || '',
-    },
-    category: product.category._id,
-    price: product.price || 0,
-    isAvailable: product.isAvailable,
-  };
-}
-
 function ProductForm({
   product,
   categories,
@@ -202,36 +178,32 @@ function ProductForm({
 }) {
   const { t } = useTranslation();
   const fallbackCategoryId = categories.find((category) => category.isActive)?._id ?? '';
-  const [form, setForm] = useState<ProductPayload>(() =>
-    productToPayload(product, fallbackCategoryId)
-  );
+  const nameEn = useValidatedField(validateRequired, product?.name.en ?? '');
+  const [nameUr, setNameUr] = useState(product?.name.ur ?? '');
+  const descEn = useValidatedField(validateRequired, product?.description.en ?? '');
+  const [descUr, setDescUr] = useState(product?.description.ur ?? '');
+  const [category, setCategory] = useState(product?.category._id ?? fallbackCategoryId);
+  const price = useValidatedField(validatePrice, product ? String(product.price) : '');
+  const [isAvailable, setIsAvailable] = useState(product?.isAvailable ?? true);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setForm(productToPayload(product, fallbackCategoryId));
-    setCoverImageFile(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product]);
-
-  const setField = (field: keyof ProductPayload, value: string | number | boolean) => {
-    setForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const setNested = (group: 'name' | 'description', field: 'en' | 'ur', value: string) => {
-    setForm((current) => ({ ...current, [group]: { ...current[group], [field]: value } }));
-  };
-
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    const errors = [nameEn.validateNow(), descEn.validateNow(), price.validateNow()];
+    if (errors.some(Boolean)) return;
+
     setSaving(true);
     setError('');
     try {
       await onSave(
         {
-          ...form,
-          price: Number(form.price),
+          name: { en: nameEn.value, ur: nameUr },
+          description: { en: descEn.value, ur: descUr },
+          category,
+          price: Number(price.value),
+          isAvailable,
         },
         coverImageFile
       );
@@ -243,83 +215,75 @@ function ProductForm({
   };
 
   return (
-    <form onSubmit={submit} className="mb-8 rounded-sm border border-border bg-card p-5">
+    <form onSubmit={submit} noValidate className="mb-8 rounded-sm border border-border bg-card p-5">
       <div className="grid gap-4 md:grid-cols-2">
-        <TextInput
+        <FieldInput
+          id="product-name-en"
           label={t('admin.form.nameEn')}
-          value={form.name.en}
-          onChange={(value) => setNested('name', 'en', value)}
           dir="ltr"
-          required
+          value={nameEn.value}
+          onChange={nameEn.onChange}
+          onBlur={nameEn.onBlur}
+          error={nameEn.error ? t(nameEn.error) : undefined}
         />
-        <TextInput
+        <FieldInput
+          id="product-name-ur"
           label={t('admin.form.nameUr')}
-          value={form.name.ur || ''}
-          onChange={(value) => setNested('name', 'ur', value)}
           dir="rtl"
+          value={nameUr}
+          onChange={setNameUr}
         />
-        <TextArea
+        <FieldTextArea
+          id="product-desc-en"
           label={t('admin.form.descEn')}
-          value={form.description.en}
-          onChange={(value) => setNested('description', 'en', value)}
           dir="ltr"
-          required
+          value={descEn.value}
+          onChange={descEn.onChange}
+          onBlur={descEn.onBlur}
+          error={descEn.error ? t(descEn.error) : undefined}
         />
-        <TextArea
+        <FieldTextArea
+          id="product-desc-ur"
           label={t('admin.form.descUr')}
-          value={form.description.ur || ''}
-          onChange={(value) => setNested('description', 'ur', value)}
           dir="rtl"
+          value={descUr}
+          onChange={setDescUr}
         />
-        <label className="block text-sm">
-          {t('admin.form.category')}
-          <select
-            value={form.category}
-            onChange={(event) => setField('category', event.target.value)}
-            required
-            className="mt-1 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
-          >
-            {categories.map((category) => (
-              <option key={category._id} value={category._id} disabled={!category.isActive}>
-                {category.name.en}
-                {!category.isActive ? ` (${t('admin.admins.inactive').toLowerCase()})` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm">
-          {t('admin.form.price')}
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.price}
-            onChange={(event) => setField('price', Number(event.target.value))}
-            className="mt-1 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
-            required
-          />
-        </label>
-        <label className="block text-sm">
-          {t('admin.form.coverImage')}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setCoverImageFile(event.target.files?.[0] || null)}
-            className="mt-1 block w-full text-sm"
-          />
-          {product?.coverImage?.url && !coverImageFile && (
-            <img
-              src={product.coverImage.url}
-              alt=""
-              className="mt-2 h-24 w-16 rounded-sm border border-border object-cover"
-            />
-          )}
-        </label>
+        <FieldSelect
+          id="product-category"
+          label={t('admin.form.category')}
+          value={category}
+          onChange={setCategory}
+        >
+          {categories.map((item) => (
+            <option key={item._id} value={item._id} disabled={!item.isActive}>
+              {item.name.en}
+              {!item.isActive ? ` (${t('admin.admins.inactive').toLowerCase()})` : ''}
+            </option>
+          ))}
+        </FieldSelect>
+        <FieldInput
+          id="product-price"
+          type="number"
+          min="0"
+          step="0.01"
+          label={t('admin.form.price')}
+          value={price.value}
+          onChange={price.onChange}
+          onBlur={price.onBlur}
+          error={price.error ? t(price.error) : undefined}
+        />
+        <ImageUploadField
+          label={t('admin.form.coverImage')}
+          file={coverImageFile}
+          onFileChange={setCoverImageFile}
+          existingUrl={product?.coverImage?.url}
+        />
         <label className="flex items-center gap-3 pt-6 text-sm">
           <input
             type="checkbox"
-            checked={form.isAvailable}
-            onChange={(event) => setField('isAvailable', event.target.checked)}
+            checked={isAvailable}
+            onChange={(event) => setIsAvailable(event.target.checked)}
           />
           {t('admin.dashboard.available')}
         </label>

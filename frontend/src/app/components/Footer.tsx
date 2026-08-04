@@ -22,8 +22,11 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-3">
             <LanternMark className="h-12 w-auto text-[var(--icon-color)]" />
-            <span className="text-lg tracking-[0.08em]">Lantern Library</span>
+            <span className="text-lg tracking-[0.08em]">The Lantern Library</span>
           </div>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ember">
+            From Kashmir to Kashmir
+          </p>
           <p className="mt-5 max-w-xs text-sm italic leading-7 opacity-70">
             A lantern lit for those who still read, remember, and feel.
           </p>

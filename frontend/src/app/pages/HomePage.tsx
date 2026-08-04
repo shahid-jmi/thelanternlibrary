@@ -143,6 +143,9 @@ export default function HomePage() {
             <h1 className="mb-6 text-5xl leading-tight tracking-normal sm:text-6xl">
               The Lantern <span className="italic text-accent">Library</span>
             </h1>
+            <p className="mb-3 text-xs uppercase tracking-label text-ember">
+              From Kashmir to Kashmir
+            </p>
             <p className="mb-8 text-sm italic tracking-normal opacity-75">
               Where books and memory live together.
             </p>
@@ -461,10 +464,10 @@ export default function HomePage() {
       <section id="about" className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <Reveal>
           <Eyebrow className="mb-3 text-center">vii.</Eyebrow>
-          <h2 className="mb-10 text-center text-4xl tracking-snug">About Lantern Library</h2>
+          <h2 className="mb-10 text-center text-4xl tracking-snug">About The Lantern Library</h2>
           <div className="space-y-6 text-[17px] leading-9">
             <p>
-              Lantern Library began as a passion project: a place to share thoughtfully curated
+              The Lantern Library began as a passion project: a place to share thoughtfully curated
               books with readers who value quality, atmosphere, and meaningful reading experiences.
             </p>
             <p>

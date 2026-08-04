@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Edit, Plus, Trash2 } from 'lucide-react';
 import {
@@ -17,19 +17,12 @@ import {
   useToggleAvailability,
 } from '../../queries/books';
 import { formatPrice } from '../../lib/format';
+import { validatePrice, validateRequired } from '../../lib/validation';
+import { useValidatedField } from '../../lib/useValidatedField';
 import StatusMessage from '../StatusMessage';
-import { SelectInput, TextArea, TextInput } from '../FormControls';
+import { FieldInput, FieldSelect, FieldTextArea } from '../FormField';
+import ImageUploadField from '../ImageUploadField';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
-
-const emptyPayload: BookPayload = {
-  title: { en: '', ur: '' },
-  description: { en: '', ur: '' },
-  author: '',
-  price: 0,
-  genre: 'fiction',
-  language: 'english',
-  isAvailable: true,
-};
 
 export default function BooksPanel() {
   const { t } = useTranslation();
@@ -90,6 +83,7 @@ export default function BooksPanel() {
 
       {showForm && (
         <BookForm
+          key={editing?._id ?? 'new'}
           book={editing}
           onCancel={() => {
             setEditing(null);
@@ -154,25 +148,6 @@ export default function BooksPanel() {
   );
 }
 
-function bookToPayload(book: AdminBook | null): BookPayload {
-  if (!book) return emptyPayload;
-  return {
-    title: {
-      en: book.title.en || '',
-      ur: book.title.ur || '',
-    },
-    description: {
-      en: book.description.en || '',
-      ur: book.description.ur || '',
-    },
-    author: book.author || '',
-    price: book.price || 0,
-    genre: book.genre,
-    language: book.language,
-    isAvailable: book.isAvailable,
-  };
-}
-
 function BookForm({
   book,
   onCancel,
@@ -183,33 +158,36 @@ function BookForm({
   onSave: (payload: BookPayload, coverImageFile: File | null) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const [form, setForm] = useState<BookPayload>(() => bookToPayload(book));
+  const titleEn = useValidatedField(validateRequired, book?.title.en ?? '');
+  const [titleUr, setTitleUr] = useState(book?.title.ur ?? '');
+  const author = useValidatedField(validateRequired, book?.author ?? '');
+  const descEn = useValidatedField(validateRequired, book?.description.en ?? '');
+  const [descUr, setDescUr] = useState(book?.description.ur ?? '');
+  const price = useValidatedField(validatePrice, book ? String(book.price) : '');
+  const [genre, setGenre] = useState<BookGenre>(book?.genre ?? 'fiction');
+  const [language, setLanguage] = useState<BookLanguage>(book?.language ?? 'english');
+  const [isAvailable, setIsAvailable] = useState(book?.isAvailable ?? true);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setForm(bookToPayload(book));
-    setCoverImageFile(null);
-  }, [book]);
-
-  const setField = (field: keyof BookPayload, value: string | number | boolean) => {
-    setForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const setNested = (group: 'title' | 'description', field: 'en' | 'ur', value: string) => {
-    setForm((current) => ({ ...current, [group]: { ...current[group], [field]: value } }));
-  };
-
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    const errors = [titleEn.validateNow(), author.validateNow(), descEn.validateNow(), price.validateNow()];
+    if (errors.some(Boolean)) return;
+
     setSaving(true);
     setError('');
     try {
       await onSave(
         {
-          ...form,
-          price: Number(form.price),
+          title: { en: titleEn.value, ur: titleUr },
+          description: { en: descEn.value, ur: descUr },
+          author: author.value,
+          price: Number(price.value),
+          genre,
+          language,
+          isAvailable,
         },
         coverImageFile
       );
@@ -221,85 +199,94 @@ function BookForm({
   };
 
   return (
-    <form onSubmit={submit} className="mb-8 rounded-sm border border-border bg-card p-5">
+    <form onSubmit={submit} noValidate className="mb-8 rounded-sm border border-border bg-card p-5">
       <div className="grid gap-4 md:grid-cols-2">
-        <TextInput
+        <FieldInput
+          id="book-title-en"
           label={t('admin.form.titleEn')}
-          value={form.title.en}
-          onChange={(value) => setNested('title', 'en', value)}
           dir="ltr"
-          required
+          value={titleEn.value}
+          onChange={titleEn.onChange}
+          onBlur={titleEn.onBlur}
+          error={titleEn.error ? t(titleEn.error) : undefined}
         />
-        <TextInput
+        <FieldInput
+          id="book-title-ur"
           label={t('admin.form.titleUr')}
-          value={form.title.ur || ''}
-          onChange={(value) => setNested('title', 'ur', value)}
           dir="rtl"
+          value={titleUr}
+          onChange={setTitleUr}
         />
-        <TextInput
+        <FieldInput
+          id="book-author"
           label={t('admin.form.author')}
-          value={form.author}
-          onChange={(value) => setField('author', value)}
-          required
+          value={author.value}
+          onChange={author.onChange}
+          onBlur={author.onBlur}
+          error={author.error ? t(author.error) : undefined}
         />
-        <TextArea
+        <FieldTextArea
+          id="book-desc-en"
           label={t('admin.form.descEn')}
-          value={form.description.en}
-          onChange={(value) => setNested('description', 'en', value)}
           dir="ltr"
-          required
+          value={descEn.value}
+          onChange={descEn.onChange}
+          onBlur={descEn.onBlur}
+          error={descEn.error ? t(descEn.error) : undefined}
         />
-        <TextArea
+        <FieldTextArea
+          id="book-desc-ur"
           label={t('admin.form.descUr')}
-          value={form.description.ur || ''}
-          onChange={(value) => setNested('description', 'ur', value)}
           dir="rtl"
+          value={descUr}
+          onChange={setDescUr}
         />
-        <label className="block text-sm">
-          {t('admin.form.price')}
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.price}
-            onChange={(event) => setField('price', Number(event.target.value))}
-            className="mt-1 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
-            required
-          />
-        </label>
-        <SelectInput
+        <FieldInput
+          id="book-price"
+          type="number"
+          min="0"
+          step="0.01"
+          label={t('admin.form.price')}
+          value={price.value}
+          onChange={price.onChange}
+          onBlur={price.onBlur}
+          error={price.error ? t(price.error) : undefined}
+        />
+        <FieldSelect
+          id="book-genre"
           label={t('admin.form.genre')}
-          value={form.genre}
-          onChange={(value) => setField('genre', value as BookGenre)}
-          values={BOOK_GENRES}
-        />
-        <SelectInput
+          value={genre}
+          onChange={(value) => setGenre(value as BookGenre)}
+        >
+          {BOOK_GENRES.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </FieldSelect>
+        <FieldSelect
+          id="book-language"
           label={t('admin.form.language')}
-          value={form.language}
-          onChange={(value) => setField('language', value as BookLanguage)}
-          values={BOOK_LANGUAGES}
+          value={language}
+          onChange={(value) => setLanguage(value as BookLanguage)}
+        >
+          {BOOK_LANGUAGES.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </FieldSelect>
+        <ImageUploadField
+          label={t('admin.form.coverImage')}
+          file={coverImageFile}
+          onFileChange={setCoverImageFile}
+          existingUrl={book?.coverImage?.url}
         />
-        <label className="block text-sm">
-          {t('admin.form.coverImage')}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setCoverImageFile(event.target.files?.[0] || null)}
-            className="mt-1 block w-full text-sm"
-          />
-          {book?.coverImage?.url && !coverImageFile && (
-            <img
-              src={book.coverImage.url}
-              alt=""
-              className="mt-2 h-24 w-16 rounded-sm border border-border object-cover"
-            />
-          )}
-        </label>
         <label className="flex items-center gap-3 pt-6 text-sm">
           <input
             type="checkbox"
-            checked={form.isAvailable}
-            onChange={(event) => setField('isAvailable', event.target.checked)}
+            checked={isAvailable}
+            onChange={(event) => setIsAvailable(event.target.checked)}
           />
           {t('admin.dashboard.available')}
         </label>

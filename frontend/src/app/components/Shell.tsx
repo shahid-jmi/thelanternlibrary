@@ -42,8 +42,8 @@ export default function Shell({ children }: { children: ReactNode }) {
               className="flex items-center gap-2.5 text-lg tracking-[0.08em]"
               onClick={closeMenu}
             >
-              <img src={logo} alt="Lantern Library logo" className="h-8 w-8 object-contain" />
-              <span>Lantern Library</span>
+              <img src={logo} alt="The Lantern Library logo" className="h-8 w-8 object-contain" />
+              <span>The Lantern Library</span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-5">
               <a

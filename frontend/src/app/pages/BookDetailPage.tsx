@@ -19,7 +19,7 @@ export default function BookDetailPage() {
 
   const whatsappUrl = useMemo(() => {
     if (!book) return '';
-    const message = `I would like to order: ${book.title} by ${book.author} - Price: ${book.price}`;
+    const message = `I would like to order: ${book.title} by ${book.author} - Price: ${formatPrice(book.price)}`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
   }, [book, whatsappNumber]);
 

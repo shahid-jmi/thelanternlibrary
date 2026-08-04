@@ -19,7 +19,7 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
-import ValidatedTextField from '../components/ValidatedTextField';
+import { FieldInput } from '../components/FormField';
 import { validateEmail, validatePassword } from '../lib/validation';
 import { useValidatedField } from '../lib/useValidatedField';
 
@@ -229,7 +229,7 @@ function AdminForm({
   return (
     <form onSubmit={submit} noValidate className="mb-8 rounded-sm border border-border bg-card p-5">
       <div className="grid gap-4 md:grid-cols-3">
-        <ValidatedTextField
+        <FieldInput
           id="new-admin-email"
           type="email"
           autoComplete="email"
@@ -237,9 +237,9 @@ function AdminForm({
           value={email.value}
           onChange={email.onChange}
           onBlur={email.onBlur}
-          error={email.error}
+          error={email.error ? t(email.error) : undefined}
         />
-        <ValidatedTextField
+        <FieldInput
           id="new-admin-password"
           type="password"
           autoComplete="new-password"
@@ -247,7 +247,7 @@ function AdminForm({
           value={password.value}
           onChange={password.onChange}
           onBlur={password.onBlur}
-          error={password.error}
+          error={password.error ? t(password.error) : undefined}
         />
         <label className="block text-sm">
           {t('admin.admins.role')}

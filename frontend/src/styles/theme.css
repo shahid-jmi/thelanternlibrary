@@ -43,6 +43,13 @@
   --sidebar-accent-foreground: #2e1a08;
   --sidebar-border: rgba(100, 65, 20, 0.22);
   --sidebar-ring: #9a7040;
+
+  /* ImageTile placeholders always render on a fixed dark gradient (see
+     .brand-photo / ImageTile fallback in index.css), independent of light
+     or dark mode. These two tokens are intentionally identical in both
+     themes below — they describe "text on a dark tile", not "foreground". */
+  --tile-foreground: #e8d5a8;
+  --tile-accent: #c9913a;
 }
 
 .dark {
@@ -86,6 +93,9 @@
   --sidebar-accent-foreground: #e8d5a8;
   --sidebar-border: rgba(200, 160, 80, 0.2);
   --sidebar-ring: #c09050;
+
+  --tile-foreground: #e8d5a8;
+  --tile-accent: #c9913a;
 }
 
 @theme inline {
@@ -129,6 +139,21 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-tile-foreground: var(--tile-foreground);
+  --color-tile-accent: var(--tile-accent);
+
+  /* Named letter-spacing scale — replaces one-off tracking-[0.0Xem]
+     arbitrary values scattered across pages. Pick the closest name instead
+     of inventing a new em value. */
+  --tracking-tight: 0.04em;
+  --tracking-snug: 0.06em;
+  --tracking-normal: 0.08em;
+  --tracking-label: 0.18em;
+  --tracking-wide: 0.2em;
+  --tracking-wider: 0.28em;
+  --tracking-wide-lg: 0.3em;
+  --tracking-widest: 0.32em;
+  --tracking-loose: 0.35em;
 }
 
 @layer base {

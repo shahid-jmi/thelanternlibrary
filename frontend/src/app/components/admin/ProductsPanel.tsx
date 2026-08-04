@@ -13,6 +13,7 @@ import { useAdminCategories } from '../../queries/categories';
 import { formatPrice } from '../../lib/format';
 import StatusMessage from '../StatusMessage';
 import { TextArea, TextInput } from '../FormControls';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function ProductsPanel() {
   const { t } = useTranslation();
@@ -66,17 +67,16 @@ export default function ProductsPanel() {
   return (
     <section>
       <div className="mb-6 flex justify-end">
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setShowForm(true);
           }}
           disabled={activeCategories.length === 0}
-          className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground disabled:opacity-60"
         >
           <Plus className="h-4 w-4" />
           {t('admin.dashboard.addProduct')}
-        </button>
+        </Button>
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
@@ -97,67 +97,66 @@ export default function ProductsPanel() {
         />
       )}
 
-      <div className="overflow-x-auto rounded-sm border border-border bg-card">
-        <table className="w-full min-w-[820px] text-left text-sm rtl:text-right">
-          <thead className="border-b border-border bg-secondary">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">{t('admin.form.category')}</th>
-              <th className="px-4 py-3">{t('book.price')}</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product._id} className="border-b border-border/70 last:border-0">
-                <td className="px-4 py-3">{product.name.en}</td>
-                <td className="px-4 py-3">
-                  {product.category.name.en}
-                  {!product.category.isActive && (
-                    <span className="ml-2 text-xs italic opacity-60 rtl:ml-0 rtl:mr-2">
-                      ({t('admin.admins.inactive')})
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3">{formatPrice(product.price)}</td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => flipAvailability(product)}
-                    className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-1.5"
-                  >
+      <Table>
+        <TableHead>
+          <tr>
+            <Th>Name</Th>
+            <Th>{t('admin.form.category')}</Th>
+            <Th>{t('book.price')}</Th>
+            <Th>Status</Th>
+            <Th>Actions</Th>
+          </tr>
+        </TableHead>
+        <tbody>
+          {products.map((product) => (
+            <TableRow key={product._id}>
+              <Td>{product.name.en}</Td>
+              <Td>
+                {product.category.name.en}
+                {!product.category.isActive && (
+                  <span className="ml-2 text-xs italic opacity-60 rtl:ml-0 rtl:mr-2">
+                    ({t('admin.admins.inactive')})
+                  </span>
+                )}
+              </Td>
+              <Td>{formatPrice(product.price)}</Td>
+              <Td>
+                <button onClick={() => flipAvailability(product)}>
+                  <Badge active={product.isAvailable} className="inline-flex items-center gap-2">
                     {product.isAvailable && <Check className="h-3.5 w-3.5" />}
                     {product.isAvailable
                       ? t('admin.dashboard.available')
                       : t('admin.dashboard.unavailable')}
-                  </button>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditing(product);
-                        setShowForm(true);
-                      }}
-                      className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3"
-                    >
-                      <Edit className="h-4 w-4" />
-                      {t('admin.dashboard.edit')}
-                    </button>
-                    <button
-                      onClick={() => removeProduct(product)}
-                      className="inline-flex h-9 items-center gap-2 rounded-sm border border-border px-3 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {t('admin.dashboard.delete')}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </Badge>
+                </button>
+              </Td>
+              <Td>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(product);
+                      setShowForm(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('admin.dashboard.edit')}
+                  </Button>
+                  <Button
+                    variant="destructive-outline"
+                    size="sm"
+                    onClick={() => removeProduct(product)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t('admin.dashboard.delete')}
+                  </Button>
+                </div>
+              </Td>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
     </section>
   );
 }
@@ -327,19 +326,10 @@ function ProductForm({
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">
-        <button
-          disabled={saving}
-          className="h-10 rounded-sm bg-primary px-5 text-sm text-primary-foreground disabled:opacity-60"
-        >
-          {t('admin.form.saveProduct')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-10 rounded-sm border border-border px-5 text-sm"
-        >
+        <Button disabled={saving}>{t('admin.form.saveProduct')}</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>
           {t('admin.form.cancel')}
-        </button>
+        </Button>
       </div>
     </form>
   );

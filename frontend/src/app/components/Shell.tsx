@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Menu, Moon, Sun, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
+import logo from '../../assets/logo.png';
 import GrainTexture from './GrainTexture';
 import Bokeh from './Bokeh';
 import Footer from './Footer';
@@ -41,7 +42,7 @@ export default function Shell({ children }: { children: ReactNode }) {
               className="flex items-center gap-2.5 text-lg tracking-[0.08em]"
               onClick={closeMenu}
             >
-              <BookOpen className="h-5 w-5 text-[var(--icon-color)]" />
+              <img src={logo} alt="Lantern Library logo" className="h-8 w-8 object-contain" />
               <span>Lantern Library</span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-5">

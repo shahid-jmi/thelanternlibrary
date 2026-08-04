@@ -19,7 +19,9 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
-import { TextInput } from '../components/FormControls';
+import ValidatedTextField from '../components/ValidatedTextField';
+import { validateEmail, validatePassword } from '../lib/validation';
+import { useValidatedField } from '../lib/useValidatedField';
 
 export default function AdminManagementPage() {
   const { t } = useTranslation();
@@ -201,18 +203,22 @@ function AdminForm({
   onSave: (payload: CreateAdminPayload) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const email = useValidatedField(validateEmail);
+  const password = useValidatedField(validatePassword);
   const [role, setRole] = useState<AdminRole>('admin');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    const emailError = email.validateNow();
+    const passwordError = password.validateNow();
+    if (emailError || passwordError) return;
+
     setSaving(true);
     setError('');
     try {
-      await onSave({ email, password, role });
+      await onSave({ email: email.value, password: password.value, role });
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -221,20 +227,28 @@ function AdminForm({
   };
 
   return (
-    <form onSubmit={submit} className="mb-8 rounded-sm border border-border bg-card p-5">
+    <form onSubmit={submit} noValidate className="mb-8 rounded-sm border border-border bg-card p-5">
       <div className="grid gap-4 md:grid-cols-3">
-        <TextInput label={t('admin.admins.email')} value={email} onChange={setEmail} required />
-        <label className="block text-sm">
-          {t('admin.admins.password')}
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 h-11 w-full rounded-sm border border-border bg-input-background px-3 outline-none focus:border-ring"
-            required
-            minLength={8}
-          />
-        </label>
+        <ValidatedTextField
+          id="new-admin-email"
+          type="email"
+          autoComplete="email"
+          label={t('admin.admins.email')}
+          value={email.value}
+          onChange={email.onChange}
+          onBlur={email.onBlur}
+          error={email.error}
+        />
+        <ValidatedTextField
+          id="new-admin-password"
+          type="password"
+          autoComplete="new-password"
+          label={t('admin.admins.password')}
+          value={password.value}
+          onChange={password.onChange}
+          onBlur={password.onBlur}
+          error={password.error}
+        />
         <label className="block text-sm">
           {t('admin.admins.role')}
           <div className="mt-1">

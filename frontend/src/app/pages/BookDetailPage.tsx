@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BookOpen, MessageCircle } from 'lucide-react';
@@ -7,13 +6,10 @@ import { useBook } from '../queries/books';
 import { formatPrice } from '../lib/format';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
-import OrderForm from '../components/OrderForm';
 
 export default function BookDetailPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
-  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
-  const [showOrderForm, setShowOrderForm] = useState(false);
 
   const bookQuery = useBook(id, i18n.language);
   const book = bookQuery.data ?? null;
@@ -73,27 +69,13 @@ export default function BookDetailPage() {
             <Info label={t('book.language')} value={book.language} />
           </dl>
           {book.isAvailable ? (
-            <>
-              {!showOrderForm && (
-                <button
-                  onClick={() => setShowOrderForm(true)}
-                  className="inline-flex h-12 items-center gap-2 rounded-sm bg-primary px-6 text-primary-foreground transition hover:opacity-90"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  {t('book.orderNow')}
-                </button>
-              )}
-              {showOrderForm && (
-                <OrderForm
-                  bookId={book._id}
-                  bookTitle={book.title}
-                  bookAuthor={book.author}
-                  priceLabel={formatPrice(book.price)}
-                  whatsappNumber={whatsappNumber}
-                  onCancel={() => setShowOrderForm(false)}
-                />
-              )}
-            </>
+            <Link
+              to={`/book/${book._id}/order`}
+              className="inline-flex h-12 items-center gap-2 rounded-sm bg-primary px-6 text-primary-foreground transition hover:opacity-90"
+            >
+              <MessageCircle className="h-5 w-5" />
+              {t('book.orderNow')}
+            </Link>
           ) : (
             <button
               disabled

@@ -10,9 +10,14 @@ import Shell from './components/Shell';
 import ErrorBoundary from './components/ErrorBoundary';
 import HomePage from './pages/HomePage';
 import BookDetailPage from './pages/BookDetailPage';
+import OrderPage from './pages/OrderPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminManagementPage from './pages/AdminManagementPage';
+import AdminCreateAdminPage from './pages/AdminCreateAdminPage';
+import AdminBookFormPage from './pages/AdminBookFormPage';
+import AdminProductFormPage from './pages/AdminProductFormPage';
+import AdminCategoryFormPage from './pages/AdminCategoryFormPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,10 +52,18 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/book/:id" element={<BookDetailPage />} />
+                  <Route path="/book/:id/order" element={<OrderPage />} />
                   <Route path="/admin" element={<AdminLoginPage />} />
                   <Route element={<RequireAdmin />}>
                     <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                    <Route path="/admin/books/new" element={<AdminBookFormPage />} />
+                    <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />
+                    <Route path="/admin/products/new" element={<AdminProductFormPage />} />
+                    <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
+                    <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
+                    <Route path="/admin/categories/:id/edit" element={<AdminCategoryFormPage />} />
                     <Route path="/admin/admins" element={<AdminManagementPage />} />
+                    <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

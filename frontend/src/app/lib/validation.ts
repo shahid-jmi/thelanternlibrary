@@ -51,3 +51,13 @@ export function validatePincode(value: string): PincodeErrorKey | undefined {
   if (!PINCODE_PATTERN.test(value.trim())) return 'validation.pincodeInvalid';
   return undefined;
 }
+
+export type ConfirmPasswordErrorKey = 'validation.required' | 'validation.passwordMismatch';
+
+export function validateConfirmPassword(password: string) {
+  return (value: string): ConfirmPasswordErrorKey | undefined => {
+    if (!value) return 'validation.required';
+    if (value !== password) return 'validation.passwordMismatch';
+    return undefined;
+  };
+}

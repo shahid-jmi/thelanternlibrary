@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LogOut, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
@@ -9,12 +8,18 @@ import ProductsPanel from '../components/admin/ProductsPanel';
 import CategoriesPanel from '../components/admin/CategoriesPanel';
 import OrdersPanel from '../components/admin/OrdersPanel';
 
-type DashboardTab = 'books' | 'products' | 'categories' | 'orders';
+const DASHBOARD_TABS = ['books', 'products', 'categories', 'orders'] as const;
+type DashboardTab = (typeof DASHBOARD_TABS)[number];
+
+const isDashboardTab = (value: string | null): value is DashboardTab =>
+  DASHBOARD_TABS.includes(value as DashboardTab);
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const { isSuperAdmin, logout } = useAuth();
-  const [tab, setTab] = useState<DashboardTab>('books');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const tab: DashboardTab = isDashboardTab(tabParam) ? tabParam : 'books';
 
   const tabs: { id: DashboardTab; label: string }[] = [
     { id: 'books', label: t('admin.dashboard.tab.books') },
@@ -53,7 +58,7 @@ export default function AdminDashboardPage() {
             key={item.id}
             role="tab"
             aria-selected={tab === item.id}
-            onClick={() => setTab(item.id)}
+            onClick={() => setSearchParams({ tab: item.id })}
             className={`-mb-px border-b-2 px-5 py-3 text-sm uppercase tracking-[0.14em] transition ${
               tab === item.id
                 ? 'border-accent text-accent'

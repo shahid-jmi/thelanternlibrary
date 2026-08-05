@@ -1,17 +1,11 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, Plus, Shield, Trash2 } from 'lucide-react';
-import {
-  ADMIN_ROLES,
-  type AdminAccount,
-  type AdminRole,
-  type CreateAdminPayload,
-} from '../api/types';
+import { ADMIN_ROLES, type AdminAccount, type AdminRole } from '../api/types';
 import { getErrorMessage } from '../api/client';
 import {
   useAdmins,
-  useCreateAdmin,
   useDeleteAdmin,
   useSetAdminActive,
   useUpdateAdminRole,
@@ -19,18 +13,13 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
-import { validateEmail, validatePassword } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
 
 export default function AdminManagementPage() {
   const { t } = useTranslation();
   const { admin: currentAdmin } = useAuth();
-  const [showForm, setShowForm] = useState(false);
   const [actionError, setActionError] = useState('');
 
   const adminsQuery = useAdmins();
-  const createAdmin = useCreateAdmin();
   const deleteAdmin = useDeleteAdmin();
   const setAdminActive = useSetAdminActive();
   const updateAdminRole = useUpdateAdminRole();
@@ -38,11 +27,6 @@ export default function AdminManagementPage() {
   const admins = adminsQuery.data ?? [];
   const loadError = adminsQuery.isError ? getErrorMessage(adminsQuery.error) : '';
   const error = actionError || loadError;
-
-  const addAdmin = async (payload: CreateAdminPayload) => {
-    await createAdmin.mutateAsync(payload);
-    setShowForm(false);
-  };
 
   const removeAdmin = async (admin: AdminAccount) => {
     if (!window.confirm(`${t('admin.admins.delete')} ${admin.email}?`)) return;
@@ -81,13 +65,13 @@ export default function AdminManagementPage() {
           <h1 className="text-4xl tracking-[0.05em]">{t('admin.admins.title')}</h1>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground"
+          <Link
+            to="/admin/admins/new"
+            className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-4 text-sm text-primary-foreground transition hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
             {t('admin.admins.addAdmin')}
-          </button>
+          </Link>
           <Link
             to="/admin/dashboard"
             className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm"
@@ -100,8 +84,6 @@ export default function AdminManagementPage() {
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
       {adminsQuery.isPending && <StatusMessage>{t('admin.admins.loading')}</StatusMessage>}
-
-      {showForm && <AdminForm onCancel={() => setShowForm(false)} onSave={addAdmin} />}
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full min-w-[760px] text-left text-sm rtl:text-right">
@@ -169,7 +151,7 @@ export default function AdminManagementPage() {
   );
 }
 
-function RoleSelect({
+export function RoleSelect({
   value,
   onChange,
   disabled,
@@ -192,86 +174,5 @@ function RoleSelect({
         </option>
       ))}
     </select>
-  );
-}
-
-function AdminForm({
-  onCancel,
-  onSave,
-}: {
-  onCancel: () => void;
-  onSave: (payload: CreateAdminPayload) => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  const email = useValidatedField(validateEmail);
-  const password = useValidatedField(validatePassword);
-  const [role, setRole] = useState<AdminRole>('admin');
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    const emailError = email.validateNow();
-    const passwordError = password.validateNow();
-    if (emailError || passwordError) return;
-
-    setSaving(true);
-    setError('');
-    try {
-      await onSave({ email: email.value, password: password.value, role });
-    } catch (requestError) {
-      setError(getErrorMessage(requestError));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <form onSubmit={submit} noValidate className="mb-8 rounded-sm border border-border bg-card p-5">
-      <div className="grid gap-4 md:grid-cols-3">
-        <FieldInput
-          id="new-admin-email"
-          type="email"
-          autoComplete="email"
-          label={t('admin.admins.email')}
-          value={email.value}
-          onChange={email.onChange}
-          onBlur={email.onBlur}
-          error={email.error ? t(email.error) : undefined}
-        />
-        <FieldInput
-          id="new-admin-password"
-          type="password"
-          autoComplete="new-password"
-          label={t('admin.admins.password')}
-          value={password.value}
-          onChange={password.onChange}
-          onBlur={password.onBlur}
-          error={password.error ? t(password.error) : undefined}
-        />
-        <label className="block text-sm">
-          {t('admin.admins.role')}
-          <div className="mt-1">
-            <RoleSelect value={role} onChange={setRole} />
-          </div>
-        </label>
-      </div>
-      {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-      <div className="mt-5 flex gap-3">
-        <button
-          disabled={saving}
-          className="h-10 rounded-sm bg-primary px-5 text-sm text-primary-foreground disabled:opacity-60"
-        >
-          {t('admin.admins.save')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-10 rounded-sm border border-border px-5 text-sm"
-        >
-          {t('admin.admins.cancel')}
-        </button>
-      </div>
-    </form>
   );
 }

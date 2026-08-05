@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 
 const fieldClass = (hasError: boolean) =>
-  `w-full rounded-sm border bg-input-background px-3 outline-none transition-colors ${
-    hasError ? 'border-destructive' : 'border-border focus:border-ember'
+  `w-full rounded-sm border bg-input-background px-3 outline-none transition ${
+    hasError
+      ? 'border-destructive focus:ring-2 focus:ring-destructive/20'
+      : 'border-border focus:border-ember focus:ring-2 focus:ring-ember/25'
   }`;
 
 function FieldShell({

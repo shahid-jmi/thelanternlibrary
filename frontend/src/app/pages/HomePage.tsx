@@ -333,7 +333,7 @@ export default function HomePage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t('catalog.search')}
-                className="h-11 w-full min-w-48 rounded-sm border border-border bg-input-background px-9 text-sm outline-none focus:border-ring"
+                className="h-11 w-full min-w-48 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
               />
             </label>
             <FilterSelect
@@ -351,7 +351,7 @@ export default function HomePage() {
             <select
               value={available}
               onChange={(event) => setAvailable(event.target.value)}
-              className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none focus:border-ring"
+              className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
             >
               <option value="">{t('catalog.filter.all')}</option>
               <option value="true">{t('admin.dashboard.available')}</option>

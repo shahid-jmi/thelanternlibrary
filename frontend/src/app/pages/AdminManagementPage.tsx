@@ -184,7 +184,7 @@ function RoleSelect({
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value as AdminRole)}
-      className="h-9 rounded-sm border border-border bg-input-background px-2 text-sm outline-none focus:border-ring disabled:opacity-50"
+      className="h-9 rounded-sm border border-border bg-input-background px-2 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25 disabled:opacity-50"
     >
       {ADMIN_ROLES.map((role) => (
         <option key={role} value={role}>

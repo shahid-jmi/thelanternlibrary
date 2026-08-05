@@ -17,7 +17,7 @@ export function FilterSelect({
       value={value}
       aria-label={label}
       onChange={(event) => onChange(event.target.value)}
-      className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none focus:border-ring"
+      className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
     >
       <option value="">{t('catalog.filter.all')}</option>
       {values.map((item) => (

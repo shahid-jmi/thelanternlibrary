@@ -59,13 +59,13 @@ export default function OrdersPanel() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t('admin.orders.search')}
-            className="h-11 w-full min-w-64 rounded-sm border border-border bg-input-background px-9 text-sm outline-none focus:border-ring"
+            className="h-11 w-full min-w-64 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
           />
         </div>
         <select
           value={sort}
           onChange={(event) => setSort(event.target.value as 'newest' | 'oldest')}
-          className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none focus:border-ring"
+          className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
         >
           <option value="newest">{t('admin.orders.sortNewest')}</option>
           <option value="oldest">{t('admin.orders.sortOldest')}</option>

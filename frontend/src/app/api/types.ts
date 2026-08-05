@@ -129,6 +129,101 @@ export interface ProductFilters {
   search?: string;
 }
 
+export const ORDER_STATUSES = ['pending', 'paid', 'cancelled'] as const;
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const INDIAN_STATES = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry',
+] as const;
+
+export interface CreateOrderPayload {
+  book: string;
+  customerName: string;
+  customerPhone: string;
+  customerAltPhone?: string;
+  addressLine: string;
+  locality: string;
+  city: string;
+  state: string;
+  pincode: string;
+  note?: string;
+}
+
+export interface PublicOrder {
+  _id: string;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export interface AdminOrderBook {
+  _id: string;
+  title: string;
+  coverImage: CoverImage;
+}
+
+export interface AdminOrder {
+  _id: string;
+  book: AdminOrderBook | null;
+  bookTitle: string;
+  bookAuthor: string;
+  price: number;
+  customerName: string;
+  customerPhone: string;
+  customerAltPhone: string | null;
+  addressLine: string;
+  locality: string;
+  city: string;
+  state: string;
+  pincode: string;
+  note: string | null;
+  status: OrderStatus;
+  invoiceNumber: string | null;
+  invoiceGeneratedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderFilters {
+  search?: string;
+  status?: OrderStatus;
+  sort?: 'newest' | 'oldest';
+}
+
 export const ADMIN_ROLES = ['admin', 'super_admin'] as const;
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 

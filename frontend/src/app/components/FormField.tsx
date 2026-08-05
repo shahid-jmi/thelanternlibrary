@@ -8,11 +8,13 @@ const fieldClass = (hasError: boolean) =>
 function FieldShell({
   id,
   label,
+  hint,
   error,
   children,
 }: {
   id: string;
   label: string;
+  hint?: string;
   error?: string;
   children: ReactNode;
 }) {
@@ -22,6 +24,7 @@ function FieldShell({
         {label}
       </label>
       {children}
+      {hint && <p className="mt-1.5 text-xs italic opacity-60">{hint}</p>}
       <p
         id={`${id}-error`}
         className={`mt-1.5 text-xs text-destructive transition-opacity ${error ? 'opacity-100' : 'opacity-0'}`}
@@ -35,6 +38,7 @@ function FieldShell({
 export function FieldInput({
   id,
   label,
+  hint,
   type = 'text',
   value,
   onChange,
@@ -48,6 +52,7 @@ export function FieldInput({
 }: {
   id: string;
   label: string;
+  hint?: string;
   type?: 'text' | 'email' | 'password' | 'number';
   value: string | number;
   onChange: (value: string) => void;
@@ -60,7 +65,7 @@ export function FieldInput({
   placeholder?: string;
 }) {
   return (
-    <FieldShell id={id} label={label} error={error}>
+    <FieldShell id={id} label={label} hint={hint} error={error}>
       <input
         id={id}
         type={type}
@@ -83,6 +88,7 @@ export function FieldInput({
 export function FieldTextArea({
   id,
   label,
+  hint,
   value,
   onChange,
   onBlur,
@@ -91,6 +97,7 @@ export function FieldTextArea({
 }: {
   id: string;
   label: string;
+  hint?: string;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
@@ -98,7 +105,7 @@ export function FieldTextArea({
   dir?: 'ltr' | 'rtl';
 }) {
   return (
-    <FieldShell id={id} label={label} error={error}>
+    <FieldShell id={id} label={label} hint={hint} error={error}>
       <textarea
         id={id}
         dir={dir}

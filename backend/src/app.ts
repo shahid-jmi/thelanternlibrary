@@ -22,6 +22,7 @@ import {
   createPublicCategoryRouter,
 } from './modules/categories/category.routes.js';
 import { createAdminManagementRouter } from './modules/admins/admin.routes.js';
+import { createAdminOrderRouter, createPublicOrderRouter } from './modules/orders/order.routes.js';
 import openApiDocument from './docs/openapi.js';
 
 const createApp = (): Express => {
@@ -45,6 +46,7 @@ const createApp = (): Express => {
     router.use('/books', createPublicBookRouter());
     router.use('/products', createPublicProductRouter());
     router.use('/categories', createPublicCategoryRouter());
+    router.use('/orders', createPublicOrderRouter());
     router.use('/admin/auth', authRouter);
     router.use('/admin/books', authenticateAdmin, createAdminBookRouter());
     router.use('/admin/products', authenticateAdmin, createAdminProductRouter());
@@ -52,6 +54,7 @@ const createApp = (): Express => {
     // with requireSuperAdmin inside the router.
     router.use('/admin/categories', authenticateAdmin, createAdminCategoryRouter());
     router.use('/admin/admins', authenticateAdmin, requireSuperAdmin, createAdminManagementRouter());
+    router.use('/admin/orders', authenticateAdmin, createAdminOrderRouter());
 
     router.get('/docs.json', (req, res) => {
       res.json(openApiDocument);

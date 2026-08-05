@@ -205,19 +205,17 @@ function CategoryForm({
           value={nameUr}
           onChange={setNameUr}
         />
-        <div>
-          <FieldInput
-            id="category-slug"
-            label={t('admin.form.slug')}
-            dir="ltr"
-            placeholder="dried-flowers"
-            value={slug.value}
-            onChange={slug.onChange}
-            onBlur={slug.onBlur}
-            error={slug.error ? t(slug.error) : undefined}
-          />
-          <p className="mt-1 text-xs italic opacity-60">{t('admin.form.slugHint')}</p>
-        </div>
+        <FieldInput
+          id="category-slug"
+          label={t('admin.form.slug')}
+          hint={t('admin.form.slugHint')}
+          dir="ltr"
+          placeholder="dried-flowers"
+          value={slug.value}
+          onChange={slug.onChange}
+          onBlur={slug.onBlur}
+          error={slug.error ? t(slug.error) : undefined}
+        />
         <label className="flex items-center gap-3 pt-6 text-sm">
           <input
             type="checkbox"

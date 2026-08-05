@@ -7,6 +7,7 @@ import {
   Feather,
   FileText,
   Flower2,
+  Heart,
   Instagram,
   Lamp,
   Library,
@@ -91,6 +92,15 @@ const TESTIMONIALS = [
     name: 'Zoya',
     city: 'Baramulla',
   },
+];
+
+// Placeholder posts for the Instagram preview section — swap for real posts
+// once the Graph API integration is wired up.
+const INSTAGRAM_POSTS = [
+  { id: 1, caption: 'Morning light on the reading room shelves.', likes: 128 },
+  { id: 2, caption: 'New arrivals, still smelling of the press.', likes: 94 },
+  { id: 3, caption: 'A postcard from Dal Lake, ready to post.', likes: 156 },
+  { id: 4, caption: 'Kahwa and a chapter before closing.', likes: 87 },
 ];
 
 export default function HomePage() {
@@ -487,12 +497,54 @@ export default function HomePage() {
 
       <Divider />
 
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <Reveal>
+          <Eyebrow className="mb-3 text-center">viii.</Eyebrow>
+          <h2 className="mb-4 text-center text-3xl tracking-tight">Follow Along</h2>
+          <p className="mx-auto mb-12 max-w-xl text-center italic leading-7 opacity-70">
+            Glimpses from the shop, shared as they happen — @lanternlibrary
+          </p>
+        </Reveal>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {INSTAGRAM_POSTS.map((post, index) => (
+            <Reveal key={post.id} delay={index * 70}>
+              <ImageTile
+                className="aspect-square"
+                placeholder={<Instagram className="h-8 w-8 text-tile-accent" strokeWidth={1.25} />}
+                overlay={
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3 text-white opacity-0 transition group-hover/tile:opacity-100">
+                    <p className="mb-1 text-xs leading-4">{post.caption}</p>
+                    <span className="inline-flex items-center gap-1 text-xs">
+                      <Heart className="h-3.5 w-3.5" />
+                      {post.likes}
+                    </span>
+                  </div>
+                }
+              />
+            </Reveal>
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <a
+            href="https://instagram.com/lanternlibrary"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-sm border border-[var(--button-border)] px-8 py-3.5 text-xs uppercase tracking-label transition hover:border-ember hover:text-ember"
+          >
+            <Instagram className="h-4 w-4" />
+            Follow @lanternlibrary
+          </a>
+        </div>
+      </section>
+
+      <Divider />
+
       <section
         id="contact"
         className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 pb-20 sm:px-6 lg:px-8"
       >
         <Reveal>
-          <Eyebrow className="mb-3 text-center">viii.</Eyebrow>
+          <Eyebrow className="mb-3 text-center">ix.</Eyebrow>
           <h2 className="mb-10 text-center text-4xl tracking-snug">Get in Touch</h2>
           <div className="rounded-sm border border-border bg-card p-6 md:p-10">
             <p className="mb-8 text-center leading-8 opacity-80">

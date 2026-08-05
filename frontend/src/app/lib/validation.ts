@@ -1,6 +1,7 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const PINCODE_PATTERN = /^\d{6}$/;
 
 export type FieldErrorKey =
   | 'validation.emailRequired'
@@ -40,5 +41,13 @@ export type SlugErrorKey = 'validation.required' | 'validation.slugInvalid';
 export function validateSlug(value: string): SlugErrorKey | undefined {
   if (!value.trim()) return 'validation.required';
   if (!SLUG_PATTERN.test(value.trim())) return 'validation.slugInvalid';
+  return undefined;
+}
+
+export type PincodeErrorKey = 'validation.required' | 'validation.pincodeInvalid';
+
+export function validatePincode(value: string): PincodeErrorKey | undefined {
+  if (!value.trim()) return 'validation.required';
+  if (!PINCODE_PATTERN.test(value.trim())) return 'validation.pincodeInvalid';
   return undefined;
 }

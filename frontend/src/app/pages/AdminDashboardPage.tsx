@@ -7,8 +7,9 @@ import PageFrame from '../components/PageFrame';
 import BooksPanel from '../components/admin/BooksPanel';
 import ProductsPanel from '../components/admin/ProductsPanel';
 import CategoriesPanel from '../components/admin/CategoriesPanel';
+import OrdersPanel from '../components/admin/OrdersPanel';
 
-type DashboardTab = 'books' | 'products' | 'categories';
+type DashboardTab = 'books' | 'products' | 'categories' | 'orders';
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function AdminDashboardPage() {
     { id: 'books', label: t('admin.dashboard.tab.books') },
     { id: 'products', label: t('admin.dashboard.tab.products') },
     { id: 'categories', label: t('admin.dashboard.tab.categories') },
+    { id: 'orders', label: t('admin.dashboard.tab.orders') },
   ];
 
   return (
@@ -66,6 +68,7 @@ export default function AdminDashboardPage() {
       {tab === 'books' && <BooksPanel />}
       {tab === 'products' && <ProductsPanel />}
       {tab === 'categories' && <CategoriesPanel />}
+      {tab === 'orders' && <OrdersPanel />}
     </PageFrame>
   );
 }

@@ -7,6 +7,7 @@ import {
   Feather,
   FileText,
   Flower2,
+  Heart,
   Instagram,
   Lamp,
   Library,
@@ -32,42 +33,102 @@ import ImageTile from '../components/ImageTile';
 import LanternMark from '../components/LanternMark';
 import { Eyebrow } from '../components/ui';
 
-const OFFERINGS: { numeral: string; name: string; line: string; icon: LucideIcon }[] = [
+const OFFERINGS: { numeral: string; name: string; line: string; icon: LucideIcon; image: string }[] = [
   {
     numeral: 'i',
     name: 'Books',
     line: 'Stories chosen slowly, shelved with care.',
     icon: BookOpen,
+    image:
+      'https://images.pexels.com/photos/28649539/pexels-photo-28649539/free-photo-of-stack-of-vintage-books-in-cozy-library.jpeg?cs=tinysrgb&w=800',
   },
-  { numeral: 'ii', name: 'Postcards', line: 'Small windows mailed from the valley.', icon: Mail },
+  {
+    numeral: 'ii',
+    name: 'Postcards',
+    line: 'Small windows mailed from the valley.',
+    icon: Mail,
+    image:
+      'https://images.pexels.com/photos/37947894/pexels-photo-37947894/free-photo-of-assortment-of-vintage-postcards-with-handwritten-notes.jpeg?cs=tinysrgb&w=800',
+  },
   {
     numeral: 'iii',
     name: 'Handwritten Letters',
     line: 'Ink, paper, and a little time.',
     icon: Feather,
+    image:
+      'https://images.pexels.com/photos/37521299/pexels-photo-37521299/free-photo-of-elegant-fountain-pen-on-handwritten-letter.jpeg?cs=tinysrgb&w=800',
   },
-  { numeral: 'iv', name: 'Typewritten Goods', line: 'Keys pressed, words kept.', icon: FileText },
-  { numeral: 'v', name: 'Canvas Totes', line: 'For carrying stories home.', icon: ShoppingBag },
+  {
+    numeral: 'iv',
+    name: 'Typewritten Goods',
+    line: 'Keys pressed, words kept.',
+    icon: FileText,
+    image:
+      'https://images.pexels.com/photos/37703243/pexels-photo-37703243/free-photo-of-rustic-vintage-typewriter-on-wooden-desk.jpeg?cs=tinysrgb&w=800',
+  },
+  {
+    numeral: 'v',
+    name: 'Canvas Totes',
+    line: 'For carrying stories home.',
+    icon: ShoppingBag,
+    image:
+      'https://images.pexels.com/photos/34393372/pexels-photo-34393372/free-photo-of-stylish-tote-bags-in-a-book-store-display.jpeg?cs=tinysrgb&w=800',
+  },
   {
     numeral: 'vi',
     name: 'Dried Flowers',
     line: "Kashmir's gardens, paused mid-bloom.",
     icon: Flower2,
+    image:
+      'https://images.pexels.com/photos/30685002/pexels-photo-30685002/free-photo-of-elegant-dried-floral-bouquet-with-red-accents.jpeg?cs=tinysrgb&w=800',
   },
   {
     numeral: 'vii',
     name: 'Kashmir Collectibles',
     line: 'Keepsakes of a storied valley.',
     icon: Mountain,
+    image:
+      'https://images.pexels.com/photos/28805621/pexels-photo-28805621/free-photo-of-scenic-himalayas-landscape-in-pahalgam-kashmir.jpeg?cs=tinysrgb&w=800',
   },
-  { numeral: 'viii', name: 'Vintage Paper', line: 'Ephemera that survived its era.', icon: Scroll },
+  {
+    numeral: 'viii',
+    name: 'Vintage Paper',
+    line: 'Ephemera that survived its era.',
+    icon: Scroll,
+    image:
+      'https://images.pexels.com/photos/17323760/pexels-photo-17323760/free-photo-of-paper-on-vintage-notes.png?cs=tinysrgb&w=800',
+  },
 ];
 
-const MOSAIC: { numeral: string; label: string; icon: LucideIcon }[] = [
-  { numeral: 'i', label: 'Lamplight', icon: Lamp },
-  { numeral: 'ii', label: 'Reading corners', icon: Armchair },
-  { numeral: 'iii', label: 'The shelves', icon: Library },
-  { numeral: 'iv', label: 'Kahwa & pages', icon: Coffee },
+const MOSAIC: { numeral: string; label: string; icon: LucideIcon; image: string }[] = [
+  {
+    numeral: 'i',
+    label: 'Lamplight',
+    icon: Lamp,
+    image:
+      'https://images.pexels.com/photos/32824756/pexels-photo-32824756/free-photo-of-elegant-ornate-lantern-with-warm-glow-indoors.jpeg?cs=tinysrgb&w=800',
+  },
+  {
+    numeral: 'ii',
+    label: 'Reading corners',
+    icon: Armchair,
+    image:
+      'https://images.pexels.com/photos/30710413/pexels-photo-30710413/free-photo-of-cozy-reading-nook-with-armchair-and-bookshelf.jpeg?cs=tinysrgb&w=800',
+  },
+  {
+    numeral: 'iii',
+    label: 'The shelves',
+    icon: Library,
+    image:
+      'https://images.pexels.com/photos/35615925/pexels-photo-35615925/free-photo-of-quiet-library-aisle-with-bookshelves.jpeg?cs=tinysrgb&w=800',
+  },
+  {
+    numeral: 'iv',
+    label: 'Kahwa & pages',
+    icon: Coffee,
+    image:
+      'https://images.pexels.com/photos/34012546/pexels-photo-34012546/free-photo-of-cozy-still-life-with-tea-and-books.jpeg?cs=tinysrgb&w=800',
+  },
 ];
 
 const TESTIMONIALS = [
@@ -90,6 +151,39 @@ const TESTIMONIALS = [
     quote: 'It is less like buying a book and more like being handed a lantern.',
     name: 'Zoya',
     city: 'Baramulla',
+  },
+];
+
+// Placeholder posts for the Instagram preview section — swap for real posts
+// once the Graph API integration is wired up.
+const INSTAGRAM_POSTS = [
+  {
+    id: 1,
+    caption: 'Morning light on the reading room shelves.',
+    likes: 128,
+    image:
+      'https://images.pexels.com/photos/16390238/pexels-photo-16390238/free-photo-of-a-book-store-with-books-and-lamps-on-the-shelves.jpeg?cs=tinysrgb&w=600',
+  },
+  {
+    id: 2,
+    caption: 'New arrivals, still smelling of the press.',
+    likes: 94,
+    image:
+      'https://images.pexels.com/photos/35082910/pexels-photo-35082910/free-photo-of-browsing-books-at-a-cozy-bookstore.jpeg?cs=tinysrgb&w=600',
+  },
+  {
+    id: 3,
+    caption: 'A postcard from Dal Lake, ready to post.',
+    likes: 156,
+    image:
+      'https://images.pexels.com/photos/37947892/pexels-photo-37947892/free-photo-of-vintage-postcards-tied-with-green-ribbon.jpeg?cs=tinysrgb&w=600',
+  },
+  {
+    id: 4,
+    caption: 'Kahwa and a chapter before closing.',
+    likes: 87,
+    image:
+      'https://images.pexels.com/photos/20228246/pexels-photo-20228246/free-photo-of-cup-with-tea-next-to-a-stack-of-books.jpeg?cs=tinysrgb&w=600',
   },
 ];
 
@@ -125,6 +219,8 @@ export default function HomePage() {
         <Reveal>
           <ImageTile
             className="aspect-[4/3] w-full lg:aspect-[4/5]"
+            src="https://images.pexels.com/photos/28463826/pexels-photo-28463826/free-photo-of-cozy-library-aisle-with-warm-lighting.jpeg?cs=tinysrgb&w=1200"
+            alt="A warmly lit library reading room"
             placeholder={
               <div className="flex flex-col items-center gap-6 text-tile-foreground">
                 <LanternMark className="h-32 w-auto sm:h-40" />
@@ -143,6 +239,9 @@ export default function HomePage() {
             <h1 className="mb-6 text-5xl leading-tight tracking-normal sm:text-6xl">
               The Lantern <span className="italic text-accent">Library</span>
             </h1>
+            <p className="mb-3 text-xs uppercase tracking-label text-ember">
+              From Kashmir to Kashmir
+            </p>
             <p className="mb-8 text-sm italic tracking-normal opacity-75">
               Where books and memory live together.
             </p>
@@ -187,6 +286,8 @@ export default function HomePage() {
             <Reveal key={item.name} delay={(index % 4) * 70}>
               <ImageTile
                 className="aspect-[4/5]"
+                src={item.image}
+                alt={item.name}
                 placeholder={<item.icon className="h-10 w-10 text-tile-accent" strokeWidth={1.25} />}
                 overlay={
                   <span className="absolute left-3 top-2 text-sm italic text-tile-accent">
@@ -320,7 +421,7 @@ export default function HomePage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={t('catalog.search')}
-                className="h-11 w-full min-w-48 rounded-sm border border-border bg-input-background px-9 text-sm outline-none focus:border-ring"
+                className="h-11 w-full min-w-48 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
               />
             </label>
             <FilterSelect
@@ -338,7 +439,7 @@ export default function HomePage() {
             <select
               value={available}
               onChange={(event) => setAvailable(event.target.value)}
-              className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none focus:border-ring"
+              className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
             >
               <option value="">{t('catalog.filter.all')}</option>
               <option value="true">{t('admin.dashboard.available')}</option>
@@ -384,6 +485,8 @@ export default function HomePage() {
               <Reveal key={tile.label} delay={index * 80}>
                 <ImageTile
                   className="aspect-square"
+                  src={tile.image}
+                  alt={tile.label}
                   placeholder={
                     <div className="flex flex-col items-center gap-3 text-tile-foreground">
                       <tile.icon className="h-8 w-8 text-tile-accent" strokeWidth={1.25} />
@@ -461,10 +564,10 @@ export default function HomePage() {
       <section id="about" className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <Reveal>
           <Eyebrow className="mb-3 text-center">vii.</Eyebrow>
-          <h2 className="mb-10 text-center text-4xl tracking-snug">About Lantern Library</h2>
+          <h2 className="mb-10 text-center text-4xl tracking-snug">About The Lantern Library</h2>
           <div className="space-y-6 text-[17px] leading-9">
             <p>
-              Lantern Library began as a passion project: a place to share thoughtfully curated
+              The Lantern Library began as a passion project: a place to share thoughtfully curated
               books with readers who value quality, atmosphere, and meaningful reading experiences.
             </p>
             <p>
@@ -484,12 +587,56 @@ export default function HomePage() {
 
       <Divider />
 
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <Reveal>
+          <Eyebrow className="mb-3 text-center">viii.</Eyebrow>
+          <h2 className="mb-4 text-center text-3xl tracking-tight">Follow Along</h2>
+          <p className="mx-auto mb-12 max-w-xl text-center italic leading-7 opacity-70">
+            Glimpses from the shop, shared as they happen — @lanternlibrary
+          </p>
+        </Reveal>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {INSTAGRAM_POSTS.map((post, index) => (
+            <Reveal key={post.id} delay={index * 70}>
+              <ImageTile
+                className="aspect-square"
+                src={post.image}
+                alt={post.caption}
+                placeholder={<Instagram className="h-8 w-8 text-tile-accent" strokeWidth={1.25} />}
+                overlay={
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3 text-white opacity-0 transition group-hover/tile:opacity-100">
+                    <p className="mb-1 text-xs leading-4">{post.caption}</p>
+                    <span className="inline-flex items-center gap-1 text-xs">
+                      <Heart className="h-3.5 w-3.5" />
+                      {post.likes}
+                    </span>
+                  </div>
+                }
+              />
+            </Reveal>
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <a
+            href="https://instagram.com/lanternlibrary"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-sm border border-[var(--button-border)] px-8 py-3.5 text-xs uppercase tracking-label transition hover:border-ember hover:text-ember"
+          >
+            <Instagram className="h-4 w-4" />
+            Follow @lanternlibrary
+          </a>
+        </div>
+      </section>
+
+      <Divider />
+
       <section
         id="contact"
         className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 pb-20 sm:px-6 lg:px-8"
       >
         <Reveal>
-          <Eyebrow className="mb-3 text-center">viii.</Eyebrow>
+          <Eyebrow className="mb-3 text-center">ix.</Eyebrow>
           <h2 className="mb-10 text-center text-4xl tracking-snug">Get in Touch</h2>
           <div className="rounded-sm border border-border bg-card p-6 md:p-10">
             <p className="mb-8 text-center leading-8 opacity-80">

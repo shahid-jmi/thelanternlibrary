@@ -7,7 +7,7 @@ import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
 import Reveal from '../components/Reveal';
 import StatusMessage from '../components/StatusMessage';
-import ValidatedTextField from '../components/ValidatedTextField';
+import { FieldInput } from '../components/FormField';
 import { validateEmail, validatePassword } from '../lib/validation';
 import { useValidatedField } from '../lib/useValidatedField';
 
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <ValidatedTextField
+          <FieldInput
             id="admin-email"
             type="email"
             autoComplete="email"
@@ -68,11 +68,11 @@ export default function AdminLoginPage() {
             value={email.value}
             onChange={email.onChange}
             onBlur={email.onBlur}
-            error={email.error}
+            error={email.error ? t(email.error) : undefined}
           />
 
           <div className="mt-3">
-            <ValidatedTextField
+            <FieldInput
               id="admin-password"
               type="password"
               autoComplete="current-password"
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
               value={password.value}
               onChange={password.onChange}
               onBlur={password.onBlur}
-              error={password.error}
+              error={password.error ? t(password.error) : undefined}
             />
           </div>
 

@@ -1,12 +1,12 @@
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BookOpen, MessageCircle } from 'lucide-react';
-import { getErrorMessage } from '../api/client';
-import { useBook } from '../queries/books';
-import { formatPrice } from '../lib/format';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import Loader from '../components/Loader';
+import { getErrorMessage } from '@/app/api/client';
+import { useBook } from '@/app/queries/books';
+import { formatPrice } from '@/app/lib/format';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
 
 export default function BookDetailPage() {
   const { id } = useParams();

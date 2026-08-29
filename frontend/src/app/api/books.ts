@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminBook, BookFilters, BookPayload, PublicBook } from './types';
+import { api } from '@/app/api/client';
+import type { AdminBook, BookFilters, BookPayload, PublicBook } from '@/app/api/types';
 
 function compactParams(params: BookFilters) {
   return Object.fromEntries(

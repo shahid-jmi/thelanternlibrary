@@ -2,14 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Lock } from 'lucide-react';
-import { getErrorMessage } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
-import PageFrame from '../components/PageFrame';
-import Reveal from '../components/Reveal';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
-import { validateEmail, validatePassword } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
+import { getErrorMessage } from '@/app/api/client';
+import { useAuth } from '@/app/auth/AuthContext';
+import PageFrame from '@/app/components/PageFrame';
+import Reveal from '@/app/components/Reveal';
+import StatusMessage from '@/app/components/StatusMessage';
+import { FieldInput } from '@/app/components/FormField';
+import { validateEmail, validatePassword } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
 
 export default function AdminLoginPage() {
   const { t } = useTranslation();

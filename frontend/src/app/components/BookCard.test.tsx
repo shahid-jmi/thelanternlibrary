@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '../../i18n';
-import BookCard from './BookCard';
-import type { PublicBook } from '../api/types';
+import i18n from '@/i18n';
+import BookCard from '@/app/components/BookCard';
+import type { PublicBook } from '@/app/api/types';
 
 const book: PublicBook = {
   _id: 'abc123',
@@ -36,7 +36,7 @@ describe('BookCard', () => {
 
     expect(screen.getByRole('heading', { name: 'The Alchemist' })).toBeInTheDocument();
     expect(screen.getByText('Paulo Coelho')).toBeInTheDocument();
-    expect(screen.getByText(/15\.99/)).toBeInTheDocument();
+    expect(screen.getByText('₹16')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/book/abc123');
   });
 

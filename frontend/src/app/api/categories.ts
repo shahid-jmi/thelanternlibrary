@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminCategory, CategoryPayload, PublicCategory } from './types';
+import { api } from '@/app/api/client';
+import type { AdminCategory, CategoryPayload, PublicCategory } from '@/app/api/types';
 
 export async function getCategories(lang: string): Promise<PublicCategory[]> {
   const { data } = await api.get<PublicCategory[]>('/categories', { params: { lang } });

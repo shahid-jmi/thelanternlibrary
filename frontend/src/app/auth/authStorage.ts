@@ -1,4 +1,4 @@
-import type { AdminRole } from '../api/types';
+import type { AdminRole } from '@/app/api/types';
 
 const ADMIN_TOKEN_KEY = 'bookstore-admin-token';
 const MUST_CHANGE_PASSWORD_KEY = 'bookstore-admin-must-change-password';

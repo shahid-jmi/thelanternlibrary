@@ -7,8 +7,8 @@ import {
   getBooks,
   toggleAvailability,
   updateBook,
-} from '../api/books';
-import type { BookFilters, BookPayload } from '../api/types';
+} from '@/app/api/books';
+import type { BookFilters, BookPayload } from '@/app/api/types';
 
 export const bookKeys = {
   all: ['books'] as const,

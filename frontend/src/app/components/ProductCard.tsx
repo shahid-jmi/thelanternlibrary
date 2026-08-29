@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Package } from 'lucide-react';
-import type { PublicProduct } from '../api/types';
-import { formatPrice } from '../lib/format';
+import type { PublicProduct } from '@/app/api/types';
+import { formatPrice } from '@/app/lib/format';
 
 // TODO: once product detail pages / ordering exist, wrap this in a <Link>
 // to the product route (mirroring BookCard -> /book/:id).

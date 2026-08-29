@@ -1,6 +1,6 @@
 import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
-import { cn } from '../../lib/cn';
-import Card from './Card';
+import { cn } from '@/app/lib/cn';
+import Card from '@/app/components/ui/Card';
 
 /**
  * Admin data-table shell. Wraps the scroll container + table + head styling

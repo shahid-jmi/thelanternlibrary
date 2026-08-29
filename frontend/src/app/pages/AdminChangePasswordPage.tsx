@@ -2,15 +2,15 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, Loader2 } from 'lucide-react';
-import { changePassword } from '../api/auth';
-import { getErrorMessage } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
-import { validateConfirmPassword, validatePassword, validateRequired } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import Reveal from '../components/Reveal';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
+import { changePassword } from '@/app/api/auth';
+import { getErrorMessage } from '@/app/api/client';
+import { useAuth } from '@/app/auth/AuthContext';
+import { validateConfirmPassword, validatePassword, validateRequired } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import Reveal from '@/app/components/Reveal';
+import StatusMessage from '@/app/components/StatusMessage';
+import { FieldInput } from '@/app/components/FormField';
 
 export default function AdminChangePasswordPage() {
   const { t } = useTranslation();

@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminRole } from './types';
+import { api } from '@/app/api/client';
+import type { AdminRole } from '@/app/api/types';
 
 export interface LoginResult {
   token: string;

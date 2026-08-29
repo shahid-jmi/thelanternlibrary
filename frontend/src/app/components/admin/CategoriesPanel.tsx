@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Edit, Plus, Trash2 } from 'lucide-react';
-import type { AdminCategory } from '../../api/types';
-import { getErrorMessage } from '../../api/client';
-import { useAdminCategories, useDeleteCategory } from '../../queries/categories';
-import { useAuth } from '../../auth/AuthContext';
-import { useConfirm } from '../../lib/useConfirm';
-import StatusMessage from '../StatusMessage';
-import Loader from '../Loader';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
+import type { AdminCategory } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminCategories, useDeleteCategory } from '@/app/queries/categories';
+import { useAuth } from '@/app/auth/AuthContext';
+import { useConfirm } from '@/app/lib/useConfirm';
+import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
 
 export default function CategoriesPanel() {
   const { t } = useTranslation();
@@ -24,15 +25,9 @@ export default function CategoriesPanel() {
   const loadError = categoriesQuery.isError ? getErrorMessage(categoriesQuery.error) : '';
   const error = actionError || loadError;
 
-  const removeCategory = async (category: AdminCategory) => {
-    if (!(await confirm(`${t('admin.dashboard.delete')} "${category.name.en}"?`))) return;
-    try {
-      await deleteCategory.mutateAsync(category._id);
-      setActionError('');
-    } catch (requestError) {
-      setActionError(getErrorMessage(requestError));
-    }
-  };
+  const confirmedDelete = useConfirmedDelete(deleteCategory, confirm, setActionError);
+  const removeCategory = (category: AdminCategory) =>
+    confirmedDelete(category._id, `${t('admin.dashboard.delete')} "${category.name.en}"?`);
 
   return (
     <section>

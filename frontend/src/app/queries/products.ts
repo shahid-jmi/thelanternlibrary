@@ -7,8 +7,8 @@ import {
   getProducts,
   toggleProductAvailability,
   updateProduct,
-} from '../api/products';
-import type { ProductFilters, ProductPayload } from '../api/types';
+} from '@/app/api/products';
+import type { ProductFilters, ProductPayload } from '@/app/api/types';
 
 export const productKeys = {
   all: ['products'] as const,

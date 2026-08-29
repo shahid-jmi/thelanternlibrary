@@ -7,7 +7,7 @@ import {
   getToken,
   setMustChangePassword,
   setToken,
-} from './authStorage';
+} from '@/app/auth/authStorage';
 
 function makeToken(payload: object): string {
   const encode = (value: object) =>

@@ -1,27 +1,31 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
-import { AuthProvider } from './auth/AuthContext';
-import { ThemeProvider } from './theme/ThemeContext';
-import RequireAdmin from './auth/RequireAdmin';
-import Shell from './components/Shell';
-import ErrorBoundary from './components/ErrorBoundary';
-import HomePage from './pages/HomePage';
-import CatalogPage from './pages/CatalogPage';
-import BookDetailPage from './pages/BookDetailPage';
-import OrderPage from './pages/OrderPage';
-import AdminLoginPage from './pages/AdminLoginPage';
-import AdminForgotPasswordPage from './pages/AdminForgotPasswordPage';
-import AdminResetPasswordPage from './pages/AdminResetPasswordPage';
-import AdminChangePasswordPage from './pages/AdminChangePasswordPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminManagementPage from './pages/AdminManagementPage';
-import AdminCreateAdminPage from './pages/AdminCreateAdminPage';
-import AdminBookFormPage from './pages/AdminBookFormPage';
-import AdminProductFormPage from './pages/AdminProductFormPage';
-import AdminCategoryFormPage from './pages/AdminCategoryFormPage';
+import { AuthProvider } from '@/app/auth/AuthContext';
+import { ThemeProvider } from '@/app/theme/ThemeContext';
+import RequireAdmin from '@/app/auth/RequireAdmin';
+import Shell from '@/app/components/Shell';
+import ErrorBoundary from '@/app/components/ErrorBoundary';
+import Loader from '@/app/components/Loader';
+import HomePage from '@/app/pages/HomePage';
+import CatalogPage from '@/app/pages/CatalogPage';
+import BookDetailPage from '@/app/pages/BookDetailPage';
+import OrderPage from '@/app/pages/OrderPage';
+
+// Admin-only pages are lazy-loaded — a public visitor browsing the catalog
+// should never have to download the admin dashboard/forms bundle.
+const AdminLoginPage = lazy(() => import('@/app/pages/AdminLoginPage'));
+const AdminForgotPasswordPage = lazy(() => import('@/app/pages/AdminForgotPasswordPage'));
+const AdminResetPasswordPage = lazy(() => import('@/app/pages/AdminResetPasswordPage'));
+const AdminChangePasswordPage = lazy(() => import('@/app/pages/AdminChangePasswordPage'));
+const AdminDashboardPage = lazy(() => import('@/app/pages/AdminDashboardPage'));
+const AdminManagementPage = lazy(() => import('@/app/pages/AdminManagementPage'));
+const AdminCreateAdminPage = lazy(() => import('@/app/pages/AdminCreateAdminPage'));
+const AdminBookFormPage = lazy(() => import('@/app/pages/AdminBookFormPage'));
+const AdminProductFormPage = lazy(() => import('@/app/pages/AdminProductFormPage'));
+const AdminCategoryFormPage = lazy(() => import('@/app/pages/AdminCategoryFormPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,28 +57,30 @@ export default function App() {
           <AuthProvider>
             <Shell>
               <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/catalog" element={<CatalogPage />} />
-                  <Route path="/book/:id" element={<BookDetailPage />} />
-                  <Route path="/book/:id/order" element={<OrderPage />} />
-                  <Route path="/admin" element={<AdminLoginPage />} />
-                  <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
-                  <Route path="/reset-password" element={<AdminResetPasswordPage />} />
-                  <Route element={<RequireAdmin />}>
-                    <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
-                    <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-                    <Route path="/admin/books/new" element={<AdminBookFormPage />} />
-                    <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />
-                    <Route path="/admin/products/new" element={<AdminProductFormPage />} />
-                    <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
-                    <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
-                    <Route path="/admin/categories/:id/edit" element={<AdminCategoryFormPage />} />
-                    <Route path="/admin/admins" element={<AdminManagementPage />} />
-                    <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
-                  </Route>
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                <Suspense fallback={<Loader />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/catalog" element={<CatalogPage />} />
+                    <Route path="/book/:id" element={<BookDetailPage />} />
+                    <Route path="/book/:id/order" element={<OrderPage />} />
+                    <Route path="/admin" element={<AdminLoginPage />} />
+                    <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<AdminResetPasswordPage />} />
+                    <Route element={<RequireAdmin />}>
+                      <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
+                      <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                      <Route path="/admin/books/new" element={<AdminBookFormPage />} />
+                      <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />
+                      <Route path="/admin/products/new" element={<AdminProductFormPage />} />
+                      <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
+                      <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
+                      <Route path="/admin/categories/:id/edit" element={<AdminCategoryFormPage />} />
+                      <Route path="/admin/admins" element={<AdminManagementPage />} />
+                      <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
               </ErrorBoundary>
             </Shell>
           </AuthProvider>

@@ -1,11 +1,11 @@
-import { api } from './client';
+import { api } from '@/app/api/client';
 import type {
   AdminOrder,
   CreateOrderPayload,
   OrderFilters,
   OrderStatus,
   PublicOrder,
-} from './types';
+} from '@/app/api/types';
 
 function compactParams(params: OrderFilters) {
   return Object.fromEntries(

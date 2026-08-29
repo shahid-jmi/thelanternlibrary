@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from 'react';
-import PageFrame from './PageFrame';
-import StatusMessage from './StatusMessage';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
 
 export default class ErrorBoundary extends Component<{ children: ReactNode }, { message: string }> {
   state = { message: '' };

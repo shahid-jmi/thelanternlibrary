@@ -2,19 +2,20 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Check, Edit, Plus, Trash2 } from 'lucide-react';
-import type { AdminProduct } from '../../api/types';
-import { getErrorMessage } from '../../api/client';
+import type { AdminProduct } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
 import {
   useAdminProducts,
   useDeleteProduct,
   useToggleProductAvailability,
-} from '../../queries/products';
-import { useAdminCategories } from '../../queries/categories';
-import { formatPrice } from '../../lib/format';
-import { useConfirm } from '../../lib/useConfirm';
-import StatusMessage from '../StatusMessage';
-import Loader from '../Loader';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
+} from '@/app/queries/products';
+import { useAdminCategories } from '@/app/queries/categories';
+import { formatPrice } from '@/app/lib/format';
+import { useConfirm } from '@/app/lib/useConfirm';
+import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
 
 export default function ProductsPanel() {
   const { t } = useTranslation();
@@ -35,15 +36,9 @@ export default function ProductsPanel() {
 
   const activeCategories = categories.filter((category) => category.isActive);
 
-  const removeProduct = async (product: AdminProduct) => {
-    if (!(await confirm(`${t('admin.dashboard.delete')} "${product.name.en}"?`))) return;
-    try {
-      await deleteProduct.mutateAsync(product._id);
-      setActionError('');
-    } catch (requestError) {
-      setActionError(getErrorMessage(requestError));
-    }
-  };
+  const confirmedDelete = useConfirmedDelete(deleteProduct, confirm, setActionError);
+  const removeProduct = (product: AdminProduct) =>
+    confirmedDelete(product._id, `${t('admin.dashboard.delete')} "${product.name.en}"?`);
 
   const flipAvailability = async (product: AdminProduct) => {
     try {

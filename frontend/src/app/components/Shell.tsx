@@ -2,11 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Menu, MessageCircle, Moon, Sun, X } from 'lucide-react';
-import { Logo } from './Logo';
-import GrainTexture from './GrainTexture';
-import Bokeh from './Bokeh';
-import Footer from './Footer';
-import { useTheme } from '../theme/ThemeContext';
+import { Logo } from '@/app/components/Logo';
+import GrainTexture from '@/app/components/GrainTexture';
+import Bokeh from '@/app/components/Bokeh';
+import Footer from '@/app/components/Footer';
+import { useTheme } from '@/app/theme/ThemeContext';
 
 type HomeSection = 'home' | 'about' | 'contact';
 // "home" has no section of its own to observe — id="home" sits on the

@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/app/auth/AuthContext';
 
 export default function RequireAdmin() {
   const { isAuthenticated, mustChangePassword } = useAuth();

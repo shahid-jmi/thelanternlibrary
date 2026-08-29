@@ -2,17 +2,17 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import type { CategoryPayload } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useAdminCategories, useSaveCategory } from '../queries/categories';
-import { useAuth } from '../auth/AuthContext';
-import { validateRequired, validateSlug } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import Loader from '../components/Loader';
-import { FieldInput } from '../components/FormField';
-import { Button } from '../components/ui';
+import type { CategoryPayload } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminCategories, useSaveCategory } from '@/app/queries/categories';
+import { useAuth } from '@/app/auth/AuthContext';
+import { validateRequired, validateSlug } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput } from '@/app/components/FormField';
+import { Button } from '@/app/components/ui';
 
 export default function AdminCategoryFormPage() {
   const { t } = useTranslation();

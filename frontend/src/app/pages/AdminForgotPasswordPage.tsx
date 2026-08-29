@@ -2,14 +2,14 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, KeyRound, Loader2 } from 'lucide-react';
-import { requestPasswordReset } from '../api/auth';
-import { getErrorMessage } from '../api/client';
-import { validateEmail } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import Reveal from '../components/Reveal';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
+import { requestPasswordReset } from '@/app/api/auth';
+import { getErrorMessage } from '@/app/api/client';
+import { validateEmail } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import Reveal from '@/app/components/Reveal';
+import StatusMessage from '@/app/components/StatusMessage';
+import { FieldInput } from '@/app/components/FormField';
 
 export default function AdminForgotPasswordPage() {
   const { t } = useTranslation();

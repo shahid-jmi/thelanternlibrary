@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Loader2, MessageCircle } from 'lucide-react';
-import { INDIAN_STATES } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useCreateOrder } from '../queries/orders';
-import { validatePincode, validateRequired } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import { FieldInput, FieldSelect, FieldTextArea } from './FormField';
-import StatusMessage from './StatusMessage';
+import { INDIAN_STATES } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useCreateOrder } from '@/app/queries/orders';
+import { validatePincode, validateRequired } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
+import StatusMessage from '@/app/components/StatusMessage';
 
 export default function OrderForm({
   bookId,

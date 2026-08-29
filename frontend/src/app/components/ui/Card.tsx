@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react';
-import { cn } from '../../lib/cn';
+import { cn } from '@/app/lib/cn';
 
 /**
  * The bordered/rounded surface used for panels, forms, and table wrappers

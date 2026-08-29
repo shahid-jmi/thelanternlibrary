@@ -7,17 +7,17 @@ import {
   BOOK_LANGUAGES,
   type BookGenre,
   type BookLanguage,
-} from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useAdminBooks, useSaveBook } from '../queries/books';
-import { validatePrice, validateRequired } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import Loader from '../components/Loader';
-import { FieldInput, FieldSelect, FieldTextArea } from '../components/FormField';
-import ImageUploadField from '../components/ImageUploadField';
-import { Button } from '../components/ui';
+} from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminBooks, useSaveBook } from '@/app/queries/books';
+import { validatePrice, validateRequired } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
+import ImageUploadField from '@/app/components/ImageUploadField';
+import { Button } from '@/app/components/ui';
 
 export default function AdminBookFormPage() {
   const { t } = useTranslation();

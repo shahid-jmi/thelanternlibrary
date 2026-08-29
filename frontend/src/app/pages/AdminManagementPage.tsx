@@ -2,19 +2,20 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, Plus, Shield, Trash2 } from 'lucide-react';
-import { ADMIN_ROLES, type AdminAccount, type AdminRole } from '../api/types';
-import { getErrorMessage } from '../api/client';
+import { ADMIN_ROLES, type AdminAccount, type AdminRole } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
 import {
   useAdmins,
   useDeleteAdmin,
   useSetAdminActive,
   useUpdateAdminRole,
-} from '../queries/admins';
-import { useAuth } from '../auth/AuthContext';
-import { useConfirm } from '../lib/useConfirm';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import Loader from '../components/Loader';
+} from '@/app/queries/admins';
+import { useAuth } from '@/app/auth/AuthContext';
+import { useConfirm } from '@/app/lib/useConfirm';
+import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
 
 export default function AdminManagementPage() {
   const { t } = useTranslation();
@@ -31,15 +32,9 @@ export default function AdminManagementPage() {
   const loadError = adminsQuery.isError ? getErrorMessage(adminsQuery.error) : '';
   const error = actionError || loadError;
 
-  const removeAdmin = async (admin: AdminAccount) => {
-    if (!(await confirm(`${t('admin.admins.delete')} ${admin.email}?`))) return;
-    try {
-      await deleteAdmin.mutateAsync(admin._id);
-      setActionError('');
-    } catch (requestError) {
-      setActionError(getErrorMessage(requestError));
-    }
-  };
+  const confirmedDelete = useConfirmedDelete(deleteAdmin, confirm, setActionError);
+  const removeAdmin = (admin: AdminAccount) =>
+    confirmedDelete(admin._id, `${t('admin.admins.delete')} ${admin.email}?`);
 
   const toggleActive = async (admin: AdminAccount) => {
     try {

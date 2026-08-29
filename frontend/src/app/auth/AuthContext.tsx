@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { setUnauthorizedHandler } from '../api/client';
-import { loginAdmin } from '../api/auth';
+import { setUnauthorizedHandler } from '@/app/api/client';
+import { loginAdmin } from '@/app/api/auth';
 import {
   clearToken,
   decodeAdminToken,
@@ -10,7 +10,7 @@ import {
   setMustChangePassword,
   setToken,
   type AdminTokenClaims,
-} from './authStorage';
+} from '@/app/auth/authStorage';
 
 interface AuthContextValue {
   admin: AdminTokenClaims | null;

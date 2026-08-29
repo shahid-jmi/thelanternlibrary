@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminAccount, AdminRole, CreateAdminPayload } from './types';
+import { api } from '@/app/api/client';
+import type { AdminAccount, AdminRole, CreateAdminPayload } from '@/app/api/types';
 
 export async function getAdmins(): Promise<AdminAccount[]> {
   const { data } = await api.get<AdminAccount[]>('/admin/admins');

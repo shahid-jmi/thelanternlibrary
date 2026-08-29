@@ -1,4 +1,4 @@
-import LanternMark from './LanternMark';
+import LanternMark from '@/app/components/LanternMark';
 
 export default function Loader({ label }: { label?: string }) {
   return (

@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import enTranslations from './locales/en.json';
-import urTranslations from './locales/ur.json';
+import enTranslations from '@/locales/en.json';
+import urTranslations from '@/locales/ur.json';
 
 const savedLang = localStorage.getItem('bookstore-lang') || 'en';
 

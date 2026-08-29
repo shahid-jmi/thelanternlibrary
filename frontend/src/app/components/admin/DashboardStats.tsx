@@ -1,10 +1,10 @@
 import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock3, Package, Wallet } from 'lucide-react';
-import { useAdminBooks } from '../../queries/books';
-import { useAdminProducts } from '../../queries/products';
-import { useAdminOrders } from '../../queries/orders';
-import { formatPrice } from '../../lib/format';
+import { useAdminBooks } from '@/app/queries/books';
+import { useAdminProducts } from '@/app/queries/products';
+import { useAdminOrders } from '@/app/queries/orders';
+import { formatPrice } from '@/app/lib/format';
 
 const STAT_STYLES = {
   blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',

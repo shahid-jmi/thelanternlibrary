@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Check, Edit, Plus, Trash2 } from 'lucide-react';
-import type { AdminBook } from '../../api/types';
-import { getErrorMessage } from '../../api/client';
-import { useAdminBooks, useDeleteBook, useToggleAvailability } from '../../queries/books';
-import { formatPrice } from '../../lib/format';
-import { useConfirm } from '../../lib/useConfirm';
-import StatusMessage from '../StatusMessage';
-import Loader from '../Loader';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
+import type { AdminBook } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminBooks, useDeleteBook, useToggleAvailability } from '@/app/queries/books';
+import { formatPrice } from '@/app/lib/format';
+import { useConfirm } from '@/app/lib/useConfirm';
+import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
 
 export default function BooksPanel() {
   const { t } = useTranslation();
@@ -24,15 +25,9 @@ export default function BooksPanel() {
   const loadError = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
   const error = actionError || loadError;
 
-  const removeBook = async (book: AdminBook) => {
-    if (!(await confirm(`${t('admin.dashboard.delete')} "${book.title.en}"?`))) return;
-    try {
-      await deleteBook.mutateAsync(book._id);
-      setActionError('');
-    } catch (requestError) {
-      setActionError(getErrorMessage(requestError));
-    }
-  };
+  const confirmedDelete = useConfirmedDelete(deleteBook, confirm, setActionError);
+  const removeBook = (book: AdminBook) =>
+    confirmedDelete(book._id, `${t('admin.dashboard.delete')} "${book.title.en}"?`);
 
   const flipAvailability = async (book: AdminBook) => {
     try {

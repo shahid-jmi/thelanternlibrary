@@ -1,8 +1,8 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
-import type { PublicBook } from '../api/types';
-import { formatPrice } from '../lib/format';
+import type { PublicBook } from '@/app/api/types';
+import { formatPrice } from '@/app/lib/format';
 
 export default function BookCard({ book }: { book: PublicBook }) {
   const { t } = useTranslation();

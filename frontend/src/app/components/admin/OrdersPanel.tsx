@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, Loader2, Search } from 'lucide-react';
-import type { AdminOrder, OrderStatus } from '../../api/types';
-import { getErrorMessage } from '../../api/client';
-import { useAdminOrders, useDownloadInvoice, useUpdateOrderStatus } from '../../queries/orders';
-import { useDebouncedValue } from '../../lib/useDebouncedValue';
-import { validatePrice } from '../../lib/validation';
-import { useValidatedField } from '../../lib/useValidatedField';
-import { formatPrice } from '../../lib/format';
-import StatusMessage from '../StatusMessage';
-import Loader from '../Loader';
-import { FieldInput } from '../FormField';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
+import type { AdminOrder, OrderStatus } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminOrders, useDownloadInvoice, useUpdateOrderStatus } from '@/app/queries/orders';
+import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
+import { validatePrice } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import { formatPrice } from '@/app/lib/format';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput } from '@/app/components/FormField';
+import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
 
 export default function OrdersPanel() {
   const { t } = useTranslation();

@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
-import { BOOK_GENRES, BOOK_LANGUAGES } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useBooks } from '../queries/books';
-import { useDebouncedValue } from '../lib/useDebouncedValue';
-import BookCard from '../components/BookCard';
-import CardSkeleton from '../components/CardSkeleton';
-import StatusMessage from '../components/StatusMessage';
-import PageFrame from '../components/PageFrame';
-import LanternMark from '../components/LanternMark';
-import { FilterSelect } from '../components/FormControls';
-import { Eyebrow } from '../components/ui';
+import { BOOK_GENRES, BOOK_LANGUAGES } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useBooks } from '@/app/queries/books';
+import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
+import BookCard from '@/app/components/BookCard';
+import CardSkeleton from '@/app/components/CardSkeleton';
+import StatusMessage from '@/app/components/StatusMessage';
+import PageFrame from '@/app/components/PageFrame';
+import LanternMark from '@/app/components/LanternMark';
+import { FilterSelect } from '@/app/components/FormControls';
+import { Eyebrow } from '@/app/components/ui';
 
 export default function CatalogPage() {
   const { t, i18n } = useTranslation();

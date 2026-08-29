@@ -5,9 +5,9 @@ import {
   getAdminCategories,
   getCategories,
   updateCategory,
-} from '../api/categories';
-import type { CategoryPayload } from '../api/types';
-import { productKeys } from './products';
+} from '@/app/api/categories';
+import type { CategoryPayload } from '@/app/api/types';
+import { productKeys } from '@/app/queries/products';
 
 export const categoryKeys = {
   all: ['categories'] as const,

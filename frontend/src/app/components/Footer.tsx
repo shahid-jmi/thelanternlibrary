@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
-import { Logo } from './Logo';
-import { BotanicalCorner } from './Botanicals';
+import { Logo } from '@/app/components/Logo';
+import { BotanicalCorner } from '@/app/components/Botanicals';
 
 const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
   { label: 'Home', href: '/#home' },

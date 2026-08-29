@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react';
-import { cn } from '../../lib/cn';
+import { cn } from '@/app/lib/cn';
 
 /**
  * Status pill used for active/inactive, in-stock/out-of-stock, etc. Pass

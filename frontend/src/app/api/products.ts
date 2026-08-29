@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminProduct, ProductFilters, ProductPayload, PublicProduct } from './types';
+import { api } from '@/app/api/client';
+import type { AdminProduct, ProductFilters, ProductPayload, PublicProduct } from '@/app/api/types';
 
 function compactParams(params: ProductFilters) {
   return Object.fromEntries(

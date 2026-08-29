@@ -2,15 +2,15 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Shield } from 'lucide-react';
-import { ADMIN_ROLES, type AdminRole } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useCreateAdmin } from '../queries/admins';
-import { validateConfirmPassword, validateEmail, validatePassword } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import Reveal from '../components/Reveal';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput, FieldSelect } from '../components/FormField';
+import { ADMIN_ROLES, type AdminRole } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useCreateAdmin } from '@/app/queries/admins';
+import { validateConfirmPassword, validateEmail, validatePassword } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import Reveal from '@/app/components/Reveal';
+import StatusMessage from '@/app/components/StatusMessage';
+import { FieldInput, FieldSelect } from '@/app/components/FormField';
 
 export default function AdminCreateAdminPage() {
   const { t } = useTranslation();

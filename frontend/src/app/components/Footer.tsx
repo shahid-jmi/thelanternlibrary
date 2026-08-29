@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
-import logo from '../../assets/logo.png';
+import { Logo } from './Logo';
 import { BotanicalCorner } from './Botanicals';
 
 const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
@@ -20,11 +20,8 @@ export default function Footer() {
       />
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="The Lantern Library logo" className="h-12 w-12 object-contain" />
-            <span className="text-lg tracking-[0.08em]">The Lantern Library</span>
-          </div>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ember">
+          <Logo variant="mark" />
+          <p className="mt-4 text-[10px] uppercase tracking-[0.3em] text-ember">
             From Kashmir to Kashmir
           </p>
           <p className="mt-5 max-w-xs text-sm italic leading-7 opacity-70">

@@ -52,12 +52,12 @@ export default function Shell({ children }: { children: ReactNode }) {
               >
                 {t('nav.home')}
               </a>
-              <a
+              <Link
                 className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 sm:inline"
-                href="/#catalog"
+                to="/catalog"
               >
                 {t('nav.catalog')}
-              </a>
+              </Link>
               <a
                 className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 lg:inline"
                 href="/#about"
@@ -122,13 +122,13 @@ export default function Shell({ children }: { children: ReactNode }) {
                 >
                   {t('nav.home')}
                 </a>
-                <a
+                <Link
                   className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
-                  href="/#catalog"
+                  to="/catalog"
                   onClick={closeMenu}
                 >
                   {t('nav.catalog')}
-                </a>
+                </Link>
                 <a
                   className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
                   href="/#about"

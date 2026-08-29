@@ -9,6 +9,7 @@ import RequireAdmin from './auth/RequireAdmin';
 import Shell from './components/Shell';
 import ErrorBoundary from './components/ErrorBoundary';
 import HomePage from './pages/HomePage';
+import CatalogPage from './pages/CatalogPage';
 import BookDetailPage from './pages/BookDetailPage';
 import OrderPage from './pages/OrderPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -54,6 +55,7 @@ export default function App() {
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/catalog" element={<CatalogPage />} />
                   <Route path="/book/:id" element={<BookDetailPage />} />
                   <Route path="/book/:id/order" element={<OrderPage />} />
                   <Route path="/admin" element={<AdminLoginPage />} />

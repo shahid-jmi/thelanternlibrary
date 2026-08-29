@@ -34,7 +34,7 @@ export default function BookDetailPage() {
   return (
     <PageFrame>
       <Link
-        to="/"
+        to="/catalog"
         className="mb-8 inline-flex items-center gap-2 text-sm opacity-75 transition hover:opacity-100"
       >
         <ArrowLeft className="h-4 w-4" />

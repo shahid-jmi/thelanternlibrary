@@ -1,4 +1,5 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Armchair,
@@ -16,18 +17,14 @@ import {
   MessageCircle,
   Mountain,
   Scroll,
-  Search,
   ShoppingBag,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { BOOK_GENRES, BOOK_LANGUAGES } from '../api/types';
 import { getErrorMessage } from '../api/client';
 import { useBooks } from '../queries/books';
-import { useDebouncedValue } from '../lib/useDebouncedValue';
 import BookCard from '../components/BookCard';
 import Divider from '../components/Divider';
 import StatusMessage from '../components/StatusMessage';
-import { FilterSelect } from '../components/FormControls';
 import Reveal from '../components/Reveal';
 import ImageTile from '../components/ImageTile';
 import LanternMark from '../components/LanternMark';
@@ -189,20 +186,9 @@ const INSTAGRAM_POSTS = [
 
 export default function HomePage() {
   const { t, i18n } = useTranslation();
-  const [search, setSearch] = useState('');
-  const [genre, setGenre] = useState('');
-  const [language, setLanguage] = useState('');
-  const [available, setAvailable] = useState('');
-  const debouncedSearch = useDebouncedValue(search);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const booksQuery = useBooks({
-    lang: i18n.language,
-    search: debouncedSearch,
-    genre,
-    language,
-    available,
-  });
+  const booksQuery = useBooks({ lang: i18n.language });
 
   const books = booksQuery.data ?? [];
   const loading = booksQuery.isPending;
@@ -250,12 +236,12 @@ export default function HomePage() {
               chosen with care for readers who seek depth, beauty, and meaning in the written word.
             </p>
             <div className="flex flex-wrap justify-center gap-4 lg:justify-start">
-              <a
-                href="#catalog"
+              <Link
+                to="/catalog"
                 className="rounded-sm bg-ember px-8 py-3.5 text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110"
               >
                 Browse Catalog →
-              </a>
+              </Link>
               <a
                 href="#contact"
                 className="inline-flex items-center gap-2 rounded-sm border border-[var(--button-border)] px-8 py-3.5 text-xs uppercase tracking-label transition hover:border-ember hover:text-ember"
@@ -322,12 +308,12 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <a
-                href="#catalog"
+              <Link
+                to="/catalog"
                 className="mt-2 rounded-sm border border-[var(--button-border)] px-6 py-3 text-xs uppercase tracking-label transition hover:border-accent hover:text-accent"
               >
                 Enter the Library →
-              </a>
+              </Link>
             </div>
             <div className="flex flex-col items-start gap-5 bg-ember px-8 py-12 text-ember-foreground sm:px-12">
               <p className="text-[10px] uppercase tracking-wide-lg opacity-80">The Cabinet</p>
@@ -367,12 +353,12 @@ export default function HomePage() {
               <h2 className="text-3xl tracking-tight">Featured Books</h2>
             </div>
             <div className="flex items-center gap-3">
-              <a
-                href="#catalog"
+              <Link
+                to="/catalog"
                 className="hidden text-xs uppercase tracking-label text-ember transition hover:opacity-75 sm:inline"
               >
                 View all →
-              </a>
+              </Link>
               <button
                 onClick={() => scrollCarousel(-1)}
                 aria-label="Scroll featured books back"
@@ -400,66 +386,6 @@ export default function HomePage() {
             <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
               <BookCard book={book} />
             </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <Divider />
-
-      <section id="catalog" className="mx-auto scroll-mt-24 max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-2 text-xs uppercase tracking-wider text-accent">
-              iii. · The Shelves
-            </p>
-            <h2 className="text-4xl tracking-snug sm:text-5xl">{t('catalog.title')}</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 rtl:left-auto rtl:right-3" />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder={t('catalog.search')}
-                className="h-11 w-full min-w-48 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
-              />
-            </label>
-            <FilterSelect
-              label={t('catalog.filter.genre')}
-              value={genre}
-              onChange={setGenre}
-              values={BOOK_GENRES}
-            />
-            <FilterSelect
-              label={t('catalog.filter.language')}
-              value={language}
-              onChange={setLanguage}
-              values={BOOK_LANGUAGES}
-            />
-            <select
-              value={available}
-              onChange={(event) => setAvailable(event.target.value)}
-              className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
-            >
-              <option value="">{t('catalog.filter.all')}</option>
-              <option value="true">{t('admin.dashboard.available')}</option>
-              <option value="false">{t('admin.dashboard.unavailable')}</option>
-            </select>
-          </div>
-        </div>
-
-        {loading && <StatusMessage>Loading books...</StatusMessage>}
-        {error && <StatusMessage tone="error">{error}</StatusMessage>}
-        {!loading && !error && books.length === 0 && (
-          <div className="py-16 text-center">
-            <LanternMark className="mx-auto mb-6 h-20 w-auto text-accent opacity-70" />
-            <p className="italic opacity-70">{t('catalog.noResults')}</p>
-          </div>
-        )}
-
-        <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-          {books.map((book) => (
-            <BookCard key={book._id} book={book} />
           ))}
         </div>
       </section>

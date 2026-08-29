@@ -3,9 +3,9 @@ import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
 import LanternMark from './LanternMark';
 import { BotanicalCorner } from './Botanicals';
 
-const QUICK_LINKS = [
+const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
   { label: 'Home', href: '/#home' },
-  { label: 'Library', href: '/#catalog' },
+  { label: 'Library', href: '/catalog', isRoute: true },
   { label: 'About', href: '/#about' },
   { label: 'Contact', href: '/#contact' },
 ];
@@ -34,16 +34,27 @@ export default function Footer() {
         <div>
           <h3 className="mb-5 text-[10px] uppercase tracking-[0.3em] text-accent">Quick Links</h3>
           <ul className="space-y-2.5">
-            {QUICK_LINKS.map((link) => (
-              <li key={link.label}>
-                <a
-                  href={link.href}
-                  className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+            {QUICK_LINKS.map((link) =>
+              link.isRoute ? (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ) : (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              )
+            )}
             <li>
               <Link
                 to="/admin"

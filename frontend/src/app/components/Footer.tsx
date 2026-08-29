@@ -13,10 +13,10 @@ const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
 export default function Footer() {
   return (
     <footer className="relative mt-20 overflow-hidden border-t border-border">
-      <BotanicalCorner className="pointer-events-none absolute -bottom-3 -left-2 h-28 w-28 text-accent opacity-45" />
+      <BotanicalCorner className="pointer-events-none absolute -bottom-4 -left-3 h-40 w-40 text-accent opacity-45" />
       <BotanicalCorner
         flip
-        className="pointer-events-none absolute -bottom-3 -right-2 h-28 w-28 text-accent opacity-45"
+        className="pointer-events-none absolute -bottom-4 -right-3 h-40 w-40 text-accent opacity-45"
       />
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>

@@ -1,4 +1,5 @@
 import type { Types } from 'mongoose';
+// See the note in admin.service.ts — the Admin model lives in admin-auth.
 import type { AdminLean } from '../admin-auth/admin.model.js';
 import type { AdminRole } from './admin.constants.js';
 

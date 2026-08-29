@@ -4,6 +4,8 @@ import {
   BOOK_LANGUAGES,
   TRANSLATION_LANGUAGES,
 } from '../modules/books/book.constants.js';
+import { ORDER_STATUSES } from '../modules/orders/order.model.js';
+import { INDIAN_STATES } from '../modules/orders/order.constants.js';
 
 const errorResponse = (description: string) => ({
   description,
@@ -37,6 +39,11 @@ const categoryIdParam = {
   description: 'MongoDB ObjectId of the category',
 };
 
+const orderIdParam = {
+  ...bookIdParam,
+  description: 'MongoDB ObjectId of the order',
+};
+
 const langQueryParam = {
   name: 'lang',
   in: 'query',
@@ -58,6 +65,7 @@ const openApiDocument = {
     { name: 'Books', description: 'Public storefront catalogue' },
     { name: 'Products', description: 'Public non-book catalogue (postcards, totes, etc.)' },
     { name: 'Categories', description: 'Public product categories for storefront navigation' },
+    { name: 'Orders', description: 'Public order placement' },
     { name: 'Auth', description: 'Admin authentication' },
     { name: 'Admin Books', description: 'Book management (admin token required)' },
     { name: 'Admin Products', description: 'Product management (admin token required)' },
@@ -67,6 +75,10 @@ const openApiDocument = {
         'Category taxonomy. Any admin can list; create/update/delete require a super admin token.',
     },
     { name: 'Admins', description: 'Admin account management (super admin token required)' },
+    {
+      name: 'Admin Orders',
+      description: 'Order management, status updates, and invoicing (admin token required)',
+    },
   ],
   components: {
     securitySchemes: {
@@ -113,7 +125,7 @@ const openApiDocument = {
           title: { type: 'string', description: 'Localized to the requested lang' },
           description: { type: 'string', description: 'Localized to the requested lang' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
@@ -129,7 +141,7 @@ const openApiDocument = {
           title: { $ref: '#/components/schemas/LocalizedText' },
           description: { $ref: '#/components/schemas/LocalizedText' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
@@ -230,7 +242,7 @@ const openApiDocument = {
           _id: { type: 'string' },
           name: { type: 'string', description: 'Localized to the requested lang' },
           description: { type: 'string', description: 'Localized to the requested lang' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           category: {
             type: 'object',
             properties: {
@@ -251,7 +263,7 @@ const openApiDocument = {
           _id: { type: 'string' },
           name: { $ref: '#/components/schemas/LocalizedText' },
           description: { $ref: '#/components/schemas/LocalizedText' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           category: {
             type: 'object',
             properties: {
@@ -279,7 +291,7 @@ const openApiDocument = {
             pattern: '^[a-fA-F\\d]{24}$',
             description: 'ObjectId of an existing, active category',
           },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
           coverImage: {
             type: 'string',
@@ -297,7 +309,7 @@ const openApiDocument = {
           title: { type: 'string', description: 'JSON-encoded LocalizedText' },
           description: { type: 'string', description: 'JSON-encoded LocalizedText' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
@@ -308,6 +320,94 @@ const openApiDocument = {
           },
         },
         required: ['title', 'description', 'author', 'price', 'genre', 'language'],
+      },
+      OrderPayload: {
+        type: 'object',
+        properties: {
+          book: {
+            type: 'string',
+            pattern: '^[a-fA-F\\d]{24}$',
+            description: 'ObjectId of the book being ordered',
+          },
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerAltPhone: { type: 'string' },
+          addressLine: { type: 'string' },
+          locality: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+          pincode: { type: 'string', pattern: '^\\d{6}$' },
+          note: { type: 'string' },
+        },
+        required: [
+          'book',
+          'customerName',
+          'customerPhone',
+          'addressLine',
+          'locality',
+          'city',
+          'state',
+          'pincode',
+        ],
+      },
+      PublicOrder: {
+        type: 'object',
+        description: 'Returned after placing an order — the full order is only visible to admins.',
+        properties: {
+          _id: { type: 'string' },
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      AdminOrder: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          book: {
+            type: 'object',
+            nullable: true,
+            description: 'Null if the book has since been deleted',
+            properties: {
+              _id: { type: 'string' },
+              title: { type: 'string' },
+              coverImage: { $ref: '#/components/schemas/CoverImage' },
+            },
+          },
+          bookTitle: { type: 'string' },
+          bookAuthor: { type: 'string' },
+          price: { type: 'integer', minimum: 0, description: 'Snapshot of the book price at order time' },
+          deliveryCharge: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Set once, when the admin marks the order paid',
+          },
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerAltPhone: { type: 'string', nullable: true },
+          addressLine: { type: 'string' },
+          locality: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+          pincode: { type: 'string' },
+          note: { type: 'string', nullable: true },
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          invoiceNumber: { type: 'string', nullable: true },
+          invoiceGeneratedAt: { type: 'string', format: 'date-time', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      OrderStatusUpdate: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          deliveryCharge: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Required when status is "paid"',
+          },
+        },
+        required: ['status'],
       },
     },
   },
@@ -446,6 +546,27 @@ const openApiDocument = {
             },
           },
           400: errorResponse('Validation failed'),
+        },
+      },
+    },
+    '/orders': {
+      post: {
+        tags: ['Orders'],
+        summary: 'Place an order for a book',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/OrderPayload' } },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Order placed',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PublicOrder' } },
+            },
+          },
+          400: errorResponse('Validation failed, or the referenced book does not exist'),
         },
       },
     },
@@ -1060,6 +1181,91 @@ const openApiDocument = {
           401: errorResponse('Missing or invalid token'),
           403: errorResponse('Super admin access required'),
           404: errorResponse('Admin not found'),
+        },
+      },
+    },
+    '/admin/orders': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'List orders',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'search',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Matches against book title or customer phone number',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: [...ORDER_STATUSES] },
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['newest', 'oldest'], default: 'newest' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Orders matching the filters',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/AdminOrder' } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+    },
+    '/admin/orders/{id}/status': {
+      patch: {
+        tags: ['Admin Orders'],
+        summary: 'Update an order\'s status',
+        description:
+          'deliveryCharge is required when setting status to "paid" — it varies per order and is only known at that point.',
+        security: [{ bearerAuth: [] }],
+        parameters: [orderIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/OrderStatusUpdate' } },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated order',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminOrder' } },
+            },
+          },
+          400: errorResponse('Validation failed, or deliveryCharge missing while marking paid'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Order not found'),
+        },
+      },
+    },
+    '/admin/orders/{id}/invoice': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'Download the invoice PDF for a paid order',
+        description:
+          'Generates and persists an invoice number on first request; subsequent requests reuse it and re-render the same PDF.',
+        security: [{ bearerAuth: [] }],
+        parameters: [orderIdParam],
+        responses: {
+          200: {
+            description: 'Invoice PDF',
+            content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+          },
+          400: errorResponse('Order is not marked paid yet'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Order not found'),
         },
       },
     },

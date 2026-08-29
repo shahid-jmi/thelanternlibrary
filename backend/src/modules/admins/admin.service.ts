@@ -1,4 +1,7 @@
 import bcrypt from 'bcryptjs';
+// The Admin model/repository live in admin-auth, not here — there is one
+// Admin entity, and admin-auth owns it since login/session logic needs it
+// too. This module only adds account-management operations on top.
 import * as adminRepository from '../admin-auth/admin.repository.js';
 import NotFoundError from '../../common/errors/NotFoundError.js';
 import AppError from '../../common/errors/AppError.js';

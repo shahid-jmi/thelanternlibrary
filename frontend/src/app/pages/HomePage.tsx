@@ -18,6 +18,8 @@ import {
   Mountain,
   Scroll,
   ShoppingBag,
+  Sparkles,
+  Truck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
@@ -193,7 +195,7 @@ export default function HomePage() {
   const books = booksQuery.data ?? [];
   const loading = booksQuery.isPending;
   const error = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
-  const featuredBooks = books.slice(0, 8);
+  const featuredBooks = books.filter((book) => book.isAvailable).slice(0, 8);
 
   const scrollCarousel = (direction: number) => {
     carouselRef.current?.scrollBy({ left: direction * 300, behavior: 'smooth' });
@@ -250,7 +252,21 @@ export default function HomePage() {
                 Order Directly
               </a>
             </div>
-            <p className="mt-14 text-[10px] uppercase tracking-wide-lg opacity-55">
+            <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 text-xs uppercase tracking-label opacity-70 lg:justify-start">
+              <span className="inline-flex items-center gap-2">
+                <Truck className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                Pan-India Delivery
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                WhatsApp Ordering
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                Handpicked Selection
+              </span>
+            </div>
+            <p className="mt-10 text-[10px] uppercase tracking-wide-lg opacity-55">
               — Est. on a long winter afternoon —
             </p>
           </div>
@@ -259,9 +275,56 @@ export default function HomePage() {
 
       <Divider />
 
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <Eyebrow className="mb-3">i.</Eyebrow>
+              <h2 className="text-3xl tracking-tight">Featured Books</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/catalog"
+                className="hidden text-xs uppercase tracking-label text-ember transition hover:opacity-75 sm:inline"
+              >
+                View all →
+              </Link>
+              <button
+                onClick={() => scrollCarousel(-1)}
+                aria-label="Scroll featured books back"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => scrollCarousel(1)}
+                aria-label="Scroll featured books forward"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </Reveal>
+        {loading && <StatusMessage>Loading books...</StatusMessage>}
+        {error && <StatusMessage tone="error">{error}</StatusMessage>}
+        {!loading && !error && featuredBooks.length === 0 && (
+          <StatusMessage>{t('catalog.noResults')}</StatusMessage>
+        )}
+        <div ref={carouselRef} className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2">
+          {featuredBooks.map((book, index) => (
+            <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
+              <BookCard book={book} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <Divider />
+
       <section id="offer" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:px-6 lg:px-8">
         <Reveal>
-          <Eyebrow className="mb-3 text-center">i.</Eyebrow>
+          <Eyebrow className="mb-3 text-center">ii.</Eyebrow>
           <h2 className="mb-4 text-center text-3xl tracking-tight">What We Offer</h2>
           <p className="mx-auto mb-12 max-w-xl text-center italic leading-7 opacity-70">
             Books first — and the quiet objects that belong beside them.
@@ -341,53 +404,6 @@ export default function HomePage() {
             </div>
           </div>
         </Reveal>
-      </section>
-
-      <Divider />
-
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <Reveal>
-          <div className="mb-10 flex items-end justify-between gap-4">
-            <div>
-              <Eyebrow className="mb-3">ii.</Eyebrow>
-              <h2 className="text-3xl tracking-tight">Featured Books</h2>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/catalog"
-                className="hidden text-xs uppercase tracking-label text-ember transition hover:opacity-75 sm:inline"
-              >
-                View all →
-              </Link>
-              <button
-                onClick={() => scrollCarousel(-1)}
-                aria-label="Scroll featured books back"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
-              >
-                ‹
-              </button>
-              <button
-                onClick={() => scrollCarousel(1)}
-                aria-label="Scroll featured books forward"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
-              >
-                ›
-              </button>
-            </div>
-          </div>
-        </Reveal>
-        {loading && <StatusMessage>Loading books...</StatusMessage>}
-        {error && <StatusMessage tone="error">{error}</StatusMessage>}
-        {!loading && !error && featuredBooks.length === 0 && (
-          <StatusMessage>{t('catalog.noResults')}</StatusMessage>
-        )}
-        <div ref={carouselRef} className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2">
-          {featuredBooks.map((book, index) => (
-            <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
-              <BookCard book={book} />
-            </Reveal>
-          ))}
-        </div>
       </section>
 
       <section className="dark mt-12 w-full border-y border-border bg-background py-20 text-foreground">

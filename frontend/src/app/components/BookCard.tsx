@@ -32,7 +32,17 @@ export default function BookCard({ book }: { book: PublicBook }) {
         )}
       </div>
       <div className="px-1 pb-1 pt-4">
-        <h2 className="text-lg leading-snug transition group-hover:text-ember">{book.title}</h2>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] opacity-65">
+            {book.genre}
+          </span>
+          <span className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] opacity-65">
+            {book.language}
+          </span>
+        </div>
+        <h2 className="mt-2 text-lg leading-snug transition group-hover:text-ember">
+          {book.title}
+        </h2>
         <p className="mt-1 text-sm italic opacity-75">{book.author}</p>
         <p className="mt-2 text-base">{formatPrice(book.price)}</p>
       </div>

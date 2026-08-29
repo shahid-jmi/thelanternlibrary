@@ -88,10 +88,10 @@ export default function Shell({ children }: { children: ReactNode }) {
                 {t('nav.home')}
               </a>
               <Link
-                className={`hidden items-center rounded-full border px-3.5 py-1 text-xs uppercase tracking-label transition sm:inline-flex ${
+                className={`hidden items-center rounded-full px-3 py-1 text-sm transition sm:inline-flex ${
                   isCatalog
-                    ? 'border-ember bg-ember text-ember-foreground'
-                    : 'border-ember/50 text-ember hover:bg-ember/10'
+                    ? 'bg-ember text-ember-foreground'
+                    : 'bg-ember/10 text-ember hover:bg-ember/20'
                 }`}
                 to="/catalog"
                 aria-current={isCatalog ? 'page' : undefined}
@@ -196,9 +196,14 @@ export default function Shell({ children }: { children: ReactNode }) {
           target="_blank"
           rel="noreferrer"
           aria-label="Chat on WhatsApp"
-          className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:brightness-105 rtl:right-auto rtl:left-5"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm text-white shadow-lg transition hover:brightness-105 rtl:right-auto rtl:left-5"
         >
-          <MessageCircle className="h-6 w-6" />
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-60"
+          />
+          <MessageCircle className="relative h-5 w-5 shrink-0" />
+          <span className="relative hidden sm:inline">Chat with us</span>
         </a>
       )}
     </div>

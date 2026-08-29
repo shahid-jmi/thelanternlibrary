@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode, type WheelEvent } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -16,7 +16,9 @@ import {
   MapPin,
   MessageCircle,
   Mountain,
+  PackageCheck,
   Scroll,
+  Search,
   ShoppingBag,
   Sparkles,
   Truck,
@@ -130,6 +132,12 @@ const MOSAIC: { numeral: string; label: string; icon: LucideIcon; image: string 
   },
 ];
 
+const AVATAR_COLORS: Record<string, string> = {
+  blue: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+  amber: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
+  teal: 'bg-teal-500/15 text-teal-700 dark:text-teal-300',
+};
+
 const TESTIMONIALS = [
   {
     numeral: 'i',
@@ -137,6 +145,7 @@ const TESTIMONIALS = [
       'I asked for something quiet, and a week later a book arrived that I still think about on evening walks.',
     name: 'Mehak',
     city: 'Srinagar',
+    color: 'blue',
   },
   {
     numeral: 'ii',
@@ -144,12 +153,14 @@ const TESTIMONIALS = [
       'The parcel smelled of old paper. Reading it felt like borrowing from the shelf of a friend.',
     name: 'Arjun',
     city: 'Delhi',
+    color: 'amber',
   },
   {
     numeral: 'iii',
     quote: 'It is less like buying a book and more like being handed a lantern.',
     name: 'Zoya',
     city: 'Baramulla',
+    color: 'teal',
   },
 ];
 
@@ -196,6 +207,17 @@ export default function HomePage() {
   const loading = booksQuery.isPending;
   const error = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
   const featuredBooks = books.filter((book) => book.isAvailable).slice(0, 8);
+
+  const handleCarouselWheel = (event: WheelEvent<HTMLDivElement>) => {
+    // A horizontally-scrollable row will otherwise capture a plain vertical
+    // mouse-wheel/trackpad scroll and turn it into horizontal movement,
+    // trapping the page. Only take over when the gesture is actually
+    // horizontal (a trackpad swipe) — pass a vertical scroll to the page.
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      event.preventDefault();
+      window.scrollBy({ top: event.deltaY });
+    }
+  };
 
   const scrollCarousel = (direction: number) => {
     carouselRef.current?.scrollBy({ left: direction * 300, behavior: 'smooth' });
@@ -311,7 +333,11 @@ export default function HomePage() {
         {!loading && !error && featuredBooks.length === 0 && (
           <StatusMessage>{t('catalog.noResults')}</StatusMessage>
         )}
-        <div ref={carouselRef} className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2">
+        <div
+          ref={carouselRef}
+          onWheel={handleCarouselWheel}
+          className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2"
+        >
           {featuredBooks.map((book, index) => (
             <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
               <BookCard book={book} />
@@ -461,17 +487,23 @@ export default function HomePage() {
                 <span className="absolute right-4 top-3 text-sm italic text-accent">
                   {testimonial.numeral}.
                 </span>
-                <span aria-hidden="true" className="block text-6xl leading-none text-accent">
+                <div className="mb-4 flex items-center gap-3">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm ${AVATAR_COLORS[testimonial.color]}`}
+                  >
+                    {testimonial.name[0]}
+                  </span>
+                  <div>
+                    <p className="text-sm">{testimonial.name}</p>
+                    <p className="text-xs italic opacity-60">{testimonial.city}</p>
+                  </div>
+                </div>
+                <span aria-hidden="true" className="block text-5xl leading-none text-accent/60">
                   “
                 </span>
-                <blockquote className="mt-2 italic leading-8 opacity-85">
+                <blockquote className="mt-1 italic leading-8 opacity-85">
                   {testimonial.quote}
                 </blockquote>
-                <div className="mt-6 h-px w-10 bg-accent/60" />
-                <figcaption className="mt-3 text-sm">
-                  {testimonial.name}
-                  <span className="ml-2 italic opacity-60">— {testimonial.city}</span>
-                </figcaption>
               </figure>
             </Reveal>
           ))}
@@ -488,13 +520,13 @@ export default function HomePage() {
             Ordering is simple and personal. No complicated checkouts, just direct communication.
           </p>
           <div className="grid gap-10 text-left rtl:text-right md:grid-cols-3">
-            <Step number="01" title="Browse">
+            <Step number="01" icon={Search} color="blue" title="Browse">
               Explore the catalogue and find the books that speak to you.
             </Step>
-            <Step number="02" title="Message">
+            <Step number="02" icon={MessageCircle} color="green" title="Message">
               Open a book and use the WhatsApp order button to start the conversation.
             </Step>
-            <Step number="03" title="Receive">
+            <Step number="03" icon={PackageCheck} color="amber" title="Receive">
               We confirm availability, arrange payment, and deliver with care.
             </Step>
           </div>
@@ -503,28 +535,46 @@ export default function HomePage() {
 
       <Divider />
 
-      <section id="about" className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <section id="about" className="mx-auto scroll-mt-24 max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <Reveal>
           <Eyebrow className="mb-3 text-center">vii.</Eyebrow>
           <h2 className="mb-10 text-center text-4xl tracking-snug">About The Lantern Library</h2>
-          <div className="space-y-6 text-[17px] leading-9">
-            <p>
-              The Lantern Library began as a passion project: a place to share thoughtfully curated
-              books with readers who value quality, atmosphere, and meaningful reading experiences.
-            </p>
-            <p>
-              Every book should be more than words on pages. It can be a doorway to new
-              perspectives, a companion in quiet moments, and a spark for better conversations.
-            </p>
-            <div className="my-10 rounded-sm border border-border bg-card p-8">
-              <h3 className="mb-3 text-2xl">Our Vision</h3>
-              <p className="opacity-85">
-                We are building toward a warmer, more personal bookstore experience. Until then,
-                this catalogue brings that curated feeling online.
-              </p>
-            </div>
-          </div>
         </Reveal>
+        <div className="grid gap-10 lg:grid-cols-[45fr_55fr] lg:items-center lg:gap-14">
+          <Reveal>
+            <ImageTile
+              className="aspect-[4/5]"
+              src="https://images.pexels.com/photos/28649539/pexels-photo-28649539/free-photo-of-stack-of-vintage-books-in-cozy-library.jpeg?cs=tinysrgb&w=800"
+              alt="A stack of vintage books in the reading room"
+              placeholder={<LanternMark className="h-24 w-auto text-tile-accent" />}
+            />
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="space-y-6 text-[17px] leading-9">
+              <p>
+                The Lantern Library began as a passion project: a place to share thoughtfully
+                curated books with readers who value quality, atmosphere, and meaningful reading
+                experiences.
+              </p>
+              <p className="text-xl italic leading-9 text-ember">
+                Every book should be more than words on pages — a doorway to new perspectives, a
+                companion in quiet moments, a spark for better conversations.
+              </p>
+              <div className="rounded-sm border border-border bg-card p-8">
+                <div className="mb-3 flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ember/10 text-ember">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <h3 className="text-2xl">Our Vision</h3>
+                </div>
+                <p className="opacity-85">
+                  We are building toward a warmer, more personal bookstore experience. Until then,
+                  this catalogue brings that curated feeling online.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       <Divider />
@@ -579,38 +629,39 @@ export default function HomePage() {
       >
         <Reveal>
           <Eyebrow className="mb-3 text-center">ix.</Eyebrow>
-          <h2 className="mb-10 text-center text-4xl tracking-snug">Get in Touch</h2>
-          <div className="rounded-sm border border-border bg-card p-6 md:p-10">
-            <p className="mb-8 text-center leading-8 opacity-80">
-              Reach out for availability, recommendations, or help placing an order.
-            </p>
-            <div className="grid gap-4">
-              <ContactLink
-                href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || ''}`}
-                icon={<MessageCircle className="h-5 w-5" />}
-                title="WhatsApp"
-                detail="Order and availability"
-              />
-              <ContactLink
-                href="https://instagram.com/lanternlibrary"
-                icon={<Instagram className="h-5 w-5" />}
-                title="Instagram"
-                detail="@lanternlibrary"
-              />
-              <ContactLink
-                href="mailto:hello@lanternlibrary.com"
-                icon={<Mail className="h-5 w-5" />}
-                title="Email"
-                detail="hello@lanternlibrary.com"
-              />
-              <div className="flex items-center gap-5 rounded-sm border border-border p-5">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent/50 bg-accent/10 text-ember">
-                  <MapPin className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3 className="text-lg">Location</h3>
-                  <p className="text-sm opacity-70">Srinagar, Kashmir</p>
-                </div>
+          <h2 className="mb-4 text-center text-4xl tracking-snug">Get in Touch</h2>
+          <p className="mx-auto mb-10 max-w-xl text-center leading-8 opacity-80">
+            Reach out for availability, recommendations, or help placing an order.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ContactLink
+              href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || ''}`}
+              icon={<MessageCircle className="h-5 w-5" />}
+              title="WhatsApp"
+              detail="Order and availability"
+              color="green"
+            />
+            <ContactLink
+              href="https://instagram.com/lanternlibrary"
+              icon={<Instagram className="h-5 w-5" />}
+              title="Instagram"
+              detail="@lanternlibrary"
+              color="pink"
+            />
+            <ContactLink
+              href="mailto:hello@lanternlibrary.com"
+              icon={<Mail className="h-5 w-5" />}
+              title="Email"
+              detail="hello@lanternlibrary.com"
+              color="blue"
+            />
+            <div className="flex items-center gap-5 rounded-sm border border-border bg-card p-5">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-red-600 dark:text-red-400">
+                <MapPin className="h-5 w-5" />
+              </span>
+              <div>
+                <h3 className="text-lg">Location</h3>
+                <p className="text-sm opacity-70">Srinagar, Kashmir</p>
               </div>
             </div>
           </div>
@@ -620,35 +671,70 @@ export default function HomePage() {
   );
 }
 
-function Step({ number, title, children }: { number: string; title: string; children: ReactNode }) {
+const STEP_COLORS: Record<string, string> = {
+  blue: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+  green: 'bg-green-500/15 text-green-600 dark:text-green-400',
+  amber: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+};
+
+function Step({
+  number,
+  icon: Icon,
+  color,
+  title,
+  children,
+}: {
+  number: string;
+  icon: LucideIcon;
+  color: string;
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <div>
-      <div className="mb-4 text-5xl italic tracking-[0.05em] text-accent/60">{number}</div>
+      <div className="mb-4 flex items-center gap-3">
+        <span
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${STEP_COLORS[color]}`}
+        >
+          <Icon className="h-6 w-6" strokeWidth={1.5} />
+        </span>
+        <span className="text-sm italic tracking-[0.05em] opacity-50">{number}</span>
+      </div>
       <h3 className="mb-2 text-xl">{title}</h3>
       <p className="leading-7 opacity-75">{children}</p>
     </div>
   );
 }
 
+const CONTACT_ICON_COLORS = {
+  green: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  pink: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
+  blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+} as const;
+
 function ContactLink({
   href,
   icon,
   title,
   detail,
+  color,
 }: {
   href: string;
   icon: ReactNode;
   title: string;
   detail: string;
+  color: keyof typeof CONTACT_ICON_COLORS;
 }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="flex items-center gap-5 rounded-sm border border-border p-5 transition hover:border-ember/60 hover:bg-secondary"
+      className="flex items-center gap-5 rounded-sm border border-border bg-card p-5 transition hover:border-ember/60 hover:bg-secondary"
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent/50 bg-accent/10 text-ember">
+      <span
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${CONTACT_ICON_COLORS[color]}`}
+      >
         {icon}
       </span>
       <span>

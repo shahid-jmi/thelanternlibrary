@@ -18,11 +18,13 @@ function StatCard({
   label,
   value,
   color,
+  loading,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   value: string;
   color: keyof typeof STAT_STYLES;
+  loading: boolean;
 }) {
   return (
     <div className="flex items-center gap-4 rounded-sm border border-border bg-card p-5">
@@ -30,7 +32,11 @@ function StatCard({
         <Icon className="h-5 w-5" />
       </div>
       <div>
-        <p className="text-2xl leading-none">{value}</p>
+        {loading ? (
+          <div className="shimmer h-6 w-14 rounded-sm" />
+        ) : (
+          <p className="text-2xl leading-none">{value}</p>
+        )}
         <p className="mt-1.5 text-xs uppercase tracking-label opacity-60">{label}</p>
       </div>
     </div>
@@ -59,24 +65,28 @@ export default function DashboardStats() {
         label={t('admin.dashboard.stats.books')}
         value={String(books.length)}
         color="blue"
+        loading={booksQuery.isPending}
       />
       <StatCard
         icon={Package}
         label={t('admin.dashboard.stats.products')}
         value={String(products.length)}
         color="violet"
+        loading={productsQuery.isPending}
       />
       <StatCard
         icon={Clock3}
         label={t('admin.dashboard.stats.pendingOrders')}
         value={String(pendingOrders)}
         color="amber"
+        loading={ordersQuery.isPending}
       />
       <StatCard
         icon={Wallet}
         label={t('admin.dashboard.stats.revenue')}
         value={formatPrice(revenue)}
         color="emerald"
+        loading={ordersQuery.isPending}
       />
     </div>
   );

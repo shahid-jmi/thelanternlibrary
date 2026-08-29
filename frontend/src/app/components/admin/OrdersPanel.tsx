@@ -9,6 +9,7 @@ import { validatePrice } from '../../lib/validation';
 import { useValidatedField } from '../../lib/useValidatedField';
 import { formatPrice } from '../../lib/format';
 import StatusMessage from '../StatusMessage';
+import Loader from '../Loader';
 import { FieldInput } from '../FormField';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
@@ -88,7 +89,7 @@ export default function OrdersPanel() {
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {ordersQuery.isPending && <StatusMessage>{t('admin.orders.loading')}</StatusMessage>}
+      {ordersQuery.isPending && <Loader label={t('admin.orders.loading')} />}
       {!ordersQuery.isPending && orders.length === 0 && (
         <StatusMessage>{t('admin.orders.noOrders')}</StatusMessage>
       )}

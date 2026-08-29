@@ -8,6 +8,7 @@ import { useAdminBooks, useDeleteBook, useToggleAvailability } from '../../queri
 import { formatPrice } from '../../lib/format';
 import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
+import Loader from '../Loader';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function BooksPanel() {
@@ -55,7 +56,7 @@ export default function BooksPanel() {
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {booksQuery.isPending && <StatusMessage>Loading books...</StatusMessage>}
+      {booksQuery.isPending && <Loader label="Loading books..." />}
 
       <Table>
         <TableHead>

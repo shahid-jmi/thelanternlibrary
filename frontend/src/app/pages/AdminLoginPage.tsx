@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Lock } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
@@ -99,8 +99,9 @@ export default function AdminLoginPage() {
 
           <button
             disabled={submitting}
-            className="mt-2 h-11 w-full rounded-sm bg-ember text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110 disabled:opacity-60"
+            className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-ember text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110 disabled:opacity-60"
           >
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('admin.login.submit')}
           </button>
         </form>

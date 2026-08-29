@@ -1,4 +1,4 @@
-import { useRef, type ReactNode, type WheelEvent } from 'react';
+import { useRef, type ReactNode, type RefObject, type WheelEvent } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -26,7 +26,10 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
 import { useBooks } from '../queries/books';
+import { useProducts } from '../queries/products';
 import BookCard from '../components/BookCard';
+import ProductCard from '../components/ProductCard';
+import CardSkeleton from '../components/CardSkeleton';
 import Divider from '../components/Divider';
 import StatusMessage from '../components/StatusMessage';
 import Reveal from '../components/Reveal';
@@ -199,7 +202,8 @@ const INSTAGRAM_POSTS = [
 
 export default function HomePage() {
   const { t, i18n } = useTranslation();
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const booksCarouselRef = useRef<HTMLDivElement>(null);
+  const productsCarouselRef = useRef<HTMLDivElement>(null);
 
   const booksQuery = useBooks({ lang: i18n.language });
 
@@ -207,6 +211,16 @@ export default function HomePage() {
   const loading = booksQuery.isPending;
   const error = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
   const featuredBooks = books.filter((book) => book.isAvailable).slice(0, 8);
+
+  const productsQuery = useProducts({ lang: i18n.language });
+
+  const products = productsQuery.data ?? [];
+  const productsLoading = productsQuery.isPending;
+  const productsError = productsQuery.isError ? getErrorMessage(productsQuery.error) : '';
+  // TODO: this just shows the first available products — replace with real
+  // "featured" selection logic (an admin-controlled featured flag, a
+  // best-sellers ranking, or a curated list) once that's decided.
+  const featuredProducts = products.filter((product) => product.isAvailable).slice(0, 8);
 
   const handleCarouselWheel = (event: WheelEvent<HTMLDivElement>) => {
     // A horizontally-scrollable row will otherwise capture a plain vertical
@@ -219,8 +233,8 @@ export default function HomePage() {
     }
   };
 
-  const scrollCarousel = (direction: number) => {
-    carouselRef.current?.scrollBy({ left: direction * 300, behavior: 'smooth' });
+  const scrollCarousel = (ref: RefObject<HTMLDivElement | null>, direction: number) => {
+    ref.current?.scrollBy({ left: direction * 300, behavior: 'smooth' });
   };
 
   return (
@@ -312,14 +326,14 @@ export default function HomePage() {
                 View all →
               </Link>
               <button
-                onClick={() => scrollCarousel(-1)}
+                onClick={() => scrollCarousel(booksCarouselRef, -1)}
                 aria-label="Scroll featured books back"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
               >
                 ‹
               </button>
               <button
-                onClick={() => scrollCarousel(1)}
+                onClick={() => scrollCarousel(booksCarouselRef, 1)}
                 aria-label="Scroll featured books forward"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
               >
@@ -328,21 +342,75 @@ export default function HomePage() {
             </div>
           </div>
         </Reveal>
-        {loading && <StatusMessage>Loading books...</StatusMessage>}
         {error && <StatusMessage tone="error">{error}</StatusMessage>}
         {!loading && !error && featuredBooks.length === 0 && (
           <StatusMessage>{t('catalog.noResults')}</StatusMessage>
         )}
         <div
-          ref={carouselRef}
+          ref={booksCarouselRef}
           onWheel={handleCarouselWheel}
           className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2"
         >
-          {featuredBooks.map((book, index) => (
-            <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
-              <BookCard book={book} />
-            </Reveal>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="w-60 shrink-0 snap-start">
+                  <CardSkeleton />
+                </div>
+              ))
+            : featuredBooks.map((book, index) => (
+                <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
+                  <BookCard book={book} />
+                </Reveal>
+              ))}
+        </div>
+      </section>
+
+      <Divider />
+
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl tracking-tight">Featured Products</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => scrollCarousel(productsCarouselRef, -1)}
+                aria-label="Scroll featured products back"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => scrollCarousel(productsCarouselRef, 1)}
+                aria-label="Scroll featured products forward"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--button-border)] text-lg transition hover:border-ember hover:text-ember"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </Reveal>
+        {productsError && <StatusMessage tone="error">{productsError}</StatusMessage>}
+        {!productsLoading && !productsError && featuredProducts.length === 0 && (
+          <StatusMessage>No products yet — check back soon.</StatusMessage>
+        )}
+        <div
+          ref={productsCarouselRef}
+          onWheel={handleCarouselWheel}
+          className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2"
+        >
+          {productsLoading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="w-60 shrink-0 snap-start">
+                  <CardSkeleton aspect="aspect-[4/5]" />
+                </div>
+              ))
+            : featuredProducts.map((product, index) => (
+                <Reveal key={product._id} delay={index * 60} className="w-60 shrink-0 snap-start">
+                  <ProductCard product={product} />
+                </Reveal>
+              ))}
         </div>
       </section>
 

@@ -8,6 +8,7 @@ import { useAdminCategories, useDeleteCategory } from '../../queries/categories'
 import { useAuth } from '../../auth/AuthContext';
 import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
+import Loader from '../Loader';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function CategoriesPanel() {
@@ -51,7 +52,7 @@ export default function CategoriesPanel() {
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {categoriesQuery.isPending && <StatusMessage>Loading categories...</StatusMessage>}
+      {categoriesQuery.isPending && <Loader label="Loading categories..." />}
 
       <Table>
         <TableHead>

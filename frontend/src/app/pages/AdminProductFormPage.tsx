@@ -10,6 +10,7 @@ import { validatePrice, validateRequired } from '../lib/validation';
 import { useValidatedField } from '../lib/useValidatedField';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
+import Loader from '../components/Loader';
 import { FieldInput, FieldSelect, FieldTextArea } from '../components/FormField';
 import ImageUploadField from '../components/ImageUploadField';
 import { Button } from '../components/ui';
@@ -30,7 +31,7 @@ export default function AdminProductFormPage() {
   if ((id && productsQuery.isPending) || categoriesQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading product...</StatusMessage>
+        <Loader label="Loading product..." />
       </PageFrame>
     );
   }

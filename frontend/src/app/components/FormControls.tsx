@@ -1,17 +1,16 @@
-import { useTranslation } from 'react-i18next';
-
 export function FilterSelect({
   label,
+  allLabel,
   value,
   onChange,
   values,
 }: {
   label: string;
+  allLabel: string;
   value: string;
   onChange: (value: string) => void;
   values: readonly string[];
 }) {
-  const { t } = useTranslation();
   return (
     <select
       value={value}
@@ -19,7 +18,7 @@ export function FilterSelect({
       onChange={(event) => onChange(event.target.value)}
       className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
     >
-      <option value="">{t('catalog.filter.all')}</option>
+      <option value="">{allLabel}</option>
       {values.map((item) => (
         <option key={item} value={item}>
           {item}

@@ -6,6 +6,7 @@ import { useBook } from '../queries/books';
 import { formatPrice } from '../lib/format';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
+import Loader from '../components/Loader';
 import OrderForm from '../components/OrderForm';
 
 export default function OrderPage() {
@@ -21,7 +22,7 @@ export default function OrderPage() {
   if (bookQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading book...</StatusMessage>
+        <Loader label="Loading book..." />
       </PageFrame>
     );
   }

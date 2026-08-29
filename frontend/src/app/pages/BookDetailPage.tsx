@@ -6,6 +6,7 @@ import { useBook } from '../queries/books';
 import { formatPrice } from '../lib/format';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
+import Loader from '../components/Loader';
 
 export default function BookDetailPage() {
   const { id } = useParams();
@@ -18,7 +19,7 @@ export default function BookDetailPage() {
   if (bookQuery.isPending) {
     return (
       <PageFrame>
-        <StatusMessage>Loading book...</StatusMessage>
+        <Loader label="Loading book..." />
       </PageFrame>
     );
   }

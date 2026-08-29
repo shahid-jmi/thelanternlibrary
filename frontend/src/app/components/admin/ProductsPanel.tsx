@@ -13,6 +13,7 @@ import { useAdminCategories } from '../../queries/categories';
 import { formatPrice } from '../../lib/format';
 import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
+import Loader from '../Loader';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function ProductsPanel() {
@@ -76,7 +77,7 @@ export default function ProductsPanel() {
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {productsQuery.isPending && <StatusMessage>Loading products...</StatusMessage>}
+      {productsQuery.isPending && <Loader label="Loading products..." />}
       {!categoriesQuery.isPending && activeCategories.length === 0 && (
         <StatusMessage>{t('admin.products.noCategories')}</StatusMessage>
       )}

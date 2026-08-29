@@ -6,6 +6,7 @@ import { getErrorMessage } from '../api/client';
 import { useBooks } from '../queries/books';
 import { useDebouncedValue } from '../lib/useDebouncedValue';
 import BookCard from '../components/BookCard';
+import CardSkeleton from '../components/CardSkeleton';
 import StatusMessage from '../components/StatusMessage';
 import PageFrame from '../components/PageFrame';
 import LanternMark from '../components/LanternMark';
@@ -52,29 +53,31 @@ export default function CatalogPage() {
             </label>
             <FilterSelect
               label={t('catalog.filter.genre')}
+              allLabel={t('catalog.filter.allGenres')}
               value={genre}
               onChange={setGenre}
               values={BOOK_GENRES}
             />
             <FilterSelect
               label={t('catalog.filter.language')}
+              allLabel={t('catalog.filter.allLanguages')}
               value={language}
               onChange={setLanguage}
               values={BOOK_LANGUAGES}
             />
             <select
               value={available}
+              aria-label={t('catalog.filter.allAvailability')}
               onChange={(event) => setAvailable(event.target.value)}
               className="h-11 rounded-sm border border-border bg-input-background px-3 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
             >
-              <option value="">{t('catalog.filter.all')}</option>
+              <option value="">{t('catalog.filter.allAvailability')}</option>
               <option value="true">{t('admin.dashboard.available')}</option>
               <option value="false">{t('admin.dashboard.unavailable')}</option>
             </select>
           </div>
         </div>
 
-        {loading && <StatusMessage>Loading books...</StatusMessage>}
         {error && <StatusMessage tone="error">{error}</StatusMessage>}
         {!loading && !error && books.length === 0 && (
           <div className="py-16 text-center">
@@ -84,9 +87,9 @@ export default function CatalogPage() {
         )}
 
         <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-          {books.map((book) => (
-            <BookCard key={book._id} book={book} />
-          ))}
+          {loading
+            ? Array.from({ length: 8 }).map((_, index) => <CardSkeleton key={index} />)
+            : books.map((book) => <BookCard key={book._id} book={book} />)}
         </div>
       </section>
     </PageFrame>

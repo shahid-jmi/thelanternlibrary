@@ -10,6 +10,7 @@ import { validateRequired, validateSlug } from '../lib/validation';
 import { useValidatedField } from '../lib/useValidatedField';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
+import Loader from '../components/Loader';
 import { FieldInput } from '../components/FormField';
 import { Button } from '../components/ui';
 
@@ -32,7 +33,7 @@ export default function AdminCategoryFormPage() {
   if (id && categoriesQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading category...</StatusMessage>
+        <Loader label="Loading category..." />
       </PageFrame>
     );
   }

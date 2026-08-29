@@ -200,7 +200,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         >
           <span
             aria-hidden="true"
-            className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-60"
+            className="whatsapp-pulse-ring absolute inset-0 rounded-full bg-[#25D366]"
           />
           <MessageCircle className="relative h-5 w-5 shrink-0" />
           <span className="relative hidden sm:inline">Chat with us</span>

@@ -14,6 +14,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useConfirm } from '../lib/useConfirm';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
+import Loader from '../components/Loader';
 
 export default function AdminManagementPage() {
   const { t } = useTranslation();
@@ -85,7 +86,7 @@ export default function AdminManagementPage() {
       </div>
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {adminsQuery.isPending && <StatusMessage>{t('admin.admins.loading')}</StatusMessage>}
+      {adminsQuery.isPending && <Loader label={t('admin.admins.loading')} />}
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full min-w-[760px] text-left text-sm rtl:text-right">

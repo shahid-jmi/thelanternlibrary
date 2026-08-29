@@ -79,6 +79,7 @@ export function FieldInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
+        onWheel={type === 'number' ? (event) => event.currentTarget.blur() : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={`${id}-error`}
         className={`h-11 ${fieldClass(Boolean(error))}`}

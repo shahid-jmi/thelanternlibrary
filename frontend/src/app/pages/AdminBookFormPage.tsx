@@ -175,14 +175,6 @@ function BookForm({
           value={titleUr}
           onChange={setTitleUr}
         />
-        <FieldInput
-          id="book-author"
-          label={t('admin.form.author')}
-          value={author.value}
-          onChange={author.onChange}
-          onBlur={author.onBlur}
-          error={author.error ? t(author.error) : undefined}
-        />
         <FieldTextArea
           id="book-desc-en"
           label={t('admin.form.descEn')}
@@ -198,6 +190,14 @@ function BookForm({
           dir="rtl"
           value={descUr}
           onChange={setDescUr}
+        />
+        <FieldInput
+          id="book-author"
+          label={t('admin.form.author')}
+          value={author.value}
+          onChange={author.onChange}
+          onBlur={author.onBlur}
+          error={author.error ? t(author.error) : undefined}
         />
         <FieldInput
           id="book-price"

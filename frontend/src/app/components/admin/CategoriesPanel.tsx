@@ -6,6 +6,7 @@ import type { AdminCategory } from '../../api/types';
 import { getErrorMessage } from '../../api/client';
 import { useAdminCategories, useDeleteCategory } from '../../queries/categories';
 import { useAuth } from '../../auth/AuthContext';
+import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
@@ -13,6 +14,7 @@ export default function CategoriesPanel() {
   const { t } = useTranslation();
   const { isSuperAdmin } = useAuth();
   const [actionError, setActionError] = useState('');
+  const { confirm, dialog } = useConfirm();
 
   const categoriesQuery = useAdminCategories();
   const deleteCategory = useDeleteCategory();
@@ -22,7 +24,7 @@ export default function CategoriesPanel() {
   const error = actionError || loadError;
 
   const removeCategory = async (category: AdminCategory) => {
-    if (!window.confirm(`${t('admin.dashboard.delete')} "${category.name.en}"?`)) return;
+    if (!(await confirm(`${t('admin.dashboard.delete')} "${category.name.en}"?`))) return;
     try {
       await deleteCategory.mutateAsync(category._id);
       setActionError('');
@@ -99,6 +101,8 @@ export default function CategoriesPanel() {
           ))}
         </tbody>
       </Table>
+
+      {dialog}
     </section>
   );
 }

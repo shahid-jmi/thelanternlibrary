@@ -6,12 +6,14 @@ import type { AdminBook } from '../../api/types';
 import { getErrorMessage } from '../../api/client';
 import { useAdminBooks, useDeleteBook, useToggleAvailability } from '../../queries/books';
 import { formatPrice } from '../../lib/format';
+import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function BooksPanel() {
   const { t } = useTranslation();
   const [actionError, setActionError] = useState('');
+  const { confirm, dialog } = useConfirm();
 
   const booksQuery = useAdminBooks();
   const deleteBook = useDeleteBook();
@@ -22,7 +24,7 @@ export default function BooksPanel() {
   const error = actionError || loadError;
 
   const removeBook = async (book: AdminBook) => {
-    if (!window.confirm(`${t('admin.dashboard.delete')} "${book.title.en}"?`)) return;
+    if (!(await confirm(`${t('admin.dashboard.delete')} "${book.title.en}"?`))) return;
     try {
       await deleteBook.mutateAsync(book._id);
       setActionError('');
@@ -102,6 +104,8 @@ export default function BooksPanel() {
           ))}
         </tbody>
       </Table>
+
+      {dialog}
     </section>
   );
 }

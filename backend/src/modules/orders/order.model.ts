@@ -10,6 +10,7 @@ export interface OrderAttrs {
   bookTitle: string;
   bookAuthor: string;
   price: number;
+  deliveryCharge: number;
   customerName: string;
   customerPhone: string;
   customerAltPhone?: string;
@@ -41,6 +42,9 @@ const orderSchema = new Schema<OrderAttrs>(
     bookTitle: { type: String, required: true, trim: true },
     bookAuthor: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
+    // Set once, when the admin marks the order paid — delivery cost varies
+    // per order/customer and isn't known until then.
+    deliveryCharge: { type: Number, default: 0, min: 0 },
     customerName: { type: String, required: true, trim: true },
     customerPhone: { type: String, required: true, trim: true },
     customerAltPhone: { type: String, trim: true },

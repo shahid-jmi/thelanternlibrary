@@ -160,25 +160,6 @@ function CategoryForm({
           onChange={setNameUr}
         />
         <FieldInput
-          id="category-slug"
-          label={t('admin.form.slug')}
-          hint={t('admin.form.slugHint')}
-          dir="ltr"
-          placeholder="dried-flowers"
-          value={slug.value}
-          onChange={slug.onChange}
-          onBlur={slug.onBlur}
-          error={slug.error ? t(slug.error) : undefined}
-        />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={(event) => setIsActive(event.target.checked)}
-          />
-          {t('admin.admins.active')}
-        </label>
-        <FieldInput
           id="category-tagline-en"
           label={t('admin.form.taglineEn')}
           dir="ltr"
@@ -193,6 +174,27 @@ function CategoryForm({
           onChange={setTaglineUr}
         />
       </div>
+      <div className="mt-4">
+        <FieldInput
+          id="category-slug"
+          label={t('admin.form.slug')}
+          hint={t('admin.form.slugHint')}
+          dir="ltr"
+          placeholder="dried-flowers"
+          value={slug.value}
+          onChange={slug.onChange}
+          onBlur={slug.onBlur}
+          error={slug.error ? t(slug.error) : undefined}
+        />
+      </div>
+      <label className="mt-4 flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={isActive}
+          onChange={(event) => setIsActive(event.target.checked)}
+        />
+        {t('admin.admins.active')}
+      </label>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">
         <Button disabled={saving}>{t('admin.form.saveCategory')}</Button>

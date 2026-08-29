@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Shield } from 'lucide-react';
-import type { AdminRole } from '../api/types';
+import { Loader2, Shield } from 'lucide-react';
+import { ADMIN_ROLES, type AdminRole } from '../api/types';
 import { getErrorMessage } from '../api/client';
 import { useCreateAdmin } from '../queries/admins';
 import { validateConfirmPassword, validateEmail, validatePassword } from '../lib/validation';
 import { useValidatedField } from '../lib/useValidatedField';
 import PageFrame from '../components/PageFrame';
-import { FieldInput } from '../components/FormField';
-import { Button } from '../components/ui';
-import { RoleSelect } from './AdminManagementPage';
+import Reveal from '../components/Reveal';
+import StatusMessage from '../components/StatusMessage';
+import { FieldInput, FieldSelect } from '../components/FormField';
 
 export default function AdminCreateAdminPage() {
   const { t } = useTranslation();
@@ -41,69 +41,97 @@ export default function AdminCreateAdminPage() {
 
   return (
     <PageFrame compact>
-      <Link
-        to="/admin/admins"
-        className="mb-8 inline-flex items-center gap-2 text-sm opacity-75 transition hover:opacity-100"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t('admin.admins.backToList')}
-      </Link>
-      <div className="mb-8 flex items-center gap-3">
-        <Shield className="h-6 w-6 text-[var(--icon-color)]" />
-        <h1 className="text-3xl tracking-[0.05em]">{t('admin.admins.addAdmin')}</h1>
-      </div>
+      <Reveal className="mx-auto max-w-md">
+        <div className="rounded-sm border border-border bg-card p-8 transition-shadow focus-within:shadow-[0_0_0_1px_var(--ember)]">
+          <div className="flex items-center gap-3">
+            <Shield className="h-5 w-5 text-[var(--icon-color)]" />
+            <h1 className="text-3xl tracking-[0.05em]">{t('admin.admins.addAdmin')}</h1>
+          </div>
 
-      <form
-        onSubmit={submit}
-        noValidate
-        className="max-w-xl rounded-sm border border-border bg-card p-6"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FieldInput
-            id="new-admin-email"
-            type="email"
-            autoComplete="email"
-            label={t('admin.admins.email')}
-            value={email.value}
-            onChange={email.onChange}
-            onBlur={email.onBlur}
-            error={email.error ? t(email.error) : undefined}
-          />
-          <label className="block text-sm">
-            {t('admin.admins.role')}
-            <div className="mt-1">
-              <RoleSelect value={role} onChange={setRole} />
+          <div className="my-6 flex items-center gap-3 opacity-40" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="h-1.5 w-1.5 rotate-45 bg-border" />
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <form onSubmit={submit} noValidate>
+            <FieldInput
+              id="new-admin-email"
+              type="email"
+              autoComplete="email"
+              label={t('admin.admins.email')}
+              value={email.value}
+              onChange={email.onChange}
+              onBlur={email.onBlur}
+              error={email.error ? t(email.error) : undefined}
+            />
+
+            <div className="mt-4">
+              <FieldSelect
+                id="new-admin-role"
+                label={t('admin.admins.role')}
+                value={role}
+                onChange={(value) => setRole(value as AdminRole)}
+              >
+                {ADMIN_ROLES.map((item) => (
+                  <option key={item} value={item}>
+                    {t(`admin.admins.role.${item}`)}
+                  </option>
+                ))}
+              </FieldSelect>
             </div>
-          </label>
-          <FieldInput
-            id="new-admin-password"
-            type="password"
-            autoComplete="new-password"
-            label={t('admin.admins.password')}
-            value={password.value}
-            onChange={password.onChange}
-            onBlur={password.onBlur}
-            error={password.error ? t(password.error) : undefined}
-          />
-          <FieldInput
-            id="new-admin-confirm-password"
-            type="password"
-            autoComplete="new-password"
-            label={t('admin.admins.confirmPassword')}
-            value={confirmPassword.value}
-            onChange={confirmPassword.onChange}
-            onBlur={confirmPassword.onBlur}
-            error={confirmPassword.error ? t(confirmPassword.error) : undefined}
-          />
+
+            <div className="mt-4">
+              <FieldInput
+                id="new-admin-password"
+                type="password"
+                autoComplete="new-password"
+                label={t('admin.admins.password')}
+                value={password.value}
+                onChange={password.onChange}
+                onBlur={password.onBlur}
+                error={password.error ? t(password.error) : undefined}
+              />
+            </div>
+
+            <div className="mt-4">
+              <FieldInput
+                id="new-admin-confirm-password"
+                type="password"
+                autoComplete="new-password"
+                label={t('admin.admins.confirmPassword')}
+                value={confirmPassword.value}
+                onChange={confirmPassword.onChange}
+                onBlur={confirmPassword.onBlur}
+                error={confirmPassword.error ? t(confirmPassword.error) : undefined}
+              />
+            </div>
+
+            {error && (
+              <div className="mt-4">
+                <StatusMessage tone="error">{error}</StatusMessage>
+              </div>
+            )}
+
+            <div className="mt-5 flex gap-3">
+              <button
+                disabled={createAdmin.isPending}
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-ember text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110 disabled:opacity-60"
+              >
+                {createAdmin.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t('admin.admins.save')}
+              </button>
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex h-11 items-center rounded-sm border border-border px-5 text-sm"
+              >
+                {t('admin.admins.cancel')}
+              </button>
+            </div>
+          </form>
         </div>
-        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-        <div className="mt-5 flex gap-3">
-          <Button disabled={createAdmin.isPending}>{t('admin.admins.save')}</Button>
-          <Button type="button" variant="outline" onClick={goBack}>
-            {t('admin.admins.cancel')}
-          </Button>
-        </div>
-      </form>
+      </Reveal>
     </PageFrame>
   );
 }

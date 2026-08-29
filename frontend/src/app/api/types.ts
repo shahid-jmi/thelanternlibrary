@@ -202,6 +202,7 @@ export interface AdminOrder {
   bookTitle: string;
   bookAuthor: string;
   price: number;
+  deliveryCharge: number;
   customerName: string;
   customerPhone: string;
   customerAltPhone: string | null;

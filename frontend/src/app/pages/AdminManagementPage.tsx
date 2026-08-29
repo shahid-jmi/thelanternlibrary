@@ -11,6 +11,7 @@ import {
   useUpdateAdminRole,
 } from '../queries/admins';
 import { useAuth } from '../auth/AuthContext';
+import { useConfirm } from '../lib/useConfirm';
 import PageFrame from '../components/PageFrame';
 import StatusMessage from '../components/StatusMessage';
 
@@ -18,6 +19,7 @@ export default function AdminManagementPage() {
   const { t } = useTranslation();
   const { admin: currentAdmin } = useAuth();
   const [actionError, setActionError] = useState('');
+  const { confirm, dialog } = useConfirm();
 
   const adminsQuery = useAdmins();
   const deleteAdmin = useDeleteAdmin();
@@ -29,7 +31,7 @@ export default function AdminManagementPage() {
   const error = actionError || loadError;
 
   const removeAdmin = async (admin: AdminAccount) => {
-    if (!window.confirm(`${t('admin.admins.delete')} ${admin.email}?`)) return;
+    if (!(await confirm(`${t('admin.admins.delete')} ${admin.email}?`))) return;
     try {
       await deleteAdmin.mutateAsync(admin._id);
       setActionError('');
@@ -147,6 +149,8 @@ export default function AdminManagementPage() {
           </tbody>
         </table>
       </div>
+
+      {dialog}
     </PageFrame>
   );
 }

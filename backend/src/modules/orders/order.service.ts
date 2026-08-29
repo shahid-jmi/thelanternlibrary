@@ -42,8 +42,12 @@ export const listAdminOrders = async (filters: ListAdminOrdersQuery): Promise<Ad
   return orders.map(toAdminOrderDto);
 };
 
-export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<AdminOrderDto> => {
-  const order = await orderRepository.updateStatusById(id, status);
+export const updateOrderStatus = async (
+  id: string,
+  status: OrderStatus,
+  deliveryCharge?: number
+): Promise<AdminOrderDto> => {
+  const order = await orderRepository.updateStatusById(id, status, deliveryCharge);
   if (!order) throw new NotFoundError('Order not found');
   return toAdminOrderDto(order);
 };

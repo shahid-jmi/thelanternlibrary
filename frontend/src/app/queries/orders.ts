@@ -23,8 +23,15 @@ export function useAdminOrders(filters: OrderFilters) {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
-      updateOrderStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      deliveryCharge,
+    }: {
+      id: string;
+      status: OrderStatus;
+      deliveryCharge?: number;
+    }) => updateOrderStatus(id, status, deliveryCharge),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: orderKeys.all }),
   });
 }

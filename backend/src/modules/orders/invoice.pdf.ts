@@ -35,17 +35,23 @@ export const buildInvoicePdf = (order: AdminOrderDto): Promise<Buffer> =>
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    const rowY = tableTop + 25;
-    doc.text(order.bookTitle, 50, rowY, { width: 200 });
-    doc.text(order.bookAuthor, 260, rowY, { width: 180 });
-    doc.text(`Rs ${order.price.toFixed(2)}`, 450, rowY, { width: 100, align: 'right' });
+    const bookRowY = tableTop + 25;
+    doc.text(order.bookTitle, 50, bookRowY, { width: 200 });
+    doc.text(order.bookAuthor, 260, bookRowY, { width: 180 });
+    doc.text(`Rs ${order.price.toFixed(2)}`, 450, bookRowY, { width: 100, align: 'right' });
 
-    doc
-      .moveTo(50, rowY + 30)
-      .lineTo(550, rowY + 30)
-      .stroke();
-    doc.fontSize(12).text('Total', 260, rowY + 40);
-    doc.text(`Rs ${order.price.toFixed(2)}`, 450, rowY + 40, { width: 100, align: 'right' });
+    const deliveryRowY = bookRowY + 20;
+    doc.text('Delivery Charge', 50, deliveryRowY, { width: 200 });
+    doc.text(`Rs ${order.deliveryCharge.toFixed(2)}`, 450, deliveryRowY, {
+      width: 100,
+      align: 'right',
+    });
+
+    const total = order.price + order.deliveryCharge;
+    const totalDividerY = deliveryRowY + 25;
+    doc.moveTo(50, totalDividerY).lineTo(550, totalDividerY).stroke();
+    doc.fontSize(12).text('Total', 260, totalDividerY + 10);
+    doc.text(`Rs ${total.toFixed(2)}`, 450, totalDividerY + 10, { width: 100, align: 'right' });
 
     doc.moveDown(4);
     doc

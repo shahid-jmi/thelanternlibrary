@@ -78,6 +78,19 @@
   display: none;
 }
 
+/* Number fields (price, delivery charge, pincode, etc.) are plain numeric
+   inputs, not steppers — suppress the native up/down spinner UI. */
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;

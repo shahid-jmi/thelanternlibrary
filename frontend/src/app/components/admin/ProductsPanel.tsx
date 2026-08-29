@@ -11,12 +11,14 @@ import {
 } from '../../queries/products';
 import { useAdminCategories } from '../../queries/categories';
 import { formatPrice } from '../../lib/format';
+import { useConfirm } from '../../lib/useConfirm';
 import StatusMessage from '../StatusMessage';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '../ui';
 
 export default function ProductsPanel() {
   const { t } = useTranslation();
   const [actionError, setActionError] = useState('');
+  const { confirm, dialog } = useConfirm();
 
   const productsQuery = useAdminProducts();
   const categoriesQuery = useAdminCategories();
@@ -33,7 +35,7 @@ export default function ProductsPanel() {
   const activeCategories = categories.filter((category) => category.isActive);
 
   const removeProduct = async (product: AdminProduct) => {
-    if (!window.confirm(`${t('admin.dashboard.delete')} "${product.name.en}"?`)) return;
+    if (!(await confirm(`${t('admin.dashboard.delete')} "${product.name.en}"?`))) return;
     try {
       await deleteProduct.mutateAsync(product._id);
       setActionError('');
@@ -135,6 +137,8 @@ export default function ProductsPanel() {
           ))}
         </tbody>
       </Table>
+
+      {dialog}
     </section>
   );
 }

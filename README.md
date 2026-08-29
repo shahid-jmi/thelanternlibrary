@@ -69,3 +69,17 @@ Run these inside `backend/` or `frontend/`:
 - **Backend**: deploy `backend/` to any Node.js host. `npm run build` then `npm start`. All required env vars must be set — the server fails fast with a clear message if any are missing. `CORS_ORIGIN` is **mandatory in production** (comma-separated allowlist). Set `SENTRY_DSN` to enable error tracking. Set `FRONTEND_URL` + `SMTP_*` to send real "forgot password" emails (optional — without them, reset links are just logged); see [backend/README.md#password-management](backend/README.md#password-management).
 - **Frontend**: deploy `frontend/dist` to any static host. Set `VITE_API_URL` to the live API base (including `/api/v1`) and `VITE_WHATSAPP_NUMBER` at build time.
 - **Multiple environments** (dev / staging / production): see [ENVIRONMENTS.md](ENVIRONMENTS.md) for a full walkthrough of setting up a second Render service + Vercel preview environment alongside the existing production deployment.
+
+
+
+ToDo:
+-> featured products
+-> dynamic What We Offer section with each link opening a separate page
+-> instagram link for latest posts
+-> forgot passoword and email sending make it work
+-> Users Login (Think and proceed)
+-> Environment setup
+-> Update all links social media , phone numbers etc
+-> Good testing overall of the product
+-> Domain name purchase
+-> Deploy properly and check

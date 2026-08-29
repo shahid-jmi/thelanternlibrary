@@ -165,6 +165,14 @@
     @apply bg-background text-foreground;
   }
 
+  /* overflow-x lives on html, not on a wrapper div inside the page — an
+     overflow-x on any ancestor of the sticky nav breaks position: sticky,
+     since it makes that ancestor (rather than the viewport) the nav's
+     scrolling container. */
+  html {
+    overflow-x: hidden;
+  }
+
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.

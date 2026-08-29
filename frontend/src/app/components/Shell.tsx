@@ -23,7 +23,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden text-foreground">
+    <div className="min-h-screen relative text-foreground">
       <div className="fixed inset-0 z-0 lantern-bg" />
       {!isAdmin && <Bokeh />}
       <div
@@ -70,12 +70,6 @@ export default function Shell({ children }: { children: ReactNode }) {
               >
                 Contact
               </a>
-              <Link
-                className="hidden text-sm opacity-70 transition hover:text-ember hover:opacity-100 sm:inline"
-                to="/admin"
-              >
-                {t('nav.admin')}
-              </Link>
               <div className="flex rounded-sm border border-border bg-card p-0.5">
                 {(['en', 'ur'] as const).map((language) => (
                   <button
@@ -143,13 +137,6 @@ export default function Shell({ children }: { children: ReactNode }) {
                 >
                   Contact
                 </a>
-                <Link
-                  className="rounded-sm px-3 py-2 text-sm opacity-80 transition hover:bg-secondary hover:text-ember hover:opacity-100"
-                  to="/admin"
-                  onClick={closeMenu}
-                >
-                  {t('nav.admin')}
-                </Link>
               </div>
             </div>
           )}

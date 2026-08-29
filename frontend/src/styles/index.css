@@ -91,6 +91,20 @@ input[type='number']::-webkit-inner-spin-button {
   margin: 0;
 }
 
+/* Autofilled fields (saved passwords, remembered emails) get a UA-forced
+   background that plain background-color can't override — the inset
+   box-shadow trick is the only reliable way to replace it with our own
+   theme color instead of the browser's white/pale-blue default. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 1000px var(--background) inset;
+  box-shadow: 0 0 0 1000px var(--background) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;

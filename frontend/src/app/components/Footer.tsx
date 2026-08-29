@@ -55,14 +55,6 @@ export default function Footer() {
                 </li>
               )
             )}
-            <li>
-              <Link
-                to="/admin"
-                className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
-              >
-                Admin
-              </Link>
-            </li>
           </ul>
         </div>
         <div>

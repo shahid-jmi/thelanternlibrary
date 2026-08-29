@@ -8,8 +8,11 @@ export default function BookCard({ book }: { book: PublicBook }) {
   const { t } = useTranslation();
 
   return (
-    <Link to={`/book/${book._id}`} className="group block">
-      <div className="mb-4 aspect-[2/3] overflow-hidden rounded-sm border border-border bg-card">
+    <Link
+      to={`/book/${book._id}`}
+      className="group block overflow-hidden rounded-sm border border-border/70 bg-card p-3 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-ember/60 hover:bg-card/80"
+    >
+      <div className="relative aspect-[2/3] overflow-hidden rounded-sm bg-background">
         {book.coverImage?.url ? (
           <img
             src={book.coverImage.url}
@@ -22,17 +25,17 @@ export default function BookCard({ book }: { book: PublicBook }) {
             <span className="text-sm">{book.title}</span>
           </div>
         )}
-      </div>
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg leading-snug transition group-hover:opacity-70">{book.title}</h2>
         {!book.isAvailable && (
-          <span className="shrink-0 rounded-sm border border-border bg-card px-2 py-1 text-[10px] uppercase tracking-[0.16em]">
+          <span className="absolute left-2 top-2 rounded-sm bg-destructive px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-destructive-foreground shadow-sm">
             {t('admin.dashboard.unavailable')}
           </span>
         )}
       </div>
-      <p className="mt-1 text-sm italic opacity-75">{book.author}</p>
-      <p className="mt-2 text-base">{formatPrice(book.price)}</p>
+      <div className="px-1 pb-1 pt-4">
+        <h2 className="text-lg leading-snug transition group-hover:text-ember">{book.title}</h2>
+        <p className="mt-1 text-sm italic opacity-75">{book.author}</p>
+        <p className="mt-2 text-base">{formatPrice(book.price)}</p>
+      </div>
     </Link>
   );
 }

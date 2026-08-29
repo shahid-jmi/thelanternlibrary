@@ -204,11 +204,11 @@ describe('PATCH /api/v1/admin/orders/:id/status', () => {
     const response = await request(app)
       .patch(`/api/v1/admin/orders/${created.body._id}/status`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ status: 'paid', deliveryCharge: 49.5 });
+      .send({ status: 'paid', deliveryCharge: 50 });
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('paid');
-    expect(response.body.deliveryCharge).toBe(49.5);
+    expect(response.body.deliveryCharge).toBe(50);
   });
 
   it('rejects marking an order paid without a delivery charge', async () => {

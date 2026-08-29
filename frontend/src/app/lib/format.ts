@@ -1,3 +1,4 @@
 export function formatPrice(price: number): string {
-  return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(price)}`;
+  // INR is conventionally shown as whole rupees, not with cents-style decimals.
+  return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price)}`;
 }

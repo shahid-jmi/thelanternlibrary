@@ -37,7 +37,8 @@ export const upsertProductBodySchema = z.object({
   category: objectId('Invalid category id'),
   price: z.coerce
     .number({ message: 'Price must be a positive number' })
-    .min(0, 'Price must be a positive number'),
+    .min(0, 'Price must be a positive number')
+    .int('Price must be a whole number of rupees'),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),
 });
 

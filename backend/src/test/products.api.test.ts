@@ -235,11 +235,11 @@ describe('PUT /api/v1/admin/products/:id', () => {
       .field('name', JSON.stringify({ en: 'Dal Lake at Dawn' }))
       .field('description', JSON.stringify({ en: 'A hand-printed postcard.' }))
       .field('category', postcards._id.toString())
-      .field('price', '4.5');
+      .field('price', '5');
 
     expect(response.status).toBe(200);
     expect(response.body.name.en).toBe('Dal Lake at Dawn');
-    expect(response.body.price).toBe(4.5);
+    expect(response.body.price).toBe(5);
   });
 
   it('rejects moving a product into an inactive category', async () => {
@@ -251,7 +251,7 @@ describe('PUT /api/v1/admin/products/:id', () => {
       .field('name', JSON.stringify({ en: 'Dal Lake at Dusk' }))
       .field('description', JSON.stringify({ en: 'A hand-printed postcard.' }))
       .field('category', retired._id.toString())
-      .field('price', '3.5');
+      .field('price', '4');
 
     expect(response.status).toBe(400);
     expect(response.body.details[0].msg).toBe('Category is inactive; assign an active category');

@@ -226,7 +226,7 @@ function MarkPaidModal({
             id="delivery-charge"
             type="number"
             min="0"
-            step="0.01"
+            step="1"
             label={t('admin.orders.deliveryCharge')}
             value={deliveryCharge.value}
             onChange={deliveryCharge.onChange}

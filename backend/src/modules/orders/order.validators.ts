@@ -51,6 +51,7 @@ export const updateOrderStatusBodySchema = z
     deliveryCharge: z.coerce
       .number({ message: 'Delivery charge must be a number' })
       .min(0, 'Delivery charge must be a positive number')
+      .int('Delivery charge must be a whole number of rupees')
       .optional(),
   })
   .refine((data) => data.status !== 'paid' || data.deliveryCharge !== undefined, {

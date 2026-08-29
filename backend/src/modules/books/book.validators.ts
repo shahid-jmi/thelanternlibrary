@@ -42,7 +42,8 @@ export const upsertBookBodySchema = z.object({
   author: z.string({ message: 'Author is required' }).trim().min(1, 'Author is required'),
   price: z.coerce
     .number({ message: 'Price must be a positive number' })
-    .min(0, 'Price must be a positive number'),
+    .min(0, 'Price must be a positive number')
+    .int('Price must be a whole number of rupees'),
   genre: z.enum(BOOK_GENRES, { message: 'Genre is invalid' }),
   language: z.enum(BOOK_LANGUAGES, { message: 'Language is invalid' }),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),

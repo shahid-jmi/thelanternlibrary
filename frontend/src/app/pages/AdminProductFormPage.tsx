@@ -202,7 +202,7 @@ function ProductForm({
           id="product-price"
           type="number"
           min="0"
-          step="0.01"
+          step="1"
           label={t('admin.form.price')}
           value={price.value}
           onChange={price.onChange}

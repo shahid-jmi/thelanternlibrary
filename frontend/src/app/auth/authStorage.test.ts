@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearToken, decodeAdminToken, getCurrentAdmin, getToken, setToken } from './authStorage';
+import {
+  clearToken,
+  decodeAdminToken,
+  getCurrentAdmin,
+  getMustChangePassword,
+  getToken,
+  setMustChangePassword,
+  setToken,
+} from './authStorage';
 
 function makeToken(payload: object): string {
   const encode = (value: object) =>
@@ -42,5 +50,24 @@ describe('token storage', () => {
   it('getCurrentAdmin decodes the stored token', () => {
     setToken(makeToken({ sub: 'id-1', role: 'admin' }));
     expect(getCurrentAdmin()).toEqual({ sub: 'id-1', role: 'admin' });
+  });
+});
+
+describe('mustChangePassword storage', () => {
+  it('defaults to false, can be set, and clearToken removes it', () => {
+    expect(getMustChangePassword()).toBe(false);
+
+    setMustChangePassword(true);
+    expect(getMustChangePassword()).toBe(true);
+
+    setToken('my-token');
+    clearToken();
+    expect(getMustChangePassword()).toBe(false);
+  });
+
+  it('setMustChangePassword(false) clears the flag directly', () => {
+    setMustChangePassword(true);
+    setMustChangePassword(false);
+    expect(getMustChangePassword()).toBe(false);
   });
 });

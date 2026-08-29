@@ -234,6 +234,8 @@ export interface AdminAccount {
   isActive: boolean;
   createdBy: string | null;
   lastLoginAt: string | null;
+  mustChangePassword: boolean;
+  passwordChangedAt: string;
   createdAt: string;
   updatedAt: string;
 }

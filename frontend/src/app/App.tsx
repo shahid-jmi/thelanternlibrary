@@ -12,6 +12,9 @@ import HomePage from './pages/HomePage';
 import BookDetailPage from './pages/BookDetailPage';
 import OrderPage from './pages/OrderPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import AdminForgotPasswordPage from './pages/AdminForgotPasswordPage';
+import AdminResetPasswordPage from './pages/AdminResetPasswordPage';
+import AdminChangePasswordPage from './pages/AdminChangePasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminManagementPage from './pages/AdminManagementPage';
 import AdminCreateAdminPage from './pages/AdminCreateAdminPage';
@@ -54,7 +57,10 @@ export default function App() {
                   <Route path="/book/:id" element={<BookDetailPage />} />
                   <Route path="/book/:id/order" element={<OrderPage />} />
                   <Route path="/admin" element={<AdminLoginPage />} />
+                  <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+                  <Route path="/reset-password" element={<AdminResetPasswordPage />} />
                   <Route element={<RequireAdmin />}>
+                    <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
                     <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
                     <Route path="/admin/books/new" element={<AdminBookFormPage />} />
                     <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />

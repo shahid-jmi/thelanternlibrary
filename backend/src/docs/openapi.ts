@@ -147,9 +147,39 @@ const openApiDocument = {
           isActive: { type: 'boolean' },
           createdBy: { type: 'string', nullable: true },
           lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          mustChangePassword: {
+            type: 'boolean',
+            description: 'True until the admin sets their own password for the first time',
+          },
+          passwordChangedAt: { type: 'string', format: 'date-time' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
+      },
+      LoginResponse: {
+        type: 'object',
+        properties: {
+          token: { type: 'string', description: 'JWT bearer token, valid for 24 hours' },
+          mustChangePassword: {
+            type: 'boolean',
+            description: 'If true, the frontend should redirect to the change-password page',
+          },
+          admin: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              email: { type: 'string', format: 'email' },
+              role: { type: 'string', enum: [...ADMIN_ROLES] },
+            },
+            required: ['id', 'email', 'role'],
+          },
+        },
+        required: ['token', 'mustChangePassword', 'admin'],
+      },
+      MessageResponse: {
+        type: 'object',
+        properties: { message: { type: 'string' } },
+        required: ['message'],
       },
       PublicCategory: {
         type: 'object',
@@ -423,7 +453,8 @@ const openApiDocument = {
       post: {
         tags: ['Auth'],
         summary: 'Log in as an admin',
-        description: 'Rate limited to 5 failed attempts per 15 minutes.',
+        description:
+          'Rate limited to 5 failed attempts per 15 minutes. If mustChangePassword is true, the frontend should redirect to the change-password page before allowing further use.',
         requestBody: {
           required: true,
           content: {
@@ -441,20 +472,111 @@ const openApiDocument = {
         },
         responses: {
           200: {
-            description: 'JWT valid for 24 hours',
+            description: 'Login successful',
             content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { token: { type: 'string' } },
-                  required: ['token'],
-                },
-              },
+              'application/json': { schema: { $ref: '#/components/schemas/LoginResponse' } },
             },
           },
           400: errorResponse('Validation failed'),
           401: errorResponse('Invalid credentials'),
           429: errorResponse('Too many login attempts'),
+        },
+      },
+    },
+    '/admin/auth/change-password': {
+      post: {
+        tags: ['Auth'],
+        summary: "Change the authenticated admin's own password",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  currentPassword: { type: 'string' },
+                  newPassword: { type: 'string', minLength: 8 },
+                },
+                required: ['currentPassword', 'newPassword'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password changed',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse(
+            'Validation failed, or new password same as current password'
+          ),
+          401: errorResponse('Missing/invalid token, or current password is incorrect'),
+        },
+      },
+    },
+    '/admin/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Request a password reset link',
+        description:
+          'Always returns the same generic success response, whether or not the email belongs to an account, to avoid leaking account existence. Rate limited to 5 requests per 15 minutes.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { email: { type: 'string', format: 'email' } },
+                required: ['email'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Generic confirmation (does not indicate whether the account exists)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          429: errorResponse('Too many password reset requests'),
+        },
+      },
+    },
+    '/admin/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Reset a password using a token from the forgot-password email',
+        description: 'The token is valid for 30 minutes and single-use.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  token: { type: 'string', description: 'Raw token from the reset link' },
+                  newPassword: { type: 'string', minLength: 8 },
+                },
+                required: ['token', 'newPassword'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password reset',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Reset link is invalid or has expired'),
+          429: errorResponse('Too many attempts'),
         },
       },
     },
@@ -907,6 +1029,34 @@ const openApiDocument = {
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Admin' } } },
           },
           400: errorResponse('Validation failed / cannot change own role'),
+          401: errorResponse('Missing or invalid token'),
+          403: errorResponse('Super admin access required'),
+          404: errorResponse('Admin not found'),
+        },
+      },
+    },
+    '/admin/admins/{id}/force-password-reset': {
+      patch: {
+        tags: ['Admins'],
+        summary: "Force-reset another admin's password (cannot target yourself)",
+        description:
+          'Generates a new temporary password, hashes and stores it, and sets mustChangePassword so the admin must change it on next login. Also invalidates any sessions the admin currently holds. The plaintext temporary password is returned once in this response and is never stored or retrievable again.',
+        security: [{ bearerAuth: [] }],
+        parameters: [adminIdParam],
+        responses: {
+          200: {
+            description: 'One-time temporary password for the target admin',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { temporaryPassword: { type: 'string' } },
+                  required: ['temporaryPassword'],
+                },
+              },
+            },
+          },
+          400: errorResponse('Cannot act on your own account'),
           401: errorResponse('Missing or invalid token'),
           403: errorResponse('Super admin access required'),
           404: errorResponse('Admin not found'),

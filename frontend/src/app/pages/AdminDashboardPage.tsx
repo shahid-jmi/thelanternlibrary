@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Users } from 'lucide-react';
+import { KeyRound, LogOut, Users } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import PageFrame from '../components/PageFrame';
 import BooksPanel from '../components/admin/BooksPanel';
@@ -42,6 +42,13 @@ export default function AdminDashboardPage() {
               {t('admin.nav.manageAdmins')}
             </Link>
           )}
+          <Link
+            to="/admin/change-password"
+            className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm"
+          >
+            <KeyRound className="h-4 w-4" />
+            {t('admin.dashboard.changePassword')}
+          </Link>
           <button
             onClick={logout}
             className="inline-flex h-10 items-center gap-2 rounded-sm border border-border px-4 text-sm"

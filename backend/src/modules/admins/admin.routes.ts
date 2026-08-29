@@ -10,6 +10,7 @@ import {
   createAdmin,
   deactivateAdmin,
   deleteAdmin,
+  forcePasswordReset,
   listAdmins,
   reactivateAdmin,
   updateAdminRole,
@@ -35,6 +36,11 @@ export const createAdminManagementRouter = (): Router => {
     '/:id/role',
     validate({ params: adminIdParamsSchema, body: updateRoleBodySchema }),
     asyncHandler(updateAdminRole)
+  );
+  router.patch(
+    '/:id/force-password-reset',
+    validate({ params: adminIdParamsSchema }),
+    asyncHandler(forcePasswordReset)
   );
 
   return router;

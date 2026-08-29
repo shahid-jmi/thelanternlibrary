@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { objectId } from '../../common/validation/objectId.js';
+import { passwordSchema } from '../../common/validation/password.js';
 import { ADMIN_ROLES } from './admin.constants.js';
 
 export const adminIdParamsSchema = z.object({
@@ -11,9 +12,7 @@ export const createAdminBodySchema = z.object({
     .string({ message: 'A valid email is required' })
     .trim()
     .email('A valid email is required'),
-  password: z
-    .string({ message: 'Password must be at least 8 characters' })
-    .min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   role: z.enum(ADMIN_ROLES, { message: 'Role must be either "admin" or "super_admin"' }),
 });
 

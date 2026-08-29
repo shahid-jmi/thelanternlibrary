@@ -9,6 +9,8 @@ export interface AdminDto {
   isActive: boolean;
   createdBy: Types.ObjectId | null;
   lastLoginAt: Date | null;
+  mustChangePassword: boolean;
+  passwordChangedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +22,8 @@ export const toAdminDto = (admin: AdminLean): AdminDto => ({
   isActive: admin.isActive,
   createdBy: admin.createdBy,
   lastLoginAt: admin.lastLoginAt,
+  mustChangePassword: Boolean(admin.mustChangePassword),
+  passwordChangedAt: admin.passwordChangedAt,
   createdAt: admin.createdAt,
   updatedAt: admin.updatedAt,
 });

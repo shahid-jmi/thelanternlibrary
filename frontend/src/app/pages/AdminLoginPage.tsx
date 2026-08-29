@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Lock } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
@@ -83,6 +83,13 @@ export default function AdminLoginPage() {
               error={password.error ? t(password.error) : undefined}
             />
           </div>
+
+          <Link
+            to="/admin/forgot-password"
+            className="mt-3 inline-block text-sm text-ember transition hover:opacity-80"
+          >
+            {t('admin.login.forgotPassword')}
+          </Link>
 
           {error && (
             <div className="mt-4">

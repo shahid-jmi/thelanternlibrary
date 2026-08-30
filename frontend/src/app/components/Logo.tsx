@@ -16,14 +16,14 @@ export function Logo({
       <img
         src={logo}
         alt="The Lantern Library logo"
-        className={`${isMark ? 'h-16 w-16 sm:h-20 sm:w-20' : 'h-11 w-11'} shrink-0 object-contain`}
+        className={`${isMark ? 'h-16 w-16 sm:h-20 sm:w-20' : 'h-14 w-14'} shrink-0 object-contain`}
       />
       <div className={`text-center leading-none ${isMark ? '' : 'shrink-0'}`}>
         <p
           className={
             isMark
               ? 'text-xs uppercase tracking-[0.4em] opacity-70'
-              : 'text-[9px] uppercase tracking-[0.3em] opacity-70'
+              : 'text-[10px] font-semibold uppercase tracking-[0.25em] opacity-80'
           }
         >
           The
@@ -32,7 +32,7 @@ export function Logo({
           className={
             isMark
               ? 'mt-1 text-2xl uppercase tracking-[0.08em] sm:text-3xl'
-              : 'mt-0.5 text-sm uppercase tracking-[0.08em]'
+              : '-mt-1 text-sm uppercase tracking-[0.08em]'
           }
         >
           Lantern
@@ -41,7 +41,7 @@ export function Logo({
           className={
             isMark
               ? 'mt-1 text-2xl uppercase tracking-[0.08em] sm:text-3xl'
-              : 'mt-0.5 text-sm uppercase tracking-[0.08em]'
+              : '-mt-1 text-sm uppercase tracking-[0.08em]'
           }
         >
           Library

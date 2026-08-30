@@ -13,7 +13,7 @@ import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
 import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
-import { Button } from '@/app/components/ui';
+import { Button, Toggle } from '@/app/components/ui';
 
 export default function AdminProductFormPage() {
   const { t } = useTranslation();
@@ -68,6 +68,7 @@ export default function AdminProductFormPage() {
           category: product?.category._id ?? fallbackCategoryId,
           price: product ? String(product.price) : '',
           isAvailable: product?.isAvailable ?? true,
+          isFeatured: product?.isFeatured ?? false,
         }}
         coverImageUrl={product?.coverImage?.url}
         categories={categories}
@@ -89,6 +90,7 @@ interface ProductFormInitial {
   category: string;
   price: string;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 function ProductForm({
@@ -109,6 +111,7 @@ function ProductForm({
       category: string;
       price: number;
       isAvailable: boolean;
+      isFeatured: boolean;
     },
     coverImageFile: File | null
   ) => Promise<void>;
@@ -121,6 +124,7 @@ function ProductForm({
   const [category, setCategory] = useState(initial.category);
   const price = useValidatedField(validatePrice, initial.price);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
+  const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -140,6 +144,7 @@ function ProductForm({
           category,
           price: Number(price.value),
           isAvailable,
+          isFeatured,
         },
         coverImageFile
       );
@@ -215,14 +220,20 @@ function ProductForm({
           onFileChange={setCoverImageFile}
           existingUrl={coverImageUrl}
         />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-6 pt-6">
+          <Toggle
+            id="product-available"
             checked={isAvailable}
-            onChange={(event) => setIsAvailable(event.target.checked)}
+            onChange={setIsAvailable}
+            label={t('admin.dashboard.available')}
           />
-          {t('admin.dashboard.available')}
-        </label>
+          <Toggle
+            id="product-featured"
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label={t('admin.dashboard.featured')}
+          />
+        </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">

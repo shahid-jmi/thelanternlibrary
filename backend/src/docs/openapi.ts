@@ -39,6 +39,14 @@ const categoryIdParam = {
   description: 'MongoDB ObjectId of the category',
 };
 
+const categorySlugParam = {
+  name: 'slug',
+  in: 'path',
+  required: true,
+  schema: { type: 'string', pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' },
+  description: 'Slug of the category',
+};
+
 const orderIdParam = {
   ...bookIdParam,
   description: 'MongoDB ObjectId of the order',
@@ -130,6 +138,7 @@ const openApiDocument = {
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -146,6 +155,7 @@ const openApiDocument = {
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -204,6 +214,12 @@ const openApiDocument = {
             nullable: true,
             description: 'Localized to the requested lang',
           },
+          description: {
+            type: 'string',
+            nullable: true,
+            description: 'Longer copy for the category detail page, localized to the requested lang',
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
         },
       },
       AdminCategory: {
@@ -216,23 +232,36 @@ const openApiDocument = {
             allOf: [{ $ref: '#/components/schemas/LocalizedText' }],
             nullable: true,
           },
+          description: {
+            allOf: [{ $ref: '#/components/schemas/LocalizedText' }],
+            nullable: true,
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
           isActive: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
-      CategoryPayload: {
+      CategoryFormPayload: {
         type: 'object',
+        description:
+          'multipart/form-data payload. name and tagline are JSON-encoded LocalizedText strings.',
         properties: {
-          name: { $ref: '#/components/schemas/LocalizedText' },
+          name: { type: 'string', description: 'JSON-encoded LocalizedText' },
           slug: {
             type: 'string',
             pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
             maxLength: 60,
             description: 'Stable machine-safe identifier used for filtering',
           },
-          tagline: { $ref: '#/components/schemas/LocalizedText' },
-          isActive: { type: 'boolean' },
+          tagline: { type: 'string', description: 'JSON-encoded LocalizedText, optional' },
+          description: { type: 'string', description: 'JSON-encoded LocalizedText, optional' },
+          isActive: { type: 'string', enum: ['true', 'false'] },
+          coverImage: {
+            type: 'string',
+            format: 'binary',
+            description: 'JPG, PNG, or WEBP up to 2MB. Optional — falls back to a placeholder.',
+          },
         },
         required: ['name', 'slug'],
       },
@@ -253,6 +282,7 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -275,6 +305,7 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -293,6 +324,7 @@ const openApiDocument = {
           },
           price: { type: 'integer', minimum: 0 },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
+          isFeatured: { type: 'string', enum: ['true', 'false'] },
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -313,6 +345,7 @@ const openApiDocument = {
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
+          isFeatured: { type: 'string', enum: ['true', 'false'] },
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -437,6 +470,12 @@ const openApiDocument = {
             schema: { type: 'string', enum: ['true', 'false'] },
           },
           {
+            name: 'featured',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+          },
+          {
             name: 'search',
             in: 'query',
             required: false,
@@ -494,6 +533,12 @@ const openApiDocument = {
             schema: { type: 'string', enum: ['true', 'false'] },
           },
           {
+            name: 'featured',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+          },
+          {
             name: 'search',
             in: 'query',
             required: false,
@@ -546,6 +591,23 @@ const openApiDocument = {
             },
           },
           400: errorResponse('Validation failed'),
+        },
+      },
+    },
+    '/categories/{slug}': {
+      get: {
+        tags: ['Categories'],
+        summary: 'Get a single active category by slug',
+        parameters: [categorySlugParam, langQueryParam],
+        responses: {
+          200: {
+            description: 'The category',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PublicCategory' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          404: errorResponse('Category not found (or inactive)'),
         },
       },
     },
@@ -814,6 +876,37 @@ const openApiDocument = {
         },
       },
     },
+    '/admin/books/{id}/featured': {
+      patch: {
+        tags: ['Admin Books'],
+        summary: 'Toggle whether a book is featured on the homepage',
+        security: [{ bearerAuth: [] }],
+        parameters: [bookIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { isFeatured: { type: 'boolean' } },
+                required: ['isFeatured'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated book',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminBook' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Book not found'),
+        },
+      },
+    },
     '/admin/products': {
       get: {
         tags: ['Admin Products'],
@@ -931,6 +1024,37 @@ const openApiDocument = {
         },
       },
     },
+    '/admin/products/{id}/featured': {
+      patch: {
+        tags: ['Admin Products'],
+        summary: 'Toggle whether a product is featured on the homepage',
+        security: [{ bearerAuth: [] }],
+        parameters: [productIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { isFeatured: { type: 'boolean' } },
+                required: ['isFeatured'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Product not found'),
+        },
+      },
+    },
     '/admin/categories': {
       get: {
         tags: ['Admin Categories'],
@@ -955,7 +1079,7 @@ const openApiDocument = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+            'multipart/form-data': { schema: { $ref: '#/components/schemas/CategoryFormPayload' } },
           },
         },
         responses: {
@@ -981,7 +1105,7 @@ const openApiDocument = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+            'multipart/form-data': { schema: { $ref: '#/components/schemas/CategoryFormPayload' } },
           },
         },
         responses: {

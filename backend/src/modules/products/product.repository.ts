@@ -10,6 +10,7 @@ export interface CreateProductPayload {
   price: number;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
@@ -58,6 +59,22 @@ export const updateAvailabilityById = async (
   Product.findByIdAndUpdate(
     id,
     { isAvailable },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+    .populate('category')
+    .lean<ProductLean>()
+    .exec();
+
+export const updateFeaturedById = async (
+  id: string,
+  isFeatured: boolean
+): Promise<ProductLean | null> =>
+  Product.findByIdAndUpdate(
+    id,
+    { isFeatured },
     {
       new: true,
       runValidators: true,

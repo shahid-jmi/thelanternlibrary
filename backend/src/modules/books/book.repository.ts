@@ -67,3 +67,18 @@ export const updateAvailabilityById = async (
   )
     .lean<BookLean>()
     .exec();
+
+export const updateFeaturedById = async (
+  id: string,
+  isFeatured: boolean
+): Promise<BookLean | null> =>
+  Book.findByIdAndUpdate(
+    id,
+    { isFeatured },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+    .lean<BookLean>()
+    .exec();

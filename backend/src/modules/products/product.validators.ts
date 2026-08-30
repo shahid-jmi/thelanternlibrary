@@ -19,6 +19,7 @@ export const listPublicProductsQuerySchema = z.object({
     .max(CATEGORY_SLUG_MAX_LENGTH, 'category must be a category slug')
     .optional(),
   available: booleanFromString('available must be true or false').optional(),
+  featured: booleanFromString('featured must be true or false').optional(),
   search: z
     .string()
     .trim()
@@ -40,13 +41,19 @@ export const upsertProductBodySchema = z.object({
     .min(0, 'Price must be a positive number')
     .int('Price must be a whole number of rupees'),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),
+  isFeatured: booleanFromString('isFeatured must be a boolean').optional(),
 });
 
 export const updateAvailabilityBodySchema = z.object({
   isAvailable: booleanFromString('isAvailable must be a boolean'),
 });
 
+export const updateFeaturedBodySchema = z.object({
+  isFeatured: booleanFromString('isFeatured must be a boolean'),
+});
+
 export type ListPublicProductsQuery = z.infer<typeof listPublicProductsQuerySchema>;
 export type GetPublicProductQuery = z.infer<typeof getPublicProductQuerySchema>;
 export type UpsertProductInput = z.infer<typeof upsertProductBodySchema>;
 export type UpdateAvailabilityInput = z.infer<typeof updateAvailabilityBodySchema>;
+export type UpdateFeaturedInput = z.infer<typeof updateFeaturedBodySchema>;

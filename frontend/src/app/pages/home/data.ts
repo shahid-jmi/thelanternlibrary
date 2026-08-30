@@ -1,85 +1,8 @@
-import {
-  Armchair,
-  BookOpen,
-  Coffee,
-  Feather,
-  FileText,
-  Flower2,
-  Lamp,
-  Library,
-  Mail,
-  Mountain,
-  Scroll,
-  ShoppingBag,
-} from 'lucide-react';
+import { Armchair, Coffee, Lamp, Library } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-export const OFFERINGS: { numeral: string; name: string; line: string; icon: LucideIcon; image: string }[] = [
-  {
-    numeral: 'i',
-    name: 'Books',
-    line: 'Stories chosen slowly, shelved with care.',
-    icon: BookOpen,
-    image:
-      'https://images.pexels.com/photos/28649539/pexels-photo-28649539/free-photo-of-stack-of-vintage-books-in-cozy-library.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'ii',
-    name: 'Postcards',
-    line: 'Small windows mailed from the valley.',
-    icon: Mail,
-    image:
-      'https://images.pexels.com/photos/37947894/pexels-photo-37947894/free-photo-of-assortment-of-vintage-postcards-with-handwritten-notes.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'iii',
-    name: 'Handwritten Letters',
-    line: 'Ink, paper, and a little time.',
-    icon: Feather,
-    image:
-      'https://images.pexels.com/photos/37521299/pexels-photo-37521299/free-photo-of-elegant-fountain-pen-on-handwritten-letter.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'iv',
-    name: 'Typewritten Goods',
-    line: 'Keys pressed, words kept.',
-    icon: FileText,
-    image:
-      'https://images.pexels.com/photos/37703243/pexels-photo-37703243/free-photo-of-rustic-vintage-typewriter-on-wooden-desk.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'v',
-    name: 'Canvas Totes',
-    line: 'For carrying stories home.',
-    icon: ShoppingBag,
-    image:
-      'https://images.pexels.com/photos/34393372/pexels-photo-34393372/free-photo-of-stylish-tote-bags-in-a-book-store-display.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'vi',
-    name: 'Dried Flowers',
-    line: "Kashmir's gardens, paused mid-bloom.",
-    icon: Flower2,
-    image:
-      'https://images.pexels.com/photos/30685002/pexels-photo-30685002/free-photo-of-elegant-dried-floral-bouquet-with-red-accents.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'vii',
-    name: 'Kashmir Collectibles',
-    line: 'Keepsakes of a storied valley.',
-    icon: Mountain,
-    image:
-      'https://images.pexels.com/photos/28805621/pexels-photo-28805621/free-photo-of-scenic-himalayas-landscape-in-pahalgam-kashmir.jpeg?cs=tinysrgb&w=800',
-  },
-  {
-    numeral: 'viii',
-    name: 'Vintage Paper',
-    line: 'Ephemera that survived its era.',
-    icon: Scroll,
-    image:
-      'https://images.pexels.com/photos/17323760/pexels-photo-17323760/free-photo-of-paper-on-vintage-notes.png?cs=tinysrgb&w=800',
-  },
-];
+// "What We Offer" used to be this static array — it's now driven by live
+// admin-managed categories (see OfferSection.tsx / useCategories).
 
 export const MOSAIC: { numeral: string; label: string; icon: LucideIcon; image: string }[] = [
   {

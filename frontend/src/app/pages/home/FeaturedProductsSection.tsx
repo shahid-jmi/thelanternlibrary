@@ -11,14 +11,14 @@ export default function FeaturedProductsSection() {
   const { i18n } = useTranslation();
   const carousel = useCarousel();
 
-  const productsQuery = useProducts({ lang: i18n.language });
-  const products = productsQuery.data ?? [];
+  const productsQuery = useProducts({ lang: i18n.language, available: 'true', featured: 'true' });
+  const featuredProducts = productsQuery.data ?? [];
   const productsLoading = productsQuery.isPending;
   const productsError = productsQuery.isError ? getErrorMessage(productsQuery.error) : '';
-  // TODO: this just shows the first available products — replace with real
-  // "featured" selection logic (an admin-controlled featured flag, a
-  // best-sellers ranking, or a curated list) once that's decided.
-  const featuredProducts = products.filter((product) => product.isAvailable).slice(0, 8);
+
+  if (!productsLoading && !productsError && featuredProducts.length === 0) {
+    return null;
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -46,9 +46,6 @@ export default function FeaturedProductsSection() {
         </div>
       </Reveal>
       {productsError && <StatusMessage tone="error">{productsError}</StatusMessage>}
-      {!productsLoading && !productsError && featuredProducts.length === 0 && (
-        <StatusMessage>No products yet — check back soon.</StatusMessage>
-      )}
       <div
         ref={carousel.ref}
         onWheel={carousel.onWheel}

@@ -6,6 +6,7 @@ import {
   getProduct,
   getProducts,
   toggleProductAvailability,
+  toggleProductFeatured,
   updateProduct,
 } from '@/app/api/products';
 import type { ProductFilters, ProductPayload } from '@/app/api/types';
@@ -68,6 +69,15 @@ export function useToggleProductAvailability() {
   return useMutation({
     mutationFn: ({ id, isAvailable }: { id: string; isAvailable: boolean }) =>
       toggleProductAvailability(id, isAvailable),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
+  });
+}
+
+export function useToggleProductFeatured() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) =>
+      toggleProductFeatured(id, isFeatured),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
   });
 }

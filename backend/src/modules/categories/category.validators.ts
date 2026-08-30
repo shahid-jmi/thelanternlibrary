@@ -9,7 +9,21 @@ export const categoryIdParamsSchema = z.object({
   id: objectId('Invalid category id'),
 });
 
+export const categorySlugParamsSchema = z.object({
+  slug: z
+    .string({ message: 'Invalid category slug' })
+    .trim()
+    .toLowerCase()
+    .min(1, 'Invalid category slug')
+    .max(CATEGORY_SLUG_MAX_LENGTH, 'Invalid category slug')
+    .regex(CATEGORY_SLUG_PATTERN, 'Invalid category slug'),
+});
+
 export const listPublicCategoriesQuerySchema = z.object({
+  lang: z.enum(TRANSLATION_LANGUAGES, { message: 'Invalid translation language' }).default('en'),
+});
+
+export const getPublicCategoryQuerySchema = z.object({
   lang: z.enum(TRANSLATION_LANGUAGES, { message: 'Invalid translation language' }).default('en'),
 });
 
@@ -26,8 +40,10 @@ export const upsertCategoryBodySchema = z.object({
       'Slug may only contain lowercase letters, numbers, and single hyphens'
     ),
   tagline: localizedText('tagline').optional(),
+  description: localizedText('description').optional(),
   isActive: booleanFromString('isActive must be a boolean').optional(),
 });
 
 export type ListPublicCategoriesQuery = z.infer<typeof listPublicCategoriesQuerySchema>;
+export type GetPublicCategoryQuery = z.infer<typeof getPublicCategoryQuerySchema>;
 export type UpsertCategoryInput = z.infer<typeof upsertCategoryBodySchema>;

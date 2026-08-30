@@ -16,6 +16,7 @@ const book: PublicBook = {
   language: 'english',
   coverImage: { url: 'https://covers.test.example.com/a.webp', key: null },
   isAvailable: true,
+  isFeatured: false,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
 };

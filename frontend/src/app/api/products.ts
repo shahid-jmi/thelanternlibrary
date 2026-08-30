@@ -44,6 +44,7 @@ function buildProductFormData(payload: ProductPayload, coverImageFile: File | nu
   formData.append('category', payload.category);
   formData.append('price', String(payload.price));
   formData.append('isAvailable', String(payload.isAvailable));
+  formData.append('isFeatured', String(payload.isFeatured));
   if (coverImageFile) {
     formData.append('coverImage', coverImageFile);
   }
@@ -84,6 +85,16 @@ export async function toggleProductAvailability(
 ): Promise<AdminProduct> {
   const { data } = await api.patch<AdminProduct>(`/admin/products/${id}/availability`, {
     isAvailable,
+  });
+  return data;
+}
+
+export async function toggleProductFeatured(
+  id: string,
+  isFeatured: boolean
+): Promise<AdminProduct> {
+  const { data } = await api.patch<AdminProduct>(`/admin/products/${id}/featured`, {
+    isFeatured,
   });
   return data;
 }

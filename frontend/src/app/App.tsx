@@ -11,6 +11,7 @@ import ErrorBoundary from '@/app/components/ErrorBoundary';
 import Loader from '@/app/components/Loader';
 import HomePage from '@/app/pages/HomePage';
 import CatalogPage from '@/app/pages/CatalogPage';
+import CategoryPage from '@/app/pages/CategoryPage';
 import BookDetailPage from '@/app/pages/BookDetailPage';
 import OrderPage from '@/app/pages/OrderPage';
 
@@ -61,6 +62,7 @@ export default function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/catalog" element={<CatalogPage />} />
+                    <Route path="/category/:slug" element={<CategoryPage />} />
                     <Route path="/book/:id" element={<BookDetailPage />} />
                     <Route path="/book/:id/order" element={<OrderPage />} />
                     <Route path="/admin" element={<AdminLoginPage />} />

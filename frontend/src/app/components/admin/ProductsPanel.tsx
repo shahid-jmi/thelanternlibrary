@@ -8,6 +8,7 @@ import {
   useAdminProducts,
   useDeleteProduct,
   useToggleProductAvailability,
+  useToggleProductFeatured,
 } from '@/app/queries/products';
 import { useAdminCategories } from '@/app/queries/categories';
 import { formatPrice } from '@/app/lib/format';
@@ -26,6 +27,7 @@ export default function ProductsPanel() {
   const categoriesQuery = useAdminCategories();
   const deleteProduct = useDeleteProduct();
   const toggleAvailability = useToggleProductAvailability();
+  const toggleFeatured = useToggleProductFeatured();
 
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
@@ -45,6 +47,18 @@ export default function ProductsPanel() {
       await toggleAvailability.mutateAsync({
         id: product._id,
         isAvailable: !product.isAvailable,
+      });
+      setActionError('');
+    } catch (requestError) {
+      setActionError(getErrorMessage(requestError));
+    }
+  };
+
+  const flipFeatured = async (product: AdminProduct) => {
+    try {
+      await toggleFeatured.mutateAsync({
+        id: product._id,
+        isFeatured: !product.isFeatured,
       });
       setActionError('');
     } catch (requestError) {
@@ -84,6 +98,7 @@ export default function ProductsPanel() {
             <Th>{t('admin.form.category')}</Th>
             <Th>{t('book.price')}</Th>
             <Th>Status</Th>
+            <Th>{t('admin.dashboard.featured')}</Th>
             <Th>Actions</Th>
           </tr>
         </TableHead>
@@ -107,6 +122,16 @@ export default function ProductsPanel() {
                     {product.isAvailable
                       ? t('admin.dashboard.available')
                       : t('admin.dashboard.unavailable')}
+                  </Badge>
+                </button>
+              </Td>
+              <Td>
+                <button onClick={() => flipFeatured(product)}>
+                  <Badge active={product.isFeatured} className="inline-flex items-center gap-2">
+                    {product.isFeatured && <Check className="h-3.5 w-3.5" />}
+                    {product.isFeatured
+                      ? t('admin.dashboard.featured')
+                      : t('admin.dashboard.notFeatured')}
                   </Badge>
                 </button>
               </Td>

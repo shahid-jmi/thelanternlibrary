@@ -10,14 +10,17 @@ import { Eyebrow } from '@/app/components/ui';
 import { useCarousel } from './useCarousel';
 
 export default function FeaturedBooksSection() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const carousel = useCarousel();
 
-  const booksQuery = useBooks({ lang: i18n.language });
-  const books = booksQuery.data ?? [];
+  const booksQuery = useBooks({ lang: i18n.language, available: 'true', featured: 'true' });
+  const featuredBooks = booksQuery.data ?? [];
   const loading = booksQuery.isPending;
   const error = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
-  const featuredBooks = books.filter((book) => book.isAvailable).slice(0, 8);
+
+  if (!loading && !error && featuredBooks.length === 0) {
+    return null;
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -52,9 +55,6 @@ export default function FeaturedBooksSection() {
         </div>
       </Reveal>
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {!loading && !error && featuredBooks.length === 0 && (
-        <StatusMessage>{t('catalog.noResults')}</StatusMessage>
-      )}
       <div
         ref={carousel.ref}
         onWheel={carousel.onWheel}

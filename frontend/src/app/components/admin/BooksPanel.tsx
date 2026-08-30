@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Check, Edit, Plus, Trash2 } from 'lucide-react';
 import type { AdminBook } from '@/app/api/types';
 import { getErrorMessage } from '@/app/api/client';
-import { useAdminBooks, useDeleteBook, useToggleAvailability } from '@/app/queries/books';
+import {
+  useAdminBooks,
+  useDeleteBook,
+  useToggleAvailability,
+  useToggleBookFeatured,
+} from '@/app/queries/books';
 import { formatPrice } from '@/app/lib/format';
 import { useConfirm } from '@/app/lib/useConfirm';
 import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
@@ -20,6 +25,7 @@ export default function BooksPanel() {
   const booksQuery = useAdminBooks();
   const deleteBook = useDeleteBook();
   const toggleAvailability = useToggleAvailability();
+  const toggleFeatured = useToggleBookFeatured();
 
   const books = booksQuery.data ?? [];
   const loadError = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
@@ -32,6 +38,15 @@ export default function BooksPanel() {
   const flipAvailability = async (book: AdminBook) => {
     try {
       await toggleAvailability.mutateAsync({ id: book._id, isAvailable: !book.isAvailable });
+      setActionError('');
+    } catch (requestError) {
+      setActionError(getErrorMessage(requestError));
+    }
+  };
+
+  const flipFeatured = async (book: AdminBook) => {
+    try {
+      await toggleFeatured.mutateAsync({ id: book._id, isFeatured: !book.isFeatured });
       setActionError('');
     } catch (requestError) {
       setActionError(getErrorMessage(requestError));
@@ -61,6 +76,7 @@ export default function BooksPanel() {
             <Th>{t('book.price')}</Th>
             <Th>{t('book.genre')}</Th>
             <Th>Status</Th>
+            <Th>{t('admin.dashboard.featured')}</Th>
             <Th>Actions</Th>
           </tr>
         </TableHead>
@@ -78,6 +94,16 @@ export default function BooksPanel() {
                     {book.isAvailable
                       ? t('admin.dashboard.available')
                       : t('admin.dashboard.unavailable')}
+                  </Badge>
+                </button>
+              </Td>
+              <Td>
+                <button onClick={() => flipFeatured(book)}>
+                  <Badge active={book.isFeatured} className="inline-flex items-center gap-2">
+                    {book.isFeatured && <Check className="h-3.5 w-3.5" />}
+                    {book.isFeatured
+                      ? t('admin.dashboard.featured')
+                      : t('admin.dashboard.notFeatured')}
                   </Badge>
                 </button>
               </Td>

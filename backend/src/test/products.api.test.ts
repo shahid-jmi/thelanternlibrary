@@ -43,6 +43,7 @@ const seedProducts = () =>
       price: 3.5,
       coverImage: { url: 'https://covers.test.example.com/p1.webp', key: null },
       isAvailable: true,
+      isFeatured: true,
     },
     {
       name: { en: 'Chinar Leaf Print' },
@@ -143,6 +144,16 @@ describe('GET /api/v1/products', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(2);
+  });
+
+  it('filters by featured', async () => {
+    await seedProducts();
+
+    const response = await request(app).get('/api/v1/products').query({ featured: 'true' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].name).toBe('Dal Lake at Dusk');
   });
 });
 
@@ -269,6 +280,39 @@ describe('PATCH /api/v1/admin/products/:id/availability', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.isAvailable).toBe(false);
+  });
+});
+
+describe('PATCH /api/v1/admin/products/:id/featured', () => {
+  it('toggles featured', async () => {
+    const [product] = await seedProducts();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${product._id.toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(200);
+    expect(response.body.isFeatured).toBe(true);
+  });
+
+  it('rejects requests without a token', async () => {
+    const [product] = await seedProducts();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${product._id.toString()}/featured`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 404 for a missing product', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${new Types.ObjectId().toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(404);
   });
 });
 

@@ -6,6 +6,7 @@ import {
   getBook,
   getBooks,
   toggleAvailability,
+  toggleFeatured,
   updateBook,
 } from '@/app/api/books';
 import type { BookFilters, BookPayload } from '@/app/api/types';
@@ -68,6 +69,15 @@ export function useToggleAvailability() {
   return useMutation({
     mutationFn: ({ id, isAvailable }: { id: string; isAvailable: boolean }) =>
       toggleAvailability(id, isAvailable),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: bookKeys.all }),
+  });
+}
+
+export function useToggleBookFeatured() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) =>
+      toggleFeatured(id, isFeatured),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: bookKeys.all }),
   });
 }

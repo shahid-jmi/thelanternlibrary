@@ -1,7 +1,15 @@
 import AppError from '../../common/errors/AppError.js';
 import NotFoundError from '../../common/errors/NotFoundError.js';
+import logger from '../../common/utils/logger.js';
 import type { TranslationLanguage } from '../../common/constants/languages.js';
+import type { CoverImage } from '../../common/models/coverImage.js';
+import {
+  PLACEHOLDER_COVER_URL,
+  uploadCoverImageAsset,
+  deleteCoverImageAsset,
+} from '../../common/services/cover-image.service.js';
 import * as categoryRepository from './category.repository.js';
+import type { CategoryAttrs } from './category.model.js';
 import * as productRepository from '../products/product.repository.js';
 import {
   toAdminCategoryDto,
@@ -10,6 +18,10 @@ import {
   type PublicCategoryDto,
 } from './category.mapper.js';
 import type { UpsertCategoryInput } from './category.validators.js';
+
+interface UploadedFile {
+  buffer: Buffer;
+}
 
 const assertSlugAvailable = async (slug: string, excludeId?: string): Promise<void> => {
   const existing = await categoryRepository.findBySlug(slug);
@@ -26,17 +38,43 @@ export const listPublicCategories = async (
   return categories.map((category) => toPublicCategoryDto(category, lang));
 };
 
+export const getPublicCategoryBySlug = async (
+  slug: string,
+  lang: TranslationLanguage = 'en'
+): Promise<PublicCategoryDto> => {
+  const category = await categoryRepository.findBySlug(slug);
+
+  // An inactive category is treated as not found for public consumers, same
+  // as an unknown one — it shouldn't be reachable once deactivated.
+  if (!category || !category.isActive) {
+    throw new NotFoundError('Category not found');
+  }
+
+  return toPublicCategoryDto(category, lang);
+};
+
 export const listAdminCategories = async (): Promise<AdminCategoryDto[]> => {
   const categories = await categoryRepository.findAllCategories();
   return categories.map(toAdminCategoryDto);
 };
 
-export const createCategory = async (payload: UpsertCategoryInput): Promise<AdminCategoryDto> => {
+export const createCategory = async (
+  payload: UpsertCategoryInput,
+  file: UploadedFile | undefined
+): Promise<AdminCategoryDto> => {
   await assertSlugAvailable(payload.slug);
+
+  let coverImage: CoverImage = { url: PLACEHOLDER_COVER_URL, key: null };
+
+  if (file) {
+    const uploaded = await uploadCoverImageAsset(file.buffer);
+    coverImage = { url: uploaded.url, key: uploaded.key };
+  }
 
   const category = await categoryRepository.createCategory({
     ...payload,
     isActive: payload.isActive ?? true,
+    coverImage,
   });
 
   return toAdminCategoryDto(category);
@@ -44,7 +82,8 @@ export const createCategory = async (payload: UpsertCategoryInput): Promise<Admi
 
 export const updateCategory = async (
   id: string,
-  payload: UpsertCategoryInput
+  payload: UpsertCategoryInput,
+  file: UploadedFile | undefined
 ): Promise<AdminCategoryDto> => {
   const existingCategory = await categoryRepository.findById(id);
 
@@ -56,10 +95,23 @@ export const updateCategory = async (
     await assertSlugAvailable(payload.slug, id);
   }
 
-  const updatedCategory = await categoryRepository.updateCategoryById(id, payload);
+  const updatePayload: Partial<CategoryAttrs> = { ...payload };
+  let previousKey: string | null = null;
+
+  if (file) {
+    const uploaded = await uploadCoverImageAsset(file.buffer);
+    updatePayload.coverImage = { url: uploaded.url, key: uploaded.key };
+    previousKey = existingCategory.coverImage?.key ?? null;
+  }
+
+  const updatedCategory = await categoryRepository.updateCategoryById(id, updatePayload);
 
   if (!updatedCategory) {
     throw new NotFoundError('Category not found');
+  }
+
+  if (previousKey) {
+    await deleteCoverImageAsset(previousKey);
   }
 
   return toAdminCategoryDto(updatedCategory);
@@ -87,5 +139,18 @@ export const deleteCategory = async (id: string): Promise<void> => {
 
   if (!deletedCategory) {
     throw new NotFoundError('Category not found');
+  }
+
+  const key = deletedCategory.coverImage?.key;
+
+  if (key) {
+    try {
+      await deleteCoverImageAsset(key);
+    } catch (error) {
+      logger.error(
+        { key, err: error },
+        'Failed to delete R2 cover image object for deleted category'
+      );
+    }
   }
 };

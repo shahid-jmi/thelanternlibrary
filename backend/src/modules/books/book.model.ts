@@ -24,6 +24,7 @@ export interface BookAttrs {
   genre: BookGenre;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
   language: BookLanguage;
 }
 
@@ -58,6 +59,7 @@ const bookSchema = new Schema<BookAttrs>(
     genre: { type: String, enum: BOOK_GENRES, required: true },
     coverImage: { type: coverImageSchema, required: true },
     isAvailable: { type: Boolean, default: true },
+    isFeatured: { type: Boolean, default: false },
     language: { type: String, enum: BOOK_LANGUAGES, required: true },
   },
   {
@@ -67,6 +69,7 @@ const bookSchema = new Schema<BookAttrs>(
 );
 
 bookSchema.index({ genre: 1, language: 1, isAvailable: 1 });
+bookSchema.index({ isFeatured: 1 });
 bookSchema.index({ 'title.en': 1 });
 
 const Book = mongoose.model('Book', bookSchema);

@@ -17,7 +17,7 @@ import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
 import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
-import { Button } from '@/app/components/ui';
+import { Button, Toggle } from '@/app/components/ui';
 
 export default function AdminBookFormPage() {
   const { t } = useTranslation();
@@ -53,6 +53,7 @@ export default function AdminBookFormPage() {
   const genre = book?.genre ?? 'fiction';
   const language = book?.language ?? 'english';
   const isAvailable = book?.isAvailable ?? true;
+  const isFeatured = book?.isFeatured ?? false;
 
   const goBack = () => navigate('/admin/dashboard?tab=books');
 
@@ -70,7 +71,18 @@ export default function AdminBookFormPage() {
       </h1>
       <BookForm
         key={book?._id ?? 'new'}
-        initial={{ titleEn, titleUr, author, descEn, descUr, price, genre, language, isAvailable }}
+        initial={{
+          titleEn,
+          titleUr,
+          author,
+          descEn,
+          descUr,
+          price,
+          genre,
+          language,
+          isAvailable,
+          isFeatured,
+        }}
         coverImageUrl={book?.coverImage?.url}
         onCancel={goBack}
         onSave={async (payload, coverImageFile) => {
@@ -92,6 +104,7 @@ interface BookFormInitial {
   genre: BookGenre;
   language: BookLanguage;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 function BookForm({
@@ -112,6 +125,7 @@ function BookForm({
       genre: BookGenre;
       language: BookLanguage;
       isAvailable: boolean;
+      isFeatured: boolean;
     },
     coverImageFile: File | null
   ) => Promise<void>;
@@ -126,6 +140,7 @@ function BookForm({
   const [genre, setGenre] = useState<BookGenre>(initial.genre);
   const [language, setLanguage] = useState<BookLanguage>(initial.language);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
+  const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -147,6 +162,7 @@ function BookForm({
           genre,
           language,
           isAvailable,
+          isFeatured,
         },
         coverImageFile
       );
@@ -241,14 +257,20 @@ function BookForm({
           onFileChange={setCoverImageFile}
           existingUrl={coverImageUrl}
         />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-6 pt-6">
+          <Toggle
+            id="book-available"
             checked={isAvailable}
-            onChange={(event) => setIsAvailable(event.target.checked)}
+            onChange={setIsAvailable}
+            label={t('admin.dashboard.available')}
           />
-          {t('admin.dashboard.available')}
-        </label>
+          <Toggle
+            id="book-featured"
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label={t('admin.dashboard.featured')}
+          />
+        </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">

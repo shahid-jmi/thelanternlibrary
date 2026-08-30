@@ -86,6 +86,8 @@
   "admin.dashboard.delete": "Delete",
   "admin.dashboard.available": "Available",
   "admin.dashboard.unavailable": "Unavailable",
+  "admin.dashboard.featured": "Featured",
+  "admin.dashboard.notFeatured": "Not Featured",
   "admin.form.titleEn": "Title (English)",
   "admin.form.titleUr": "Title (Urdu)",
   "admin.form.descEn": "Description (English)",

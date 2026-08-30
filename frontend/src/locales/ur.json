@@ -86,6 +86,8 @@
   "admin.dashboard.delete": "حذف کریں",
   "admin.dashboard.available": "دستیاب",
   "admin.dashboard.unavailable": "دستیاب نہیں",
+  "admin.dashboard.featured": "نمایاں",
+  "admin.dashboard.notFeatured": "نمایاں نہیں",
   "admin.form.titleEn": "عنوان (انگریزی)",
   "admin.form.titleUr": "عنوان (اردو)",
   "admin.form.descEn": "تفصیل (انگریزی)",

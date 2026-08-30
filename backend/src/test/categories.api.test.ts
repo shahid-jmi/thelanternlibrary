@@ -6,6 +6,7 @@ import createApp from '../app.js';
 import Admin from '../modules/admin-auth/admin.model.js';
 import Category from '../modules/categories/category.model.js';
 import Product from '../modules/products/product.model.js';
+import { PLACEHOLDER_COVER_URL } from '../common/services/cover-image.service.js';
 import { startTestDatabase, stopTestDatabase } from './db.js';
 
 const app = createApp();
@@ -91,6 +92,11 @@ describe('GET /api/v1/categories', () => {
     );
     expect(postcards.name).toBe('Postcards');
     expect(postcards.tagline).toBe('Small windows mailed from the valley.');
+    // seedCategories() creates categories the way pre-existing data (before
+    // coverImage existed) looks — no coverImage field at all. The mapper
+    // must fall back to the placeholder rather than crash.
+    expect(postcards.coverImage.url).toBe(PLACEHOLDER_COVER_URL);
+    expect(postcards.coverImage.key).toBeNull();
   });
 
   it('localizes to Urdu with English fallback', async () => {
@@ -102,6 +108,50 @@ describe('GET /api/v1/categories', () => {
     const names = response.body.map((category: { name: string }) => category.name);
     expect(names).toContain('پوسٹ کارڈز');
     expect(names).toContain('Canvas Totes');
+  });
+});
+
+describe('GET /api/v1/categories/:slug', () => {
+  it('returns an active category by slug, with its description', async () => {
+    await Category.create({
+      name: { en: 'Postcards' },
+      slug: 'postcards',
+      tagline: { en: 'Small windows mailed from the valley.' },
+      description: { en: 'Hand-picked postcards from around the valley, ready to mail.' },
+      isActive: true,
+    });
+
+    const response = await request(app).get('/api/v1/categories/postcards');
+
+    expect(response.status).toBe(200);
+    expect(response.body.slug).toBe('postcards');
+    expect(response.body.description).toBe(
+      'Hand-picked postcards from around the valley, ready to mail.'
+    );
+  });
+
+  it('returns null description when none is set', async () => {
+    await seedCategories();
+
+    const response = await request(app).get('/api/v1/categories/postcards');
+
+    expect(response.status).toBe(200);
+    expect(response.body.description).toBeNull();
+  });
+
+  it('returns 404 for an inactive category', async () => {
+    await seedCategories();
+
+    const response = await request(app).get('/api/v1/categories/retired-section');
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Category not found');
+  });
+
+  it('returns 404 for an unknown slug', async () => {
+    const response = await request(app).get('/api/v1/categories/does-not-exist');
+
+    expect(response.status).toBe(404);
   });
 });
 
@@ -130,6 +180,7 @@ describe('POST /api/v1/admin/categories', () => {
     name: { en: 'Dried Flowers', ur: 'خشک پھول' },
     slug: 'dried-flowers',
     tagline: { en: "Kashmir's gardens, paused mid-bloom." },
+    description: { en: 'Sun-dried flowers from Kashmiri gardens, pressed and preserved by hand.' },
   };
 
   it('rejects a regular admin', async () => {
@@ -152,6 +203,11 @@ describe('POST /api/v1/admin/categories', () => {
     expect(response.body.slug).toBe('dried-flowers');
     expect(response.body.isActive).toBe(true);
     expect(response.body.name.ur).toBe('خشک پھول');
+    expect(response.body.description.en).toBe(
+      'Sun-dried flowers from Kashmiri gardens, pressed and preserved by hand.'
+    );
+    expect(response.body.coverImage.url).toBe(PLACEHOLDER_COVER_URL);
+    expect(response.body.coverImage.key).toBeNull();
   });
 
   it('rejects a duplicate slug with 409', async () => {

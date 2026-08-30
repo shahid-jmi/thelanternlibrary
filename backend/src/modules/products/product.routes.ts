@@ -8,6 +8,7 @@ import {
   listPublicProductsQuerySchema,
   productIdParamsSchema,
   updateAvailabilityBodySchema,
+  updateFeaturedBodySchema,
   upsertProductBodySchema,
 } from './product.validators.js';
 import {
@@ -17,6 +18,7 @@ import {
   listAdminProducts,
   listPublicProducts,
   updateAvailability,
+  updateFeatured,
   updateProduct,
 } from './product.controller.js';
 
@@ -60,6 +62,11 @@ export const createAdminProductRouter = (): Router => {
     '/:id/availability',
     validate({ params: productIdParamsSchema, body: updateAvailabilityBodySchema }),
     asyncHandler(updateAvailability)
+  );
+  router.patch(
+    '/:id/featured',
+    validate({ params: productIdParamsSchema, body: updateFeaturedBodySchema }),
+    asyncHandler(updateFeatured)
   );
 
   return router;

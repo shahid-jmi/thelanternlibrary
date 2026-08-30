@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Check, Edit, Plus, Trash2 } from 'lucide-react';
+import { Check, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import type { AdminProduct } from '@/app/api/types';
 import { getErrorMessage } from '@/app/api/client';
 import {
@@ -14,6 +14,7 @@ import { useAdminCategories } from '@/app/queries/categories';
 import { formatPrice } from '@/app/lib/format';
 import { useConfirm } from '@/app/lib/useConfirm';
 import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
@@ -21,6 +22,8 @@ import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/compone
 export default function ProductsPanel() {
   const { t } = useTranslation();
   const [actionError, setActionError] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const { confirm, dialog } = useConfirm();
 
   const productsQuery = useAdminProducts();
@@ -37,6 +40,15 @@ export default function ProductsPanel() {
   const error = actionError || loadError;
 
   const activeCategories = categories.filter((category) => category.isActive);
+
+  const query = debouncedSearch.trim().toLowerCase();
+  const filteredProducts = query
+    ? products.filter(
+        (product) =>
+          product.name.en.toLowerCase().includes(query) ||
+          product.name.ur?.toLowerCase().includes(query)
+      )
+    : products;
 
   const confirmedDelete = useConfirmedDelete(deleteProduct, confirm, setActionError);
   const removeProduct = (product: AdminProduct) =>
@@ -68,7 +80,16 @@ export default function ProductsPanel() {
 
   return (
     <section>
-      <div className="mb-6 flex justify-end">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 rtl:left-auto rtl:right-3" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t('admin.dashboard.searchProducts')}
+            className="h-11 w-full min-w-64 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
+          />
+        </div>
         {activeCategories.length === 0 ? (
           <Button disabled>
             <Plus className="h-4 w-4" />
@@ -90,6 +111,9 @@ export default function ProductsPanel() {
       {!categoriesQuery.isPending && activeCategories.length === 0 && (
         <StatusMessage>{t('admin.products.noCategories')}</StatusMessage>
       )}
+      {!productsQuery.isPending && products.length > 0 && filteredProducts.length === 0 && (
+        <StatusMessage>{t('admin.dashboard.noResults')}</StatusMessage>
+      )}
 
       <Table>
         <TableHead>
@@ -103,7 +127,7 @@ export default function ProductsPanel() {
           </tr>
         </TableHead>
         <tbody>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <TableRow key={product._id}>
               <Td>{product.name.en}</Td>
               <Td>

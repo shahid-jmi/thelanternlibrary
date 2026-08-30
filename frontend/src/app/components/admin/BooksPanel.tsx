@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Check, Edit, Plus, Trash2 } from 'lucide-react';
+import { Check, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import type { AdminBook } from '@/app/api/types';
 import { getErrorMessage } from '@/app/api/client';
 import {
@@ -13,6 +13,7 @@ import {
 import { formatPrice } from '@/app/lib/format';
 import { useConfirm } from '@/app/lib/useConfirm';
 import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
+import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
 import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
@@ -20,6 +21,8 @@ import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/compone
 export default function BooksPanel() {
   const { t } = useTranslation();
   const [actionError, setActionError] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const { confirm, dialog } = useConfirm();
 
   const booksQuery = useAdminBooks();
@@ -30,6 +33,16 @@ export default function BooksPanel() {
   const books = booksQuery.data ?? [];
   const loadError = booksQuery.isError ? getErrorMessage(booksQuery.error) : '';
   const error = actionError || loadError;
+
+  const query = debouncedSearch.trim().toLowerCase();
+  const filteredBooks = query
+    ? books.filter(
+        (book) =>
+          book.title.en.toLowerCase().includes(query) ||
+          book.title.ur?.toLowerCase().includes(query) ||
+          book.author.toLowerCase().includes(query)
+      )
+    : books;
 
   const confirmedDelete = useConfirmedDelete(deleteBook, confirm, setActionError);
   const removeBook = (book: AdminBook) =>
@@ -55,7 +68,16 @@ export default function BooksPanel() {
 
   return (
     <section>
-      <div className="mb-6 flex justify-end">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 rtl:left-auto rtl:right-3" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t('admin.dashboard.searchBooks')}
+            className="h-11 w-full min-w-64 rounded-sm border border-border bg-input-background px-9 text-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/25"
+          />
+        </div>
         <Link
           to="/admin/books/new"
           className="inline-flex h-10 items-center gap-2 rounded-sm bg-primary px-5 text-sm text-primary-foreground transition hover:opacity-90"
@@ -67,6 +89,9 @@ export default function BooksPanel() {
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
       {booksQuery.isPending && <Loader label="Loading books..." />}
+      {!booksQuery.isPending && books.length > 0 && filteredBooks.length === 0 && (
+        <StatusMessage>{t('admin.dashboard.noResults')}</StatusMessage>
+      )}
 
       <Table>
         <TableHead>
@@ -81,7 +106,7 @@ export default function BooksPanel() {
           </tr>
         </TableHead>
         <tbody>
-          {books.map((book) => (
+          {filteredBooks.map((book) => (
             <TableRow key={book._id}>
               <Td>{book.title.en}</Td>
               <Td>{book.author}</Td>

@@ -198,7 +198,20 @@ describe('GET /api/v1/admin/orders', () => {
 });
 
 describe('PATCH /api/v1/admin/orders/:id/status', () => {
-  it('marks an order as paid', async () => {
+  it('marks an order as paid with a delivery charge', async () => {
+    const created = await createOrderForBook(theAlchemist._id.toString());
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/orders/${created.body._id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'paid', deliveryCharge: 50 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('paid');
+    expect(response.body.deliveryCharge).toBe(50);
+  });
+
+  it('rejects marking an order paid without a delivery charge', async () => {
     const created = await createOrderForBook(theAlchemist._id.toString());
 
     const response = await request(app)
@@ -206,8 +219,33 @@ describe('PATCH /api/v1/admin/orders/:id/status', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ status: 'paid' });
 
+    expect(response.status).toBe(400);
+    expect(response.body.details[0].msg).toBe(
+      'Delivery charge is required when marking an order as paid'
+    );
+  });
+
+  it('rejects a negative delivery charge', async () => {
+    const created = await createOrderForBook(theAlchemist._id.toString());
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/orders/${created.body._id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'paid', deliveryCharge: -10 });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('does not require a delivery charge when cancelling an order', async () => {
+    const created = await createOrderForBook(theAlchemist._id.toString());
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/orders/${created.body._id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'cancelled' });
+
     expect(response.status).toBe(200);
-    expect(response.body.status).toBe('paid');
+    expect(response.body.status).toBe('cancelled');
   });
 });
 
@@ -227,7 +265,7 @@ describe('GET /api/v1/admin/orders/:id/invoice', () => {
     await request(app)
       .patch(`/api/v1/admin/orders/${created.body._id}/status`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ status: 'paid' });
+      .send({ status: 'paid', deliveryCharge: 30 });
 
     const response = await request(app)
       .get(`/api/v1/admin/orders/${created.body._id}/invoice`)
@@ -239,5 +277,6 @@ describe('GET /api/v1/admin/orders/:id/invoice', () => {
 
     const order = await Order.findById(created.body._id);
     expect(order?.invoiceNumber).toMatch(/^INV-\d{4}-0001$/);
+    expect(order?.deliveryCharge).toBe(30);
   });
 });

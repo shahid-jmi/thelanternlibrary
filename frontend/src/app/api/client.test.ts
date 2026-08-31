@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { getErrorMessage } from './client';
+import { getErrorMessage } from '@/app/api/client';
 
 function makeAxiosError(status: number, data: unknown): AxiosError {
   const error = new AxiosError('Request failed', String(status));

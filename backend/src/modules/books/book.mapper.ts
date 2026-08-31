@@ -11,6 +11,7 @@ export interface PublicBookDto {
   genre: BookGenre;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
   language: BookLanguage;
   createdAt: Date;
   updatedAt: Date;
@@ -24,6 +25,10 @@ export interface AdminBookDto extends Omit<PublicBookDto, 'title' | 'description
 const getLocalizedField = (field: LocalizedText, lang: TranslationLanguage): string =>
   field[lang] || field.en || '';
 
+// Defensive default for books created before isFeatured existed — .lean()
+// reads don't retroactively apply schema defaults to pre-existing documents.
+const isFeaturedOf = (book: BookLean): boolean => book.isFeatured ?? false;
+
 export const toPublicBookDto = (
   book: BookLean,
   lang: TranslationLanguage = 'en'
@@ -36,6 +41,7 @@ export const toPublicBookDto = (
   genre: book.genre,
   coverImage: book.coverImage,
   isAvailable: book.isAvailable,
+  isFeatured: isFeaturedOf(book),
   language: book.language,
   createdAt: book.createdAt,
   updatedAt: book.updatedAt,
@@ -50,6 +56,7 @@ export const toAdminBookDto = (book: BookLean): AdminBookDto => ({
   genre: book.genre,
   coverImage: book.coverImage,
   isAvailable: book.isAvailable,
+  isFeatured: isFeaturedOf(book),
   language: book.language,
   createdAt: book.createdAt,
   updatedAt: book.updatedAt,

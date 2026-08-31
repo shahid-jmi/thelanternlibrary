@@ -1,7 +1,11 @@
 import bcrypt from 'bcryptjs';
+// The Admin model/repository live in admin-auth, not here — there is one
+// Admin entity, and admin-auth owns it since login/session logic needs it
+// too. This module only adds account-management operations on top.
 import * as adminRepository from '../admin-auth/admin.repository.js';
 import NotFoundError from '../../common/errors/NotFoundError.js';
 import AppError from '../../common/errors/AppError.js';
+import { generateTemporaryPassword } from '../../common/utils/password.js';
 import { toAdminDto, type AdminDto } from './admin.mapper.js';
 import type { AdminRole } from './admin.constants.js';
 import type { CreateAdminInput } from './admin.validators.js';
@@ -36,6 +40,9 @@ export const createAdmin = async (
     passwordHash,
     role,
     createdBy: requestingAdminId,
+    // The password a super admin sets here is a temporary one — the new
+    // admin must set their own on first login.
+    mustChangePassword: true,
   });
 
   return toAdminDto(admin);
@@ -87,4 +94,24 @@ export const updateAdminRole = async (
   }
 
   return toAdminDto(admin);
+};
+
+export const forcePasswordReset = async (
+  id: string,
+  requestingAdminId: string
+): Promise<{ temporaryPassword: string }> => {
+  assertNotSelf(id, requestingAdminId, 'You cannot force a password reset on your own account');
+
+  const temporaryPassword = generateTemporaryPassword();
+  const passwordHash = await bcrypt.hash(temporaryPassword, SALT_ROUNDS);
+
+  const admin = await adminRepository.forcePasswordResetById(id, passwordHash);
+
+  if (!admin) {
+    throw new NotFoundError('Admin not found');
+  }
+
+  // Returned once and never persisted in plaintext — this is the admin's
+  // only chance to see it.
+  return { temporaryPassword };
 };

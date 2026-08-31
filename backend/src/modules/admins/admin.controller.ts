@@ -32,3 +32,8 @@ export const updateAdminRole = async (req: Request, res: Response): Promise<void
   const admin = await adminService.updateAdminRole(req.params.id as string, role, req.admin!.id);
   res.json(admin);
 };
+
+export const forcePasswordReset = async (req: Request, res: Response): Promise<void> => {
+  const result = await adminService.forcePasswordReset(req.params.id as string, req.admin!.id);
+  res.json(result);
+};

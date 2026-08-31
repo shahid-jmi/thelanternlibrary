@@ -6,8 +6,8 @@ import {
   getAdmins,
   reactivateAdmin,
   updateAdminRole,
-} from '../api/admins';
-import type { AdminRole, CreateAdminPayload } from '../api/types';
+} from '@/app/api/admins';
+import type { AdminRole, CreateAdminPayload } from '@/app/api/types';
 
 export const adminKeys = {
   all: ['admins'] as const,

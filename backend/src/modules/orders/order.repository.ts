@@ -48,9 +48,14 @@ export const findAdminOrders = async (filters: AdminOrderListFilters): Promise<O
 
 export const updateStatusById = async (
   id: string,
-  status: OrderStatus
+  status: OrderStatus,
+  deliveryCharge?: number
 ): Promise<OrderLean | null> =>
-  Order.findByIdAndUpdate(id, { status }, { new: true, runValidators: true })
+  Order.findByIdAndUpdate(
+    id,
+    { status, ...(deliveryCharge !== undefined && { deliveryCharge }) },
+    { new: true, runValidators: true }
+  )
     .populate('book')
     .lean<OrderLean>()
     .exec();

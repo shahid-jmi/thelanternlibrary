@@ -4,6 +4,7 @@ import type {
   GetPublicProductQuery,
   ListPublicProductsQuery,
   UpdateAvailabilityInput,
+  UpdateFeaturedInput,
   UpsertProductInput,
 } from './product.validators.js';
 
@@ -46,5 +47,11 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
 export const updateAvailability = async (req: Request, res: Response): Promise<void> => {
   const { isAvailable } = req.body as UpdateAvailabilityInput;
   const product = await productService.updateAvailability(req.params.id as string, isAvailable);
+  res.json(product);
+};
+
+export const updateFeatured = async (req: Request, res: Response): Promise<void> => {
+  const { isFeatured } = req.body as UpdateFeaturedInput;
+  const product = await productService.updateFeatured(req.params.id as string, isFeatured);
   res.json(product);
 };

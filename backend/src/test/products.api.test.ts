@@ -43,6 +43,7 @@ const seedProducts = () =>
       price: 3.5,
       coverImage: { url: 'https://covers.test.example.com/p1.webp', key: null },
       isAvailable: true,
+      isFeatured: true,
     },
     {
       name: { en: 'Chinar Leaf Print' },
@@ -144,6 +145,16 @@ describe('GET /api/v1/products', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(2);
   });
+
+  it('filters by featured', async () => {
+    await seedProducts();
+
+    const response = await request(app).get('/api/v1/products').query({ featured: 'true' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].name).toBe('Dal Lake at Dusk');
+  });
 });
 
 describe('GET /api/v1/products/:id', () => {
@@ -235,11 +246,11 @@ describe('PUT /api/v1/admin/products/:id', () => {
       .field('name', JSON.stringify({ en: 'Dal Lake at Dawn' }))
       .field('description', JSON.stringify({ en: 'A hand-printed postcard.' }))
       .field('category', postcards._id.toString())
-      .field('price', '4.5');
+      .field('price', '5');
 
     expect(response.status).toBe(200);
     expect(response.body.name.en).toBe('Dal Lake at Dawn');
-    expect(response.body.price).toBe(4.5);
+    expect(response.body.price).toBe(5);
   });
 
   it('rejects moving a product into an inactive category', async () => {
@@ -251,7 +262,7 @@ describe('PUT /api/v1/admin/products/:id', () => {
       .field('name', JSON.stringify({ en: 'Dal Lake at Dusk' }))
       .field('description', JSON.stringify({ en: 'A hand-printed postcard.' }))
       .field('category', retired._id.toString())
-      .field('price', '3.5');
+      .field('price', '4');
 
     expect(response.status).toBe(400);
     expect(response.body.details[0].msg).toBe('Category is inactive; assign an active category');
@@ -269,6 +280,39 @@ describe('PATCH /api/v1/admin/products/:id/availability', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.isAvailable).toBe(false);
+  });
+});
+
+describe('PATCH /api/v1/admin/products/:id/featured', () => {
+  it('toggles featured', async () => {
+    const [product] = await seedProducts();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${product._id.toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(200);
+    expect(response.body.isFeatured).toBe(true);
+  });
+
+  it('rejects requests without a token', async () => {
+    const [product] = await seedProducts();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${product._id.toString()}/featured`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 404 for a missing product', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/admin/products/${new Types.ObjectId().toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: true });
+
+    expect(response.status).toBe(404);
   });
 });
 

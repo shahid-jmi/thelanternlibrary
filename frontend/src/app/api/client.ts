@@ -1,6 +1,6 @@
 import type { AxiosError } from 'axios';
 import axios from 'axios';
-import { clearToken, getToken } from '../auth/authStorage';
+import { clearToken, getToken } from '@/app/auth/authStorage';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api/v1',

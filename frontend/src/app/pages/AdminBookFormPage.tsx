@@ -7,16 +7,17 @@ import {
   BOOK_LANGUAGES,
   type BookGenre,
   type BookLanguage,
-} from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useAdminBooks, useSaveBook } from '../queries/books';
-import { validatePrice, validateRequired } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput, FieldSelect, FieldTextArea } from '../components/FormField';
-import ImageUploadField from '../components/ImageUploadField';
-import { Button } from '../components/ui';
+} from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminBooks, useSaveBook } from '@/app/queries/books';
+import { validatePrice, validateRequired } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
+import ImageUploadField from '@/app/components/ImageUploadField';
+import { Button, Toggle } from '@/app/components/ui';
 
 export default function AdminBookFormPage() {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ export default function AdminBookFormPage() {
   if (id && booksQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading book...</StatusMessage>
+        <Loader label="Loading book..." />
       </PageFrame>
     );
   }
@@ -52,6 +53,7 @@ export default function AdminBookFormPage() {
   const genre = book?.genre ?? 'fiction';
   const language = book?.language ?? 'english';
   const isAvailable = book?.isAvailable ?? true;
+  const isFeatured = book?.isFeatured ?? false;
 
   const goBack = () => navigate('/admin/dashboard?tab=books');
 
@@ -69,7 +71,18 @@ export default function AdminBookFormPage() {
       </h1>
       <BookForm
         key={book?._id ?? 'new'}
-        initial={{ titleEn, titleUr, author, descEn, descUr, price, genre, language, isAvailable }}
+        initial={{
+          titleEn,
+          titleUr,
+          author,
+          descEn,
+          descUr,
+          price,
+          genre,
+          language,
+          isAvailable,
+          isFeatured,
+        }}
         coverImageUrl={book?.coverImage?.url}
         onCancel={goBack}
         onSave={async (payload, coverImageFile) => {
@@ -91,6 +104,7 @@ interface BookFormInitial {
   genre: BookGenre;
   language: BookLanguage;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 function BookForm({
@@ -111,6 +125,7 @@ function BookForm({
       genre: BookGenre;
       language: BookLanguage;
       isAvailable: boolean;
+      isFeatured: boolean;
     },
     coverImageFile: File | null
   ) => Promise<void>;
@@ -125,6 +140,7 @@ function BookForm({
   const [genre, setGenre] = useState<BookGenre>(initial.genre);
   const [language, setLanguage] = useState<BookLanguage>(initial.language);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
+  const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -146,6 +162,7 @@ function BookForm({
           genre,
           language,
           isAvailable,
+          isFeatured,
         },
         coverImageFile
       );
@@ -175,14 +192,6 @@ function BookForm({
           value={titleUr}
           onChange={setTitleUr}
         />
-        <FieldInput
-          id="book-author"
-          label={t('admin.form.author')}
-          value={author.value}
-          onChange={author.onChange}
-          onBlur={author.onBlur}
-          error={author.error ? t(author.error) : undefined}
-        />
         <FieldTextArea
           id="book-desc-en"
           label={t('admin.form.descEn')}
@@ -200,10 +209,18 @@ function BookForm({
           onChange={setDescUr}
         />
         <FieldInput
+          id="book-author"
+          label={t('admin.form.author')}
+          value={author.value}
+          onChange={author.onChange}
+          onBlur={author.onBlur}
+          error={author.error ? t(author.error) : undefined}
+        />
+        <FieldInput
           id="book-price"
           type="number"
           min="0"
-          step="0.01"
+          step="1"
           label={t('admin.form.price')}
           value={price.value}
           onChange={price.onChange}
@@ -240,14 +257,20 @@ function BookForm({
           onFileChange={setCoverImageFile}
           existingUrl={coverImageUrl}
         />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-6 pt-6">
+          <Toggle
+            id="book-available"
             checked={isAvailable}
-            onChange={(event) => setIsAvailable(event.target.checked)}
+            onChange={setIsAvailable}
+            label={t('admin.dashboard.available')}
           />
-          {t('admin.dashboard.available')}
-        </label>
+          <Toggle
+            id="book-featured"
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label={t('admin.dashboard.featured')}
+          />
+        </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">

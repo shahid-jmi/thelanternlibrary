@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { AdminBook, BookFilters, BookPayload, PublicBook } from './types';
+import { api } from '@/app/api/client';
+import type { AdminBook, BookFilters, BookPayload, PublicBook } from '@/app/api/types';
 
 function compactParams(params: BookFilters) {
   return Object.fromEntries(
@@ -46,6 +46,7 @@ function buildBookFormData(payload: BookPayload, coverImageFile: File | null): F
   formData.append('genre', payload.genre);
   formData.append('language', payload.language);
   formData.append('isAvailable', String(payload.isAvailable));
+  formData.append('isFeatured', String(payload.isFeatured));
   if (coverImageFile) {
     formData.append('coverImage', coverImageFile);
   }
@@ -82,5 +83,10 @@ export async function deleteBook(id: string): Promise<{ message: string }> {
 
 export async function toggleAvailability(id: string, isAvailable: boolean): Promise<AdminBook> {
   const { data } = await api.patch<AdminBook>(`/admin/books/${id}/availability`, { isAvailable });
+  return data;
+}
+
+export async function toggleFeatured(id: string, isFeatured: boolean): Promise<AdminBook> {
+  const { data } = await api.patch<AdminBook>(`/admin/books/${id}/featured`, { isFeatured });
   return data;
 }

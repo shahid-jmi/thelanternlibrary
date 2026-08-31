@@ -10,6 +10,7 @@ export interface ProductAttrs {
   price: number;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 // Repository reads always populate `category`, so lean products carry the full
@@ -29,6 +30,7 @@ const productSchema = new Schema<ProductAttrs>(
     price: { type: Number, required: true, min: 0 },
     coverImage: { type: coverImageSchema, required: true },
     isAvailable: { type: Boolean, default: true },
+    isFeatured: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -37,6 +39,7 @@ const productSchema = new Schema<ProductAttrs>(
 );
 
 productSchema.index({ category: 1, isAvailable: 1 });
+productSchema.index({ isFeatured: 1 });
 productSchema.index({ 'name.en': 1 });
 
 const Product = mongoose.model('Product', productSchema);

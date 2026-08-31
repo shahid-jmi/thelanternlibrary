@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createOrder, downloadInvoice, getAdminOrders, updateOrderStatus } from '../api/orders';
-import type { CreateOrderPayload, OrderFilters, OrderStatus } from '../api/types';
+import { createOrder, downloadInvoice, getAdminOrders, updateOrderStatus } from '@/app/api/orders';
+import type { CreateOrderPayload, OrderFilters, OrderStatus } from '@/app/api/types';
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -23,8 +23,15 @@ export function useAdminOrders(filters: OrderFilters) {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
-      updateOrderStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      deliveryCharge,
+    }: {
+      id: string;
+      status: OrderStatus;
+      deliveryCharge?: number;
+    }) => updateOrderStatus(id, status, deliveryCharge),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: orderKeys.all }),
   });
 }

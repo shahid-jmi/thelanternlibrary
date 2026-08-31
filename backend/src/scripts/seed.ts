@@ -17,6 +17,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'fiction',
     coverImage: placeholderCover,
     isAvailable: true,
+    isFeatured: false,
     language: 'english',
   },
   {
@@ -30,6 +31,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'history',
     coverImage: placeholderCover,
     isAvailable: true,
+    isFeatured: false,
     language: 'urdu',
   },
   {
@@ -43,6 +45,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'poetry',
     coverImage: placeholderCover,
     isAvailable: true,
+    isFeatured: false,
     language: 'persian',
   },
   {
@@ -55,6 +58,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'science',
     coverImage: placeholderCover,
     isAvailable: true,
+    isFeatured: false,
     language: 'english',
   },
   {
@@ -65,6 +69,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'children',
     coverImage: placeholderCover,
     isAvailable: false,
+    isFeatured: false,
     language: 'english',
   },
   {
@@ -75,6 +80,7 @@ const sampleBooks: BookAttrs[] = [
     genre: 'non-fiction',
     coverImage: placeholderCover,
     isAvailable: true,
+    isFeatured: false,
     language: 'english',
   },
 ];

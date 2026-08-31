@@ -16,6 +16,12 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1, 'R2_SECRET_ACCESS_KEY must be set'),
   R2_BUCKET_NAME: z.string().min(1, 'R2_BUCKET_NAME must be set'),
   R2_PUBLIC_URL: z.string().min(1, 'R2_PUBLIC_URL must be set'),
+  FRONTEND_URL: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -53,6 +59,17 @@ if (corsOrigins.length === 0) {
   corsOrigins.push('http://localhost:5173');
 }
 
+const smtp =
+  raw.SMTP_HOST && raw.SMTP_PORT
+    ? {
+        host: raw.SMTP_HOST,
+        port: raw.SMTP_PORT,
+        user: raw.SMTP_USER,
+        password: raw.SMTP_PASSWORD,
+        from: raw.SMTP_FROM ?? 'The Lantern Library <no-reply@lanternlibrary.com>',
+      }
+    : null;
+
 const env = {
   nodeEnv: raw.NODE_ENV,
   port: raw.PORT,
@@ -66,6 +83,8 @@ const env = {
   r2SecretAccessKey: raw.R2_SECRET_ACCESS_KEY,
   r2BucketName: raw.R2_BUCKET_NAME,
   r2PublicUrl: raw.R2_PUBLIC_URL,
+  frontendUrl: raw.FRONTEND_URL ?? 'http://localhost:5173',
+  smtp,
 } as const;
 
 export type Env = typeof env;

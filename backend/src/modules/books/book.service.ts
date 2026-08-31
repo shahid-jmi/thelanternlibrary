@@ -25,6 +25,7 @@ const buildPublicBookQuery = ({
   genre,
   language,
   available,
+  featured,
   search,
 }: ListPublicBooksQuery): FilterQuery<BookAttrs> => {
   const query: FilterQuery<BookAttrs> = {};
@@ -39,6 +40,10 @@ const buildPublicBookQuery = ({
 
   if (available !== undefined) {
     query.isAvailable = available;
+  }
+
+  if (featured !== undefined) {
+    query.isFeatured = featured;
   }
 
   if (search) {
@@ -89,6 +94,7 @@ export const createBook = async (
   const book = await bookRepository.createBook({
     ...payload,
     isAvailable: payload.isAvailable ?? true,
+    isFeatured: payload.isFeatured ?? false,
     coverImage,
   });
   return toAdminBookDto(book);
@@ -150,6 +156,16 @@ export const updateAvailability = async (
   isAvailable: boolean
 ): Promise<AdminBookDto> => {
   const updatedBook = await bookRepository.updateAvailabilityById(id, isAvailable);
+
+  if (!updatedBook) {
+    throw new NotFoundError('Book not found');
+  }
+
+  return toAdminBookDto(updatedBook);
+};
+
+export const updateFeatured = async (id: string, isFeatured: boolean): Promise<AdminBookDto> => {
+  const updatedBook = await bookRepository.updateFeaturedById(id, isFeatured);
 
   if (!updatedBook) {
     throw new NotFoundError('Book not found');

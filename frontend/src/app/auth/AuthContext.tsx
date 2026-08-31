@@ -1,21 +1,25 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { setUnauthorizedHandler } from '../api/client';
-import { loginAdmin } from '../api/auth';
+import { setUnauthorizedHandler } from '@/app/api/client';
+import { loginAdmin } from '@/app/api/auth';
 import {
   clearToken,
   decodeAdminToken,
   getCurrentAdmin,
+  getMustChangePassword,
+  setMustChangePassword,
   setToken,
   type AdminTokenClaims,
-} from './authStorage';
+} from '@/app/auth/authStorage';
 
 interface AuthContextValue {
   admin: AdminTokenClaims | null;
   isAuthenticated: boolean;
   isSuperAdmin: boolean;
+  mustChangePassword: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  completePasswordChange: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -23,6 +27,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<AdminTokenClaims | null>(getCurrentAdmin);
+  const [mustChangePassword, setMustChangePasswordState] = useState(getMustChangePassword);
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -37,18 +42,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       admin,
       isAuthenticated: admin !== null,
       isSuperAdmin: admin?.role === 'super_admin',
+      mustChangePassword,
       async login(email: string, password: string) {
-        const { token } = await loginAdmin(email, password);
-        setToken(token);
-        setAdmin(decodeAdminToken(token));
+        const result = await loginAdmin(email, password);
+        setToken(result.token);
+        setMustChangePassword(result.mustChangePassword);
+        setAdmin(decodeAdminToken(result.token));
+        setMustChangePasswordState(result.mustChangePassword);
       },
       logout() {
         clearToken();
         setAdmin(null);
+        setMustChangePasswordState(false);
         navigate('/admin', { replace: true });
       },
+      completePasswordChange() {
+        setMustChangePassword(false);
+        setMustChangePasswordState(false);
+      },
     }),
-    [admin, navigate]
+    [admin, mustChangePassword, navigate]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

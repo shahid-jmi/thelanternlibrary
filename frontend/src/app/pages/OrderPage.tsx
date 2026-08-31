@@ -1,12 +1,13 @@
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BookOpen } from 'lucide-react';
-import { getErrorMessage } from '../api/client';
-import { useBook } from '../queries/books';
-import { formatPrice } from '../lib/format';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import OrderForm from '../components/OrderForm';
+import { getErrorMessage } from '@/app/api/client';
+import { useBook } from '@/app/queries/books';
+import { formatPrice } from '@/app/lib/format';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import OrderForm from '@/app/components/OrderForm';
 
 export default function OrderPage() {
   const { id } = useParams();
@@ -21,7 +22,7 @@ export default function OrderPage() {
   if (bookQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading book...</StatusMessage>
+        <Loader label="Loading book..." />
       </PageFrame>
     );
   }

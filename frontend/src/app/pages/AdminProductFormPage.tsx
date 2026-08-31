@@ -2,17 +2,18 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import type { AdminCategory } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useAdminProducts, useSaveProduct } from '../queries/products';
-import { useAdminCategories } from '../queries/categories';
-import { validatePrice, validateRequired } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput, FieldSelect, FieldTextArea } from '../components/FormField';
-import ImageUploadField from '../components/ImageUploadField';
-import { Button } from '../components/ui';
+import type { AdminCategory } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminProducts, useSaveProduct } from '@/app/queries/products';
+import { useAdminCategories } from '@/app/queries/categories';
+import { validatePrice, validateRequired } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
+import ImageUploadField from '@/app/components/ImageUploadField';
+import { Button, Toggle } from '@/app/components/ui';
 
 export default function AdminProductFormPage() {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ export default function AdminProductFormPage() {
   if ((id && productsQuery.isPending) || categoriesQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading product...</StatusMessage>
+        <Loader label="Loading product..." />
       </PageFrame>
     );
   }
@@ -67,6 +68,7 @@ export default function AdminProductFormPage() {
           category: product?.category._id ?? fallbackCategoryId,
           price: product ? String(product.price) : '',
           isAvailable: product?.isAvailable ?? true,
+          isFeatured: product?.isFeatured ?? false,
         }}
         coverImageUrl={product?.coverImage?.url}
         categories={categories}
@@ -88,6 +90,7 @@ interface ProductFormInitial {
   category: string;
   price: string;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 function ProductForm({
@@ -108,6 +111,7 @@ function ProductForm({
       category: string;
       price: number;
       isAvailable: boolean;
+      isFeatured: boolean;
     },
     coverImageFile: File | null
   ) => Promise<void>;
@@ -120,6 +124,7 @@ function ProductForm({
   const [category, setCategory] = useState(initial.category);
   const price = useValidatedField(validatePrice, initial.price);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
+  const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -139,6 +144,7 @@ function ProductForm({
           category,
           price: Number(price.value),
           isAvailable,
+          isFeatured,
         },
         coverImageFile
       );
@@ -201,7 +207,7 @@ function ProductForm({
           id="product-price"
           type="number"
           min="0"
-          step="0.01"
+          step="1"
           label={t('admin.form.price')}
           value={price.value}
           onChange={price.onChange}
@@ -214,14 +220,20 @@ function ProductForm({
           onFileChange={setCoverImageFile}
           existingUrl={coverImageUrl}
         />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-6 pt-6">
+          <Toggle
+            id="product-available"
             checked={isAvailable}
-            onChange={(event) => setIsAvailable(event.target.checked)}
+            onChange={setIsAvailable}
+            label={t('admin.dashboard.available')}
           />
-          {t('admin.dashboard.available')}
-        </label>
+          <Toggle
+            id="product-featured"
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            label={t('admin.dashboard.featured')}
+          />
+        </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">

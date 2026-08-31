@@ -26,6 +26,7 @@ export interface PublicProductDto {
   category: PublicProductCategoryDto;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +39,10 @@ export interface AdminProductDto extends Omit<
   description: LocalizedText;
   category: AdminProductCategoryDto;
 }
+
+// Defensive default for products created before isFeatured existed — .lean()
+// reads don't retroactively apply schema defaults to pre-existing documents.
+const isFeaturedOf = (product: ProductLean): boolean => product.isFeatured ?? false;
 
 export const toPublicProductDto = (
   product: ProductLean,
@@ -54,6 +59,7 @@ export const toPublicProductDto = (
   },
   coverImage: product.coverImage,
   isAvailable: product.isAvailable,
+  isFeatured: isFeaturedOf(product),
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
 });
@@ -71,6 +77,7 @@ export const toAdminProductDto = (product: ProductLean): AdminProductDto => ({
   },
   coverImage: product.coverImage,
   isAvailable: product.isAvailable,
+  isFeatured: isFeaturedOf(product),
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
 });

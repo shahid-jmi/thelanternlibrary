@@ -4,6 +4,7 @@ import type {
   GetPublicBookQuery,
   ListPublicBooksQuery,
   UpdateAvailabilityInput,
+  UpdateFeaturedInput,
   UpsertBookInput,
 } from './book.validators.js';
 
@@ -46,5 +47,11 @@ export const deleteBook = async (req: Request, res: Response): Promise<void> => 
 export const updateAvailability = async (req: Request, res: Response): Promise<void> => {
   const { isAvailable } = req.body as UpdateAvailabilityInput;
   const book = await bookService.updateAvailability(req.params.id as string, isAvailable);
+  res.json(book);
+};
+
+export const updateFeatured = async (req: Request, res: Response): Promise<void> => {
+  const { isFeatured } = req.body as UpdateFeaturedInput;
+  const book = await bookService.updateFeatured(req.params.id as string, isFeatured);
   res.json(book);
 };

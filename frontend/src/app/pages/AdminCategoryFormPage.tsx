@@ -2,16 +2,18 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import type { CategoryPayload } from '../api/types';
-import { getErrorMessage } from '../api/client';
-import { useAdminCategories, useSaveCategory } from '../queries/categories';
-import { useAuth } from '../auth/AuthContext';
-import { validateRequired, validateSlug } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
-import PageFrame from '../components/PageFrame';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
-import { Button } from '../components/ui';
+import type { CategoryPayload } from '@/app/api/types';
+import { getErrorMessage } from '@/app/api/client';
+import { useAdminCategories, useSaveCategory } from '@/app/queries/categories';
+import { useAuth } from '@/app/auth/AuthContext';
+import { validateRequired, validateSlug } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
+import PageFrame from '@/app/components/PageFrame';
+import StatusMessage from '@/app/components/StatusMessage';
+import Loader from '@/app/components/Loader';
+import { FieldInput, FieldTextArea } from '@/app/components/FormField';
+import ImageUploadField from '@/app/components/ImageUploadField';
+import { Button, Toggle } from '@/app/components/ui';
 
 export default function AdminCategoryFormPage() {
   const { t } = useTranslation();
@@ -32,7 +34,7 @@ export default function AdminCategoryFormPage() {
   if (id && categoriesQuery.isPending) {
     return (
       <PageFrame compact>
-        <StatusMessage>Loading category...</StatusMessage>
+        <Loader label="Loading category..." />
       </PageFrame>
     );
   }
@@ -65,11 +67,14 @@ export default function AdminCategoryFormPage() {
           slug: category?.slug ?? '',
           taglineEn: category?.tagline?.en ?? '',
           taglineUr: category?.tagline?.ur ?? '',
+          descriptionEn: category?.description?.en ?? '',
+          descriptionUr: category?.description?.ur ?? '',
           isActive: category?.isActive ?? true,
         }}
+        coverImageUrl={category?.coverImage?.url}
         onCancel={goBack}
-        onSave={async (payload) => {
-          await saveCategory.mutateAsync({ id: category?._id, payload });
+        onSave={async (payload, coverImageFile) => {
+          await saveCategory.mutateAsync({ id: category?._id, payload, coverImageFile });
           goBack();
         }}
       />
@@ -83,6 +88,8 @@ interface CategoryFormInitial {
   slug: string;
   taglineEn: string;
   taglineUr: string;
+  descriptionEn: string;
+  descriptionUr: string;
   isActive: boolean;
 }
 
@@ -92,6 +99,8 @@ function formToPayload(
   slug: string,
   taglineEn: string,
   taglineUr: string,
+  descriptionEn: string,
+  descriptionUr: string,
   isActive: boolean
 ): CategoryPayload {
   const payload: CategoryPayload = {
@@ -102,17 +111,22 @@ function formToPayload(
   if (taglineEn.trim()) {
     payload.tagline = { en: taglineEn, ur: taglineUr || undefined };
   }
+  if (descriptionEn.trim()) {
+    payload.description = { en: descriptionEn, ur: descriptionUr || undefined };
+  }
   return payload;
 }
 
 function CategoryForm({
   initial,
+  coverImageUrl,
   onCancel,
   onSave,
 }: {
   initial: CategoryFormInitial;
+  coverImageUrl?: string;
   onCancel: () => void;
-  onSave: (payload: CategoryPayload) => Promise<void>;
+  onSave: (payload: CategoryPayload, coverImageFile: File | null) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const nameEn = useValidatedField(validateRequired, initial.nameEn);
@@ -120,7 +134,10 @@ function CategoryForm({
   const slug = useValidatedField(validateSlug, initial.slug);
   const [taglineEn, setTaglineEn] = useState(initial.taglineEn);
   const [taglineUr, setTaglineUr] = useState(initial.taglineUr);
+  const [descriptionEn, setDescriptionEn] = useState(initial.descriptionEn);
+  const [descriptionUr, setDescriptionUr] = useState(initial.descriptionUr);
   const [isActive, setIsActive] = useState(initial.isActive);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -132,7 +149,19 @@ function CategoryForm({
     setSaving(true);
     setError('');
     try {
-      await onSave(formToPayload(nameEn.value, nameUr, slug.value, taglineEn, taglineUr, isActive));
+      await onSave(
+        formToPayload(
+          nameEn.value,
+          nameUr,
+          slug.value,
+          taglineEn,
+          taglineUr,
+          descriptionEn,
+          descriptionUr,
+          isActive
+        ),
+        coverImageFile
+      );
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -160,25 +189,6 @@ function CategoryForm({
           onChange={setNameUr}
         />
         <FieldInput
-          id="category-slug"
-          label={t('admin.form.slug')}
-          hint={t('admin.form.slugHint')}
-          dir="ltr"
-          placeholder="dried-flowers"
-          value={slug.value}
-          onChange={slug.onChange}
-          onBlur={slug.onBlur}
-          error={slug.error ? t(slug.error) : undefined}
-        />
-        <label className="flex items-center gap-3 pt-6 text-sm">
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={(event) => setIsActive(event.target.checked)}
-          />
-          {t('admin.admins.active')}
-        </label>
-        <FieldInput
           id="category-tagline-en"
           label={t('admin.form.taglineEn')}
           dir="ltr"
@@ -192,6 +202,49 @@ function CategoryForm({
           value={taglineUr}
           onChange={setTaglineUr}
         />
+        <FieldTextArea
+          id="category-description-en"
+          label={t('admin.form.descEn')}
+          dir="ltr"
+          value={descriptionEn}
+          onChange={setDescriptionEn}
+        />
+        <FieldTextArea
+          id="category-description-ur"
+          label={t('admin.form.descUr')}
+          dir="rtl"
+          value={descriptionUr}
+          onChange={setDescriptionUr}
+        />
+      </div>
+      <div className="mt-4">
+        <FieldInput
+          id="category-slug"
+          label={t('admin.form.slug')}
+          hint={t('admin.form.slugHint')}
+          dir="ltr"
+          placeholder="dried-flowers"
+          value={slug.value}
+          onChange={slug.onChange}
+          onBlur={slug.onBlur}
+          error={slug.error ? t(slug.error) : undefined}
+        />
+      </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <ImageUploadField
+          label={t('admin.form.coverImage')}
+          file={coverImageFile}
+          onFileChange={setCoverImageFile}
+          existingUrl={coverImageUrl}
+        />
+        <div className="flex items-center gap-6 pt-6">
+          <Toggle
+            id="category-active"
+            checked={isActive}
+            onChange={setIsActive}
+            label={t('admin.admins.active')}
+          />
+        </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">

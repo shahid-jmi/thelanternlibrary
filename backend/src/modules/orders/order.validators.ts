@@ -43,9 +43,21 @@ export const listAdminOrdersQuerySchema = z.object({
   sort: z.enum(['newest', 'oldest'], { message: 'sort must be "newest" or "oldest"' }).default('newest'),
 });
 
-export const updateOrderStatusBodySchema = z.object({
-  status: z.enum(ORDER_STATUSES, { message: 'Invalid order status' }),
-});
+export const updateOrderStatusBodySchema = z
+  .object({
+    status: z.enum(ORDER_STATUSES, { message: 'Invalid order status' }),
+    // Delivery cost varies per order and is only known once the admin marks
+    // it paid — required at that point so the invoice reflects it.
+    deliveryCharge: z.coerce
+      .number({ message: 'Delivery charge must be a number' })
+      .min(0, 'Delivery charge must be a positive number')
+      .int('Delivery charge must be a whole number of rupees')
+      .optional(),
+  })
+  .refine((data) => data.status !== 'paid' || data.deliveryCharge !== undefined, {
+    message: 'Delivery charge is required when marking an order as paid',
+    path: ['deliveryCharge'],
+  });
 
 export type CreateOrderInput = z.infer<typeof createOrderBodySchema>;
 export type ListAdminOrdersQuery = z.infer<typeof listAdminOrdersQuerySchema>;

@@ -1,6 +1,10 @@
 import PDFDocument from 'pdfkit';
 import type { AdminOrderDto } from './order.mapper.js';
 
+// INR is shown as whole rupees, not with cents-style decimals — "Rs" stays
+// plain text (not the ₹ glyph) since PDF fonts often lack that character.
+const formatRupees = (amount: number): string => `Rs ${Math.round(amount).toLocaleString('en-IN')}`;
+
 export const buildInvoicePdf = (order: AdminOrderDto): Promise<Buffer> =>
   new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -35,17 +39,23 @@ export const buildInvoicePdf = (order: AdminOrderDto): Promise<Buffer> =>
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    const rowY = tableTop + 25;
-    doc.text(order.bookTitle, 50, rowY, { width: 200 });
-    doc.text(order.bookAuthor, 260, rowY, { width: 180 });
-    doc.text(`Rs ${order.price.toFixed(2)}`, 450, rowY, { width: 100, align: 'right' });
+    const bookRowY = tableTop + 25;
+    doc.text(order.bookTitle, 50, bookRowY, { width: 200 });
+    doc.text(order.bookAuthor, 260, bookRowY, { width: 180 });
+    doc.text(formatRupees(order.price), 450, bookRowY, { width: 100, align: 'right' });
 
-    doc
-      .moveTo(50, rowY + 30)
-      .lineTo(550, rowY + 30)
-      .stroke();
-    doc.fontSize(12).text('Total', 260, rowY + 40);
-    doc.text(`Rs ${order.price.toFixed(2)}`, 450, rowY + 40, { width: 100, align: 'right' });
+    const deliveryRowY = bookRowY + 20;
+    doc.text('Delivery Charge', 50, deliveryRowY, { width: 200 });
+    doc.text(formatRupees(order.deliveryCharge), 450, deliveryRowY, {
+      width: 100,
+      align: 'right',
+    });
+
+    const total = order.price + order.deliveryCharge;
+    const totalDividerY = deliveryRowY + 25;
+    doc.moveTo(50, totalDividerY).lineTo(550, totalDividerY).stroke();
+    doc.fontSize(12).text('Total', 260, totalDividerY + 10);
+    doc.text(formatRupees(total), 450, totalDividerY + 10, { width: 100, align: 'right' });
 
     doc.moveDown(4);
     doc

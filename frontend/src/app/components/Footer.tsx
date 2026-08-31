@@ -1,11 +1,11 @@
 import { Link } from 'react-router';
 import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
-import LanternMark from './LanternMark';
-import { BotanicalCorner } from './Botanicals';
+import { Logo } from '@/app/components/Logo';
+import { BotanicalCorner } from '@/app/components/Botanicals';
 
-const QUICK_LINKS = [
+const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
   { label: 'Home', href: '/#home' },
-  { label: 'Library', href: '/#catalog' },
+  { label: 'Library', href: '/catalog', isRoute: true },
   { label: 'About', href: '/#about' },
   { label: 'Contact', href: '/#contact' },
 ];
@@ -13,18 +13,15 @@ const QUICK_LINKS = [
 export default function Footer() {
   return (
     <footer className="relative mt-20 overflow-hidden border-t border-border">
-      <BotanicalCorner className="pointer-events-none absolute -bottom-3 -left-2 h-28 w-28 text-accent opacity-45" />
+      <BotanicalCorner className="pointer-events-none absolute -bottom-4 -left-3 h-40 w-40 text-accent opacity-45" />
       <BotanicalCorner
         flip
-        className="pointer-events-none absolute -bottom-3 -right-2 h-28 w-28 text-accent opacity-45"
+        className="pointer-events-none absolute -bottom-4 -right-3 h-40 w-40 text-accent opacity-45"
       />
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>
-          <div className="flex items-center gap-3">
-            <LanternMark className="h-12 w-auto text-[var(--icon-color)]" />
-            <span className="text-lg tracking-[0.08em]">The Lantern Library</span>
-          </div>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ember">
+          <Logo variant="mark" />
+          <p className="mt-4 text-[10px] uppercase tracking-[0.3em] text-ember">
             From Kashmir to Kashmir
           </p>
           <p className="mt-5 max-w-xs text-sm italic leading-7 opacity-70">
@@ -34,24 +31,27 @@ export default function Footer() {
         <div>
           <h3 className="mb-5 text-[10px] uppercase tracking-[0.3em] text-accent">Quick Links</h3>
           <ul className="space-y-2.5">
-            {QUICK_LINKS.map((link) => (
-              <li key={link.label}>
-                <a
-                  href={link.href}
-                  className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-            <li>
-              <Link
-                to="/admin"
-                className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
-              >
-                Admin
-              </Link>
-            </li>
+            {QUICK_LINKS.map((link) =>
+              link.isRoute ? (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ) : (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="text-sm opacity-70 transition hover:text-ember hover:opacity-100"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              )
+            )}
           </ul>
         </div>
         <div>

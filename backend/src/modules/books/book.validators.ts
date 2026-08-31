@@ -24,6 +24,7 @@ export const listPublicBooksQuerySchema = z.object({
   genre: z.enum(BOOK_GENRES, { message: 'Invalid genre' }).optional(),
   language: z.enum(BOOK_LANGUAGES, { message: 'Invalid book language' }).optional(),
   available: booleanFromString('available must be true or false').optional(),
+  featured: booleanFromString('featured must be true or false').optional(),
   search: z
     .string()
     .trim()
@@ -42,17 +43,24 @@ export const upsertBookBodySchema = z.object({
   author: z.string({ message: 'Author is required' }).trim().min(1, 'Author is required'),
   price: z.coerce
     .number({ message: 'Price must be a positive number' })
-    .min(0, 'Price must be a positive number'),
+    .min(0, 'Price must be a positive number')
+    .int('Price must be a whole number of rupees'),
   genre: z.enum(BOOK_GENRES, { message: 'Genre is invalid' }),
   language: z.enum(BOOK_LANGUAGES, { message: 'Language is invalid' }),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),
+  isFeatured: booleanFromString('isFeatured must be a boolean').optional(),
 });
 
 export const updateAvailabilityBodySchema = z.object({
   isAvailable: booleanFromString('isAvailable must be a boolean'),
 });
 
+export const updateFeaturedBodySchema = z.object({
+  isFeatured: booleanFromString('isFeatured must be a boolean'),
+});
+
 export type ListPublicBooksQuery = z.infer<typeof listPublicBooksQuerySchema>;
 export type GetPublicBookQuery = z.infer<typeof getPublicBookQuerySchema>;
 export type UpsertBookInput = z.infer<typeof upsertBookBodySchema>;
 export type UpdateAvailabilityInput = z.infer<typeof updateAvailabilityBodySchema>;
+export type UpdateFeaturedInput = z.infer<typeof updateFeaturedBodySchema>;

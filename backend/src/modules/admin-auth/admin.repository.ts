@@ -6,6 +6,7 @@ export interface CreateAdminRecord {
   passwordHash: string;
   role: AdminRole;
   createdBy: string | null;
+  mustChangePassword?: boolean;
 }
 
 export const findByEmail = async (email: string): Promise<AdminDocument | null> =>
@@ -16,6 +17,12 @@ export const findById = async (id: string): Promise<AdminDocument | null> =>
 
 export const findByIdLean = async (id: string): Promise<AdminLean | null> =>
   Admin.findById(id).lean<AdminLean>().exec();
+
+export const findByResetTokenHash = async (tokenHash: string): Promise<AdminDocument | null> =>
+  Admin.findOne({
+    passwordResetTokenHash: tokenHash,
+    passwordResetExpiresAt: { $gt: new Date() },
+  }).exec();
 
 export const findAll = async (): Promise<AdminLean[]> =>
   Admin.find().sort({ createdAt: -1 }).lean<AdminLean[]>().exec();
@@ -44,5 +51,27 @@ export const reactivateById = async (id: string): Promise<AdminLean | null> =>
 
 export const updateRoleById = async (id: string, role: AdminRole): Promise<AdminLean | null> =>
   Admin.findByIdAndUpdate(id, { role }, { new: true, runValidators: true })
+    .lean<AdminLean>()
+    .exec();
+
+// Used for the super-admin "force password reset" flow. Bumping tokenVersion
+// invalidates any sessions the admin already holds, mirroring deactivateById
+// — a forced reset is a signal the current credentials may be compromised.
+export const forcePasswordResetById = async (
+  id: string,
+  passwordHash: string
+): Promise<AdminLean | null> =>
+  Admin.findByIdAndUpdate(
+    id,
+    {
+      passwordHash,
+      mustChangePassword: true,
+      passwordChangedAt: new Date(),
+      passwordResetTokenHash: null,
+      passwordResetExpiresAt: null,
+      $inc: { tokenVersion: 1 },
+    },
+    { new: true, runValidators: true }
+  )
     .lean<AdminLean>()
     .exec();

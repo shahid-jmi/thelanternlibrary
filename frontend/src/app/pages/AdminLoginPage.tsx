@@ -1,15 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Lock } from 'lucide-react';
-import { getErrorMessage } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
-import PageFrame from '../components/PageFrame';
-import Reveal from '../components/Reveal';
-import StatusMessage from '../components/StatusMessage';
-import { FieldInput } from '../components/FormField';
-import { validateEmail, validatePassword } from '../lib/validation';
-import { useValidatedField } from '../lib/useValidatedField';
+import { Loader2, Lock } from 'lucide-react';
+import { getErrorMessage } from '@/app/api/client';
+import { useAuth } from '@/app/auth/AuthContext';
+import PageFrame from '@/app/components/PageFrame';
+import Reveal from '@/app/components/Reveal';
+import StatusMessage from '@/app/components/StatusMessage';
+import { FieldInput } from '@/app/components/FormField';
+import { validateEmail, validatePassword } from '@/app/lib/validation';
+import { useValidatedField } from '@/app/lib/useValidatedField';
 
 export default function AdminLoginPage() {
   const { t } = useTranslation();
@@ -84,6 +84,13 @@ export default function AdminLoginPage() {
             />
           </div>
 
+          <Link
+            to="/admin/forgot-password"
+            className="mt-3 inline-block text-sm text-ember transition hover:opacity-80"
+          >
+            {t('admin.login.forgotPassword')}
+          </Link>
+
           {error && (
             <div className="mt-4">
               <StatusMessage tone="error">{error}</StatusMessage>
@@ -92,8 +99,9 @@ export default function AdminLoginPage() {
 
           <button
             disabled={submitting}
-            className="mt-2 h-11 w-full rounded-sm bg-ember text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110 disabled:opacity-60"
+            className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-ember text-xs uppercase tracking-label text-ember-foreground transition hover:brightness-110 disabled:opacity-60"
           >
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('admin.login.submit')}
           </button>
         </form>

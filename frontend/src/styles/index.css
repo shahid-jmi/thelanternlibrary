@@ -78,6 +78,104 @@
   display: none;
 }
 
+/* Number fields (price, delivery charge, pincode, etc.) are plain numeric
+   inputs, not steppers — suppress the native up/down spinner UI. */
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Autofilled fields (saved passwords, remembered emails) get a UA-forced
+   background that plain background-color can't override — the inset
+   box-shadow trick is the only reliable way to replace it with our own
+   theme color instead of the browser's white/pale-blue default. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 1000px var(--background) inset;
+  box-shadow: 0 0 0 1000px var(--background) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Lantern loader — a hanging lantern swaying gently while content loads. */
+@keyframes lantern-swing {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes lantern-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.lantern-loader-icon {
+  transform-origin: 50% 0%;
+  animation: lantern-swing 1.8s ease-in-out infinite;
+}
+
+.lantern-loader-glow {
+  animation: lantern-glow 1.8s ease-in-out infinite;
+}
+
+/* WhatsApp button — a slow, subtle pulse ring (Tailwind's animate-ping is
+   too fast/large for a persistent floating button that's always on screen). */
+@keyframes whatsapp-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+.whatsapp-pulse-ring {
+  animation: whatsapp-pulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Shimmer — a soft warm sweep across skeleton placeholders on card grids. */
+@keyframes shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--secondary);
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(200, 150, 60, 0.22), transparent);
+  animation: shimmer-sweep 1.6s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -86,6 +184,19 @@
   }
 
   .bokeh-orb {
+    animation: none;
+  }
+
+  .lantern-loader-icon,
+  .lantern-loader-glow {
+    animation: none;
+  }
+
+  .whatsapp-pulse-ring {
+    animation: none;
+  }
+
+  .shimmer::after {
     animation: none;
   }
 }

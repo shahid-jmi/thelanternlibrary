@@ -13,6 +13,7 @@ export interface AdminOrderDto {
   bookTitle: string;
   bookAuthor: string;
   price: number;
+  deliveryCharge: number;
   customerName: string;
   customerPhone: string;
   customerAltPhone: string | null;
@@ -43,6 +44,8 @@ export const toAdminOrderDto = (order: OrderLean): AdminOrderDto => ({
   bookTitle: order.bookTitle,
   bookAuthor: order.bookAuthor,
   price: order.price,
+  // Defensive default for orders paid before this field existed.
+  deliveryCharge: order.deliveryCharge ?? 0,
   customerName: order.customerName,
   customerPhone: order.customerPhone,
   customerAltPhone: order.customerAltPhone ?? null,

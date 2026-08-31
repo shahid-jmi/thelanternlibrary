@@ -8,6 +8,7 @@ import {
   getPublicBookQuerySchema,
   listPublicBooksQuerySchema,
   updateAvailabilityBodySchema,
+  updateFeaturedBodySchema,
   upsertBookBodySchema,
 } from './book.validators.js';
 import {
@@ -18,6 +19,7 @@ import {
   listPublicBooks,
   updateAvailability,
   updateBook,
+  updateFeatured,
 } from './book.controller.js';
 
 export const createPublicBookRouter = (): Router => {
@@ -56,6 +58,11 @@ export const createAdminBookRouter = (): Router => {
     '/:id/availability',
     validate({ params: bookIdParamsSchema, body: updateAvailabilityBodySchema }),
     asyncHandler(updateAvailability)
+  );
+  router.patch(
+    '/:id/featured',
+    validate({ params: bookIdParamsSchema, body: updateFeaturedBodySchema }),
+    asyncHandler(updateFeatured)
   );
 
   return router;

@@ -18,8 +18,8 @@ export const listAdminOrders = async (req: Request, res: Response): Promise<void
 };
 
 export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
-  const { status } = req.body as UpdateOrderStatusInput;
-  const order = await orderService.updateOrderStatus(req.params.id as string, status);
+  const { status, deliveryCharge } = req.body as UpdateOrderStatusInput;
+  const order = await orderService.updateOrderStatus(req.params.id as string, status, deliveryCharge);
   res.json(order);
 };
 

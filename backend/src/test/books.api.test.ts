@@ -1,11 +1,17 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import createApp from '../app.js';
+import Admin from '../modules/admin-auth/admin.model.js';
 import Book from '../modules/books/book.model.js';
-import { clearTestDatabase, startTestDatabase, stopTestDatabase } from './db.js';
+import { startTestDatabase, stopTestDatabase } from './db.js';
 
 const app = createApp();
+
+const REGULAR_ADMIN = { email: 'admin@test.com', password: 'admin-secret-1' };
+
+let adminToken = '';
 
 const seedBooks = () =>
   Book.create(
@@ -17,6 +23,7 @@ const seedBooks = () =>
       genre: 'fiction',
       coverImage: { url: 'https://covers.test.example.com/a.webp', key: null },
       isAvailable: true,
+      isFeatured: true,
       language: 'english',
     },
     {
@@ -33,6 +40,16 @@ const seedBooks = () =>
 
 beforeAll(async () => {
   await startTestDatabase();
+
+  await Admin.create({
+    email: REGULAR_ADMIN.email,
+    passwordHash: await bcrypt.hash(REGULAR_ADMIN.password, 4),
+    role: 'admin',
+    isActive: true,
+  });
+
+  const response = await request(app).post('/api/v1/admin/auth/login').send(REGULAR_ADMIN);
+  adminToken = response.body.token as string;
 });
 
 afterAll(async () => {
@@ -40,7 +57,8 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await clearTestDatabase();
+  // Keep the admin account; only reset book data between tests.
+  await Book.deleteMany({});
 });
 
 describe('GET /api/books', () => {
@@ -88,6 +106,16 @@ describe('GET /api/v1/books', () => {
     expect(available.body[0].isAvailable).toBe(true);
   });
 
+  it('filters by featured', async () => {
+    await seedBooks();
+
+    const response = await request(app).get('/api/v1/books').query({ featured: 'true' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].author).toBe('Paulo Coelho');
+  });
+
   it('rejects an invalid genre with details', async () => {
     const response = await request(app).get('/api/v1/books').query({ genre: 'cooking' });
 
@@ -119,5 +147,38 @@ describe('GET /api/v1/books/:id', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.details[0].msg).toBe('Invalid book id');
+  });
+});
+
+describe('PATCH /api/v1/admin/books/:id/featured', () => {
+  it('toggles featured', async () => {
+    const [book] = await seedBooks();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/books/${book._id.toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: false });
+
+    expect(response.status).toBe(200);
+    expect(response.body.isFeatured).toBe(false);
+  });
+
+  it('rejects requests without a token', async () => {
+    const [book] = await seedBooks();
+
+    const response = await request(app)
+      .patch(`/api/v1/admin/books/${book._id.toString()}/featured`)
+      .send({ isFeatured: false });
+
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 404 for a missing book', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/admin/books/${new Types.ObjectId().toString()}/featured`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ isFeatured: false });
+
+    expect(response.status).toBe(404);
   });
 });

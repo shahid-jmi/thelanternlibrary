@@ -31,6 +31,7 @@ export interface PublicBook {
   language: BookLanguage;
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +54,7 @@ export interface BookPayload {
   genre: BookGenre;
   language: BookLanguage;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 export interface BookFilters {
@@ -61,6 +63,7 @@ export interface BookFilters {
   genre?: string;
   language?: string;
   available?: string;
+  featured?: string;
 }
 
 export interface PublicCategory {
@@ -68,6 +71,8 @@ export interface PublicCategory {
   name: string;
   slug: string;
   tagline: string | null;
+  description: string | null;
+  coverImage: CoverImage;
 }
 
 export interface AdminCategory {
@@ -75,6 +80,8 @@ export interface AdminCategory {
   name: LocalizedText;
   slug: string;
   tagline: LocalizedText | null;
+  description: LocalizedText | null;
+  coverImage: CoverImage;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -84,6 +91,7 @@ export interface CategoryPayload {
   name: LocalizedText;
   slug: string;
   tagline?: LocalizedText;
+  description?: LocalizedText;
   isActive: boolean;
 }
 
@@ -99,6 +107,7 @@ export interface PublicProduct {
   };
   coverImage: CoverImage;
   isAvailable: boolean;
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,12 +129,14 @@ export interface ProductPayload {
   category: string;
   price: number;
   isAvailable: boolean;
+  isFeatured: boolean;
 }
 
 export interface ProductFilters {
   lang?: string;
   category?: string;
   available?: string;
+  featured?: string;
   search?: string;
 }
 
@@ -202,6 +213,7 @@ export interface AdminOrder {
   bookTitle: string;
   bookAuthor: string;
   price: number;
+  deliveryCharge: number;
   customerName: string;
   customerPhone: string;
   customerAltPhone: string | null;
@@ -234,6 +246,8 @@ export interface AdminAccount {
   isActive: boolean;
   createdBy: string | null;
   lastLoginAt: string | null;
+  mustChangePassword: boolean;
+  passwordChangedAt: string;
   createdAt: string;
   updatedAt: string;
 }

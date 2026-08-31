@@ -4,6 +4,8 @@ import {
   BOOK_LANGUAGES,
   TRANSLATION_LANGUAGES,
 } from '../modules/books/book.constants.js';
+import { ORDER_STATUSES } from '../modules/orders/order.model.js';
+import { INDIAN_STATES } from '../modules/orders/order.constants.js';
 
 const errorResponse = (description: string) => ({
   description,
@@ -37,6 +39,19 @@ const categoryIdParam = {
   description: 'MongoDB ObjectId of the category',
 };
 
+const categorySlugParam = {
+  name: 'slug',
+  in: 'path',
+  required: true,
+  schema: { type: 'string', pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' },
+  description: 'Slug of the category',
+};
+
+const orderIdParam = {
+  ...bookIdParam,
+  description: 'MongoDB ObjectId of the order',
+};
+
 const langQueryParam = {
   name: 'lang',
   in: 'query',
@@ -58,6 +73,7 @@ const openApiDocument = {
     { name: 'Books', description: 'Public storefront catalogue' },
     { name: 'Products', description: 'Public non-book catalogue (postcards, totes, etc.)' },
     { name: 'Categories', description: 'Public product categories for storefront navigation' },
+    { name: 'Orders', description: 'Public order placement' },
     { name: 'Auth', description: 'Admin authentication' },
     { name: 'Admin Books', description: 'Book management (admin token required)' },
     { name: 'Admin Products', description: 'Product management (admin token required)' },
@@ -67,6 +83,10 @@ const openApiDocument = {
         'Category taxonomy. Any admin can list; create/update/delete require a super admin token.',
     },
     { name: 'Admins', description: 'Admin account management (super admin token required)' },
+    {
+      name: 'Admin Orders',
+      description: 'Order management, status updates, and invoicing (admin token required)',
+    },
   ],
   components: {
     securitySchemes: {
@@ -113,11 +133,12 @@ const openApiDocument = {
           title: { type: 'string', description: 'Localized to the requested lang' },
           description: { type: 'string', description: 'Localized to the requested lang' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -129,11 +150,12 @@ const openApiDocument = {
           title: { $ref: '#/components/schemas/LocalizedText' },
           description: { $ref: '#/components/schemas/LocalizedText' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -147,9 +169,39 @@ const openApiDocument = {
           isActive: { type: 'boolean' },
           createdBy: { type: 'string', nullable: true },
           lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          mustChangePassword: {
+            type: 'boolean',
+            description: 'True until the admin sets their own password for the first time',
+          },
+          passwordChangedAt: { type: 'string', format: 'date-time' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
+      },
+      LoginResponse: {
+        type: 'object',
+        properties: {
+          token: { type: 'string', description: 'JWT bearer token, valid for 24 hours' },
+          mustChangePassword: {
+            type: 'boolean',
+            description: 'If true, the frontend should redirect to the change-password page',
+          },
+          admin: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              email: { type: 'string', format: 'email' },
+              role: { type: 'string', enum: [...ADMIN_ROLES] },
+            },
+            required: ['id', 'email', 'role'],
+          },
+        },
+        required: ['token', 'mustChangePassword', 'admin'],
+      },
+      MessageResponse: {
+        type: 'object',
+        properties: { message: { type: 'string' } },
+        required: ['message'],
       },
       PublicCategory: {
         type: 'object',
@@ -162,6 +214,12 @@ const openApiDocument = {
             nullable: true,
             description: 'Localized to the requested lang',
           },
+          description: {
+            type: 'string',
+            nullable: true,
+            description: 'Longer copy for the category detail page, localized to the requested lang',
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
         },
       },
       AdminCategory: {
@@ -174,23 +232,36 @@ const openApiDocument = {
             allOf: [{ $ref: '#/components/schemas/LocalizedText' }],
             nullable: true,
           },
+          description: {
+            allOf: [{ $ref: '#/components/schemas/LocalizedText' }],
+            nullable: true,
+          },
+          coverImage: { $ref: '#/components/schemas/CoverImage' },
           isActive: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
-      CategoryPayload: {
+      CategoryFormPayload: {
         type: 'object',
+        description:
+          'multipart/form-data payload. name and tagline are JSON-encoded LocalizedText strings.',
         properties: {
-          name: { $ref: '#/components/schemas/LocalizedText' },
+          name: { type: 'string', description: 'JSON-encoded LocalizedText' },
           slug: {
             type: 'string',
             pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
             maxLength: 60,
             description: 'Stable machine-safe identifier used for filtering',
           },
-          tagline: { $ref: '#/components/schemas/LocalizedText' },
-          isActive: { type: 'boolean' },
+          tagline: { type: 'string', description: 'JSON-encoded LocalizedText, optional' },
+          description: { type: 'string', description: 'JSON-encoded LocalizedText, optional' },
+          isActive: { type: 'string', enum: ['true', 'false'] },
+          coverImage: {
+            type: 'string',
+            format: 'binary',
+            description: 'JPG, PNG, or WEBP up to 2MB. Optional — falls back to a placeholder.',
+          },
         },
         required: ['name', 'slug'],
       },
@@ -200,7 +271,7 @@ const openApiDocument = {
           _id: { type: 'string' },
           name: { type: 'string', description: 'Localized to the requested lang' },
           description: { type: 'string', description: 'Localized to the requested lang' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           category: {
             type: 'object',
             properties: {
@@ -211,6 +282,7 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -221,7 +293,7 @@ const openApiDocument = {
           _id: { type: 'string' },
           name: { $ref: '#/components/schemas/LocalizedText' },
           description: { $ref: '#/components/schemas/LocalizedText' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           category: {
             type: 'object',
             properties: {
@@ -233,6 +305,7 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
+          isFeatured: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -249,8 +322,9 @@ const openApiDocument = {
             pattern: '^[a-fA-F\\d]{24}$',
             description: 'ObjectId of an existing, active category',
           },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
+          isFeatured: { type: 'string', enum: ['true', 'false'] },
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -267,10 +341,11 @@ const openApiDocument = {
           title: { type: 'string', description: 'JSON-encoded LocalizedText' },
           description: { type: 'string', description: 'JSON-encoded LocalizedText' },
           author: { type: 'string' },
-          price: { type: 'number', minimum: 0 },
+          price: { type: 'integer', minimum: 0 },
           genre: { type: 'string', enum: [...BOOK_GENRES] },
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
+          isFeatured: { type: 'string', enum: ['true', 'false'] },
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -278,6 +353,94 @@ const openApiDocument = {
           },
         },
         required: ['title', 'description', 'author', 'price', 'genre', 'language'],
+      },
+      OrderPayload: {
+        type: 'object',
+        properties: {
+          book: {
+            type: 'string',
+            pattern: '^[a-fA-F\\d]{24}$',
+            description: 'ObjectId of the book being ordered',
+          },
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerAltPhone: { type: 'string' },
+          addressLine: { type: 'string' },
+          locality: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+          pincode: { type: 'string', pattern: '^\\d{6}$' },
+          note: { type: 'string' },
+        },
+        required: [
+          'book',
+          'customerName',
+          'customerPhone',
+          'addressLine',
+          'locality',
+          'city',
+          'state',
+          'pincode',
+        ],
+      },
+      PublicOrder: {
+        type: 'object',
+        description: 'Returned after placing an order — the full order is only visible to admins.',
+        properties: {
+          _id: { type: 'string' },
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      AdminOrder: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          book: {
+            type: 'object',
+            nullable: true,
+            description: 'Null if the book has since been deleted',
+            properties: {
+              _id: { type: 'string' },
+              title: { type: 'string' },
+              coverImage: { $ref: '#/components/schemas/CoverImage' },
+            },
+          },
+          bookTitle: { type: 'string' },
+          bookAuthor: { type: 'string' },
+          price: { type: 'integer', minimum: 0, description: 'Snapshot of the book price at order time' },
+          deliveryCharge: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Set once, when the admin marks the order paid',
+          },
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerAltPhone: { type: 'string', nullable: true },
+          addressLine: { type: 'string' },
+          locality: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+          pincode: { type: 'string' },
+          note: { type: 'string', nullable: true },
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          invoiceNumber: { type: 'string', nullable: true },
+          invoiceGeneratedAt: { type: 'string', format: 'date-time', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      OrderStatusUpdate: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          deliveryCharge: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Required when status is "paid"',
+          },
+        },
+        required: ['status'],
       },
     },
   },
@@ -302,6 +465,12 @@ const openApiDocument = {
           },
           {
             name: 'available',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+          },
+          {
+            name: 'featured',
             in: 'query',
             required: false,
             schema: { type: 'string', enum: ['true', 'false'] },
@@ -364,6 +533,12 @@ const openApiDocument = {
             schema: { type: 'string', enum: ['true', 'false'] },
           },
           {
+            name: 'featured',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+          },
+          {
             name: 'search',
             in: 'query',
             required: false,
@@ -419,11 +594,50 @@ const openApiDocument = {
         },
       },
     },
+    '/categories/{slug}': {
+      get: {
+        tags: ['Categories'],
+        summary: 'Get a single active category by slug',
+        parameters: [categorySlugParam, langQueryParam],
+        responses: {
+          200: {
+            description: 'The category',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PublicCategory' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          404: errorResponse('Category not found (or inactive)'),
+        },
+      },
+    },
+    '/orders': {
+      post: {
+        tags: ['Orders'],
+        summary: 'Place an order for a book',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/OrderPayload' } },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Order placed',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PublicOrder' } },
+            },
+          },
+          400: errorResponse('Validation failed, or the referenced book does not exist'),
+        },
+      },
+    },
     '/admin/auth/login': {
       post: {
         tags: ['Auth'],
         summary: 'Log in as an admin',
-        description: 'Rate limited to 5 failed attempts per 15 minutes.',
+        description:
+          'Rate limited to 5 failed attempts per 15 minutes. If mustChangePassword is true, the frontend should redirect to the change-password page before allowing further use.',
         requestBody: {
           required: true,
           content: {
@@ -441,20 +655,111 @@ const openApiDocument = {
         },
         responses: {
           200: {
-            description: 'JWT valid for 24 hours',
+            description: 'Login successful',
             content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { token: { type: 'string' } },
-                  required: ['token'],
-                },
-              },
+              'application/json': { schema: { $ref: '#/components/schemas/LoginResponse' } },
             },
           },
           400: errorResponse('Validation failed'),
           401: errorResponse('Invalid credentials'),
           429: errorResponse('Too many login attempts'),
+        },
+      },
+    },
+    '/admin/auth/change-password': {
+      post: {
+        tags: ['Auth'],
+        summary: "Change the authenticated admin's own password",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  currentPassword: { type: 'string' },
+                  newPassword: { type: 'string', minLength: 8 },
+                },
+                required: ['currentPassword', 'newPassword'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password changed',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse(
+            'Validation failed, or new password same as current password'
+          ),
+          401: errorResponse('Missing/invalid token, or current password is incorrect'),
+        },
+      },
+    },
+    '/admin/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Request a password reset link',
+        description:
+          'Always returns the same generic success response, whether or not the email belongs to an account, to avoid leaking account existence. Rate limited to 5 requests per 15 minutes.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { email: { type: 'string', format: 'email' } },
+                required: ['email'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Generic confirmation (does not indicate whether the account exists)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          429: errorResponse('Too many password reset requests'),
+        },
+      },
+    },
+    '/admin/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Reset a password using a token from the forgot-password email',
+        description: 'The token is valid for 30 minutes and single-use.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  token: { type: 'string', description: 'Raw token from the reset link' },
+                  newPassword: { type: 'string', minLength: 8 },
+                },
+                required: ['token', 'newPassword'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password reset',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Reset link is invalid or has expired'),
+          429: errorResponse('Too many attempts'),
         },
       },
     },
@@ -554,6 +859,37 @@ const openApiDocument = {
                 type: 'object',
                 properties: { isAvailable: { type: 'boolean' } },
                 required: ['isAvailable'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated book',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminBook' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Book not found'),
+        },
+      },
+    },
+    '/admin/books/{id}/featured': {
+      patch: {
+        tags: ['Admin Books'],
+        summary: 'Toggle whether a book is featured on the homepage',
+        security: [{ bearerAuth: [] }],
+        parameters: [bookIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { isFeatured: { type: 'boolean' } },
+                required: ['isFeatured'],
               },
             },
           },
@@ -688,6 +1024,37 @@ const openApiDocument = {
         },
       },
     },
+    '/admin/products/{id}/featured': {
+      patch: {
+        tags: ['Admin Products'],
+        summary: 'Toggle whether a product is featured on the homepage',
+        security: [{ bearerAuth: [] }],
+        parameters: [productIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { isFeatured: { type: 'boolean' } },
+                required: ['isFeatured'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated product',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminProduct' } },
+            },
+          },
+          400: errorResponse('Validation failed'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Product not found'),
+        },
+      },
+    },
     '/admin/categories': {
       get: {
         tags: ['Admin Categories'],
@@ -712,7 +1079,7 @@ const openApiDocument = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+            'multipart/form-data': { schema: { $ref: '#/components/schemas/CategoryFormPayload' } },
           },
         },
         responses: {
@@ -738,7 +1105,7 @@ const openApiDocument = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CategoryPayload' } },
+            'multipart/form-data': { schema: { $ref: '#/components/schemas/CategoryFormPayload' } },
           },
         },
         responses: {
@@ -910,6 +1277,119 @@ const openApiDocument = {
           401: errorResponse('Missing or invalid token'),
           403: errorResponse('Super admin access required'),
           404: errorResponse('Admin not found'),
+        },
+      },
+    },
+    '/admin/admins/{id}/force-password-reset': {
+      patch: {
+        tags: ['Admins'],
+        summary: "Force-reset another admin's password (cannot target yourself)",
+        description:
+          'Generates a new temporary password, hashes and stores it, and sets mustChangePassword so the admin must change it on next login. Also invalidates any sessions the admin currently holds. The plaintext temporary password is returned once in this response and is never stored or retrievable again.',
+        security: [{ bearerAuth: [] }],
+        parameters: [adminIdParam],
+        responses: {
+          200: {
+            description: 'One-time temporary password for the target admin',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { temporaryPassword: { type: 'string' } },
+                  required: ['temporaryPassword'],
+                },
+              },
+            },
+          },
+          400: errorResponse('Cannot act on your own account'),
+          401: errorResponse('Missing or invalid token'),
+          403: errorResponse('Super admin access required'),
+          404: errorResponse('Admin not found'),
+        },
+      },
+    },
+    '/admin/orders': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'List orders',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'search',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Matches against book title or customer phone number',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: [...ORDER_STATUSES] },
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['newest', 'oldest'], default: 'newest' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Orders matching the filters',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/AdminOrder' } },
+              },
+            },
+          },
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+    },
+    '/admin/orders/{id}/status': {
+      patch: {
+        tags: ['Admin Orders'],
+        summary: 'Update an order\'s status',
+        description:
+          'deliveryCharge is required when setting status to "paid" — it varies per order and is only known at that point.',
+        security: [{ bearerAuth: [] }],
+        parameters: [orderIdParam],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/OrderStatusUpdate' } },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Updated order',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AdminOrder' } },
+            },
+          },
+          400: errorResponse('Validation failed, or deliveryCharge missing while marking paid'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Order not found'),
+        },
+      },
+    },
+    '/admin/orders/{id}/invoice': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'Download the invoice PDF for a paid order',
+        description:
+          'Generates and persists an invoice number on first request; subsequent requests reuse it and re-render the same PDF.',
+        security: [{ bearerAuth: [] }],
+        parameters: [orderIdParam],
+        responses: {
+          200: {
+            description: 'Invoice PDF',
+            content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+          },
+          400: errorResponse('Order is not marked paid yet'),
+          401: errorResponse('Missing or invalid token'),
+          404: errorResponse('Order not found'),
         },
       },
     },

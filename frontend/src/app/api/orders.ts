@@ -1,11 +1,11 @@
-import { api } from './client';
+import { api } from '@/app/api/client';
 import type {
   AdminOrder,
   CreateOrderPayload,
   OrderFilters,
   OrderStatus,
   PublicOrder,
-} from './types';
+} from '@/app/api/types';
 
 function compactParams(params: OrderFilters) {
   return Object.fromEntries(
@@ -30,8 +30,15 @@ export async function getAdminOrders(filters: OrderFilters): Promise<AdminOrder[
   return data;
 }
 
-export async function updateOrderStatus(id: string, status: OrderStatus): Promise<AdminOrder> {
-  const { data } = await api.patch<AdminOrder>(`/admin/orders/${id}/status`, { status });
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus,
+  deliveryCharge?: number
+): Promise<AdminOrder> {
+  const { data } = await api.patch<AdminOrder>(`/admin/orders/${id}/status`, {
+    status,
+    deliveryCharge,
+  });
   return data;
 }
 

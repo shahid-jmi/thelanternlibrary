@@ -14,7 +14,9 @@ function getInitialTheme(): Theme {
   if (stored === 'light' || stored === 'dark') {
     return stored;
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // Light is the default for new visitors regardless of system preference —
+  // the vintage parchment aesthetic is designed for light mode first.
+  return 'light';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

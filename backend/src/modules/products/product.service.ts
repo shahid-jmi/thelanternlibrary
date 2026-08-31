@@ -61,6 +61,10 @@ export const listPublicProducts = async (
     query.isAvailable = filters.available;
   }
 
+  if (filters.featured !== undefined) {
+    query.isFeatured = filters.featured;
+  }
+
   if (filters.search) {
     query.$or = [
       { 'name.en': { $regex: filters.search, $options: 'i' } },
@@ -106,6 +110,7 @@ export const createProduct = async (
   const product = await productRepository.createProduct({
     ...payload,
     isAvailable: payload.isAvailable ?? true,
+    isFeatured: payload.isFeatured ?? false,
     coverImage,
   });
 
@@ -173,6 +178,19 @@ export const updateAvailability = async (
   isAvailable: boolean
 ): Promise<AdminProductDto> => {
   const updatedProduct = await productRepository.updateAvailabilityById(id, isAvailable);
+
+  if (!updatedProduct) {
+    throw new NotFoundError('Product not found');
+  }
+
+  return toAdminProductDto(updatedProduct);
+};
+
+export const updateFeatured = async (
+  id: string,
+  isFeatured: boolean
+): Promise<AdminProductDto> => {
+  const updatedProduct = await productRepository.updateFeaturedById(id, isFeatured);
 
   if (!updatedProduct) {
     throw new NotFoundError('Product not found');

@@ -25,6 +25,20 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     return;
   }
 
+  // express.json() throws these as plain (non-AppError) errors when the
+  // request body is malformed or exceeds the size limit. Without this they
+  // fall through to the generic 500 below and get logged as a server
+  // error, even though they're really the client's mistake.
+  const bodyParserErrorType = (err as { type?: string } | null)?.type;
+  if (bodyParserErrorType === 'entity.parse.failed') {
+    res.status(400).json({ message: 'Invalid JSON in request body' });
+    return;
+  }
+  if (bodyParserErrorType === 'entity.too.large') {
+    res.status(413).json({ message: 'Request body is too large' });
+    return;
+  }
+
   logger.error({ err }, err instanceof Error ? err.message : 'Unhandled error');
   res.status(500).json({ message: 'Internal Server Error' });
 };

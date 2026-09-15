@@ -34,12 +34,24 @@ api.interceptors.response.use(
 );
 
 export function getErrorMessage(error: unknown): string {
-  const response = (error as AxiosError<{ message?: string; details?: Array<{ msg: string }> }>)
-    .response;
+  const axiosError = error as AxiosError<{ message?: string; details?: Array<{ msg: string }> }>;
+  const response = axiosError.response;
   const details = response?.data?.details;
   if (Array.isArray(details) && details.length > 0) {
     return details.map((detail) => detail.msg).join(' ');
   }
+
+  // No response reached the client at all — either the device is offline,
+  // the request timed out, or the server is unreachable. Axios surfaces all
+  // of these as a plain Error with no `.response`, so give a message that
+  // fits the common case instead of the raw "Network Error"/timeout text.
+  if (!response && axiosError.request) {
+    if (axiosError.code === 'ECONNABORTED') {
+      return 'The request took too long. Please try again.';
+    }
+    return 'Unable to reach the server. Please check your internet connection.';
+  }
+
   if (error instanceof Error && !response) return error.message;
   return response?.data?.message || 'Something went wrong. Please try again.';
 }

@@ -17,7 +17,16 @@ import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
 import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
+import {
+  Badge,
+  Button,
+  EmptyTableRow,
+  Table,
+  TableHead,
+  TableRow,
+  Td,
+  Th,
+} from '@/app/components/ui';
 
 export default function ProductsPanel() {
   const { t } = useTranslation();
@@ -111,9 +120,6 @@ export default function ProductsPanel() {
       {!categoriesQuery.isPending && activeCategories.length === 0 && (
         <StatusMessage>{t('admin.products.noCategories')}</StatusMessage>
       )}
-      {!productsQuery.isPending && products.length > 0 && filteredProducts.length === 0 && (
-        <StatusMessage>{t('admin.dashboard.noResults')}</StatusMessage>
-      )}
 
       <Table>
         <TableHead>
@@ -127,6 +133,9 @@ export default function ProductsPanel() {
           </tr>
         </TableHead>
         <tbody>
+          {products.length > 0 && filteredProducts.length === 0 && (
+            <EmptyTableRow colSpan={6} message={t('admin.dashboard.noResults')} />
+          )}
           {filteredProducts.map((product) => (
             <TableRow key={product._id}>
               <Td>{product.name.en}</Td>

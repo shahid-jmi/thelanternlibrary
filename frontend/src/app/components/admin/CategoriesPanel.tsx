@@ -11,7 +11,16 @@ import { useConfirmedDelete } from '@/app/lib/useConfirmedDelete';
 import { useDebouncedValue } from '@/app/lib/useDebouncedValue';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
-import { Badge, Button, Table, TableHead, TableRow, Td, Th } from '@/app/components/ui';
+import {
+  Badge,
+  Button,
+  EmptyTableRow,
+  Table,
+  TableHead,
+  TableRow,
+  Td,
+  Th,
+} from '@/app/components/ui';
 
 export default function CategoriesPanel() {
   const { t } = useTranslation();
@@ -69,9 +78,6 @@ export default function CategoriesPanel() {
 
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
       {categoriesQuery.isPending && <Loader label="Loading categories..." />}
-      {!categoriesQuery.isPending && categories.length > 0 && filteredCategories.length === 0 && (
-        <StatusMessage>{t('admin.dashboard.noResults')}</StatusMessage>
-      )}
 
       <Table>
         <TableHead>
@@ -84,6 +90,9 @@ export default function CategoriesPanel() {
           </tr>
         </TableHead>
         <tbody>
+          {categories.length > 0 && filteredCategories.length === 0 && (
+            <EmptyTableRow colSpan={isSuperAdmin ? 5 : 4} message={t('admin.dashboard.noResults')} />
+          )}
           {filteredCategories.map((category) => (
             <TableRow key={category._id}>
               <Td>{category.name.en}</Td>

@@ -1,4 +1,8 @@
 {
+  "offline.message": "You're offline — some features may not work until your connection is restored.",
+  "error.boundaryHeading": "Something went wrong",
+  "error.boundarySubtext": "An unexpected error occurred. Try reloading the page.",
+  "error.reload": "Reload Page",
   "nav.home": "Home",
   "nav.catalog": "Catalog",
   "nav.admin": "Admin",

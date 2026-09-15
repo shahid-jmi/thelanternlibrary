@@ -28,8 +28,22 @@ describe('getErrorMessage', () => {
     expect(getErrorMessage(error)).toBe('Invalid credentials');
   });
 
-  it('uses the error message for network failures', () => {
+  it('uses the error message for a non-axios error', () => {
     expect(getErrorMessage(new Error('Network Error'))).toBe('Network Error');
+  });
+
+  it('gives a friendly message when no response reaches the client (offline/unreachable server)', () => {
+    const error = new AxiosError('Network Error', 'ERR_NETWORK');
+    error.request = {};
+    expect(getErrorMessage(error)).toBe(
+      'Unable to reach the server. Please check your internet connection.'
+    );
+  });
+
+  it('gives a friendly message for a request timeout', () => {
+    const error = new AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED');
+    error.request = {};
+    expect(getErrorMessage(error)).toBe('The request took too long. Please try again.');
   });
 
   it('falls back to a generic message', () => {

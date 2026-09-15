@@ -6,6 +6,7 @@ import { Logo } from '@/app/components/Logo';
 import GrainTexture from '@/app/components/GrainTexture';
 import Bokeh from '@/app/components/Bokeh';
 import Footer from '@/app/components/Footer';
+import OfflineBanner from '@/app/components/OfflineBanner';
 import { useTheme } from '@/app/theme/ThemeContext';
 
 type HomeSection = 'home' | 'about' | 'contact';
@@ -15,7 +16,7 @@ type HomeSection = 'home' | 'about' | 'contact';
 const OBSERVED_SECTIONS: Exclude<HomeSection, 'home'>[] = ['about', 'contact'];
 
 const navLinkClass = (active: boolean) =>
-  `relative inline-block text-sm transition after:absolute after:-bottom-2.5 after:left-1/2 after:h-1.5 after:w-1.5 after:-translate-x-1/2 after:rounded-full after:bg-ember after:transition-opacity after:content-[''] hover:text-ember hover:opacity-100 ${
+  `relative text-sm transition after:absolute after:-bottom-2.5 after:left-1/2 after:h-1.5 after:w-1.5 after:-translate-x-1/2 after:rounded-full after:bg-ember after:transition-opacity after:content-[''] hover:text-ember hover:opacity-100 ${
     active ? 'text-ember opacity-100 after:opacity-100' : 'opacity-70 after:opacity-0'
   }`;
 
@@ -74,119 +75,122 @@ export default function Shell({ children }: { children: ReactNode }) {
       />
       <GrainTexture />
       <div className="relative z-10">
-        <nav className="sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <Link to="/" className="min-w-0" onClick={closeMenu}>
-              <Logo />
-            </Link>
-            <div className="flex shrink-0 items-center gap-2 sm:gap-5">
-              <a
-                className={`hidden sm:inline ${navLinkClass(isHome && activeSection === 'home')}`}
-                href="/#home"
-                aria-current={isHome && activeSection === 'home' ? 'page' : undefined}
-              >
-                {t('nav.home')}
-              </a>
-              <Link
-                className={`hidden items-center rounded-full px-3 py-1 text-sm transition sm:inline-flex ${
-                  isCatalog
-                    ? 'bg-ember text-ember-foreground'
-                    : 'bg-ember/10 text-ember hover:bg-ember/20'
-                }`}
-                to="/catalog"
-                aria-current={isCatalog ? 'page' : undefined}
-              >
-                {t('nav.catalog')}
+        <div className="sticky top-0 z-40">
+          <OfflineBanner />
+          <nav className="border-b border-border/80 bg-background/80 backdrop-blur-md">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+              <Link to="/" className="min-w-0" onClick={closeMenu}>
+                <Logo />
               </Link>
-              <a
-                className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'about')}`}
-                href="/#about"
-                aria-current={isHome && activeSection === 'about' ? 'page' : undefined}
-              >
-                About
-              </a>
-              <a
-                className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'contact')}`}
-                href="/#contact"
-                aria-current={isHome && activeSection === 'contact' ? 'page' : undefined}
-              >
-                Contact
-              </a>
-              <div className="flex rounded-sm border border-border bg-card p-0.5">
-                {(['en', 'ur'] as const).map((language) => (
-                  <button
-                    key={language}
-                    onClick={() => setLanguage(language)}
-                    className={`h-8 px-3 text-xs transition ${
-                      i18n.language === language
-                        ? 'bg-primary text-primary-foreground'
-                        : 'opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    {language === 'en' ? 'EN' : 'اردو'}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={toggleTheme}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border transition hover:bg-secondary"
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="h-4 w-4 text-[var(--icon-color)]" />
-                ) : (
-                  <Moon className="h-4 w-4 text-[var(--icon-color)]" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsMenuOpen((open) => !open)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border sm:hidden"
-                aria-label="Toggle menu"
-                aria-expanded={isMenuOpen}
-              >
-                {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          {isMenuOpen && (
-            <div className="border-t border-border/80 bg-background/95 px-4 py-3 sm:hidden">
-              <div className="flex flex-col gap-1">
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:gap-5">
                 <a
-                  className={mobileNavLinkClass(isHome && activeSection === 'home')}
+                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'home')}`}
                   href="/#home"
-                  onClick={closeMenu}
                   aria-current={isHome && activeSection === 'home' ? 'page' : undefined}
                 >
                   {t('nav.home')}
                 </a>
                 <Link
-                  className={mobileNavLinkClass(isCatalog)}
+                  className={`hidden items-center rounded-full px-3 py-1 text-sm transition lg:inline-flex ${
+                    isCatalog
+                      ? 'bg-ember text-ember-foreground'
+                      : 'bg-ember/10 text-ember hover:bg-ember/20'
+                  }`}
                   to="/catalog"
-                  onClick={closeMenu}
                   aria-current={isCatalog ? 'page' : undefined}
                 >
                   {t('nav.catalog')}
                 </Link>
                 <a
-                  className={mobileNavLinkClass(isHome && activeSection === 'about')}
+                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'about')}`}
                   href="/#about"
-                  onClick={closeMenu}
                   aria-current={isHome && activeSection === 'about' ? 'page' : undefined}
                 >
                   About
                 </a>
                 <a
-                  className={mobileNavLinkClass(isHome && activeSection === 'contact')}
+                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'contact')}`}
                   href="/#contact"
-                  onClick={closeMenu}
                   aria-current={isHome && activeSection === 'contact' ? 'page' : undefined}
                 >
                   Contact
                 </a>
+                <div className="flex rounded-sm border border-border bg-card p-0.5">
+                  {(['en', 'ur'] as const).map((language) => (
+                    <button
+                      key={language}
+                      onClick={() => setLanguage(language)}
+                      className={`h-8 px-2 text-xs transition sm:px-3 ${
+                        i18n.language === language
+                          ? 'bg-primary text-primary-foreground'
+                          : 'opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      {language === 'en' ? 'EN' : 'اردو'}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={toggleTheme}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border transition hover:bg-secondary sm:h-9 sm:w-9"
+                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="h-4 w-4 text-[var(--icon-color)]" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-[var(--icon-color)]" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsMenuOpen((open) => !open)}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border lg:hidden sm:h-9 sm:w-9"
+                  aria-label="Toggle menu"
+                  aria-expanded={isMenuOpen}
+                >
+                  {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                </button>
               </div>
             </div>
-          )}
-        </nav>
+            {isMenuOpen && (
+              <div className="border-t border-border/80 bg-background/95 px-4 py-3 lg:hidden">
+                <div className="flex flex-col gap-1">
+                  <a
+                    className={mobileNavLinkClass(isHome && activeSection === 'home')}
+                    href="/#home"
+                    onClick={closeMenu}
+                    aria-current={isHome && activeSection === 'home' ? 'page' : undefined}
+                  >
+                    {t('nav.home')}
+                  </a>
+                  <Link
+                    className={mobileNavLinkClass(isCatalog)}
+                    to="/catalog"
+                    onClick={closeMenu}
+                    aria-current={isCatalog ? 'page' : undefined}
+                  >
+                    {t('nav.catalog')}
+                  </Link>
+                  <a
+                    className={mobileNavLinkClass(isHome && activeSection === 'about')}
+                    href="/#about"
+                    onClick={closeMenu}
+                    aria-current={isHome && activeSection === 'about' ? 'page' : undefined}
+                  >
+                    About
+                  </a>
+                  <a
+                    className={mobileNavLinkClass(isHome && activeSection === 'contact')}
+                    href="/#contact"
+                    onClick={closeMenu}
+                    aria-current={isHome && activeSection === 'contact' ? 'page' : undefined}
+                  >
+                    Contact
+                  </a>
+                </div>
+              </div>
+            )}
+          </nav>
+        </div>
         {children}
         {!isAdmin && <Footer />}
       </div>

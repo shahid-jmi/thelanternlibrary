@@ -5,3 +5,4 @@ export { default as Badge } from '@/app/components/ui/Badge';
 export { default as Eyebrow } from '@/app/components/ui/Eyebrow';
 export { Table, TableHead, TableRow, Th, Td } from '@/app/components/ui/Table';
 export { default as Toggle } from '@/app/components/ui/Toggle';
+export { default as EmptyTableRow } from '@/app/components/ui/EmptyTableRow';

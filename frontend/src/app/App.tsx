@@ -14,6 +14,13 @@ import CatalogPage from '@/app/pages/CatalogPage';
 import CategoryPage from '@/app/pages/CategoryPage';
 import BookDetailPage from '@/app/pages/BookDetailPage';
 import OrderPage from '@/app/pages/OrderPage';
+import ComingSoonPage from '@/app/pages/ComingSoonPage';
+
+// Storefront is still being built out — set VITE_COMING_SOON=true (Production
+// scope only, e.g. on Vercel) to show a holding page to public visitors
+// instead. The admin panel stays fully reachable either way, so the site can
+// keep being populated/managed while it isn't publicly launched yet.
+const COMING_SOON = import.meta.env.VITE_COMING_SOON === 'true';
 
 // Admin-only pages are lazy-loaded — a public visitor browsing the catalog
 // should never have to download the admin dashboard/forms bundle.
@@ -60,11 +67,17 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<Loader />}>
                   <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/catalog" element={<CatalogPage />} />
-                    <Route path="/category/:slug" element={<CategoryPage />} />
-                    <Route path="/book/:id" element={<BookDetailPage />} />
-                    <Route path="/book/:id/order" element={<OrderPage />} />
+                    {COMING_SOON ? (
+                      <Route path="/" element={<ComingSoonPage />} />
+                    ) : (
+                      <>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/catalog" element={<CatalogPage />} />
+                        <Route path="/category/:slug" element={<CategoryPage />} />
+                        <Route path="/book/:id" element={<BookDetailPage />} />
+                        <Route path="/book/:id/order" element={<OrderPage />} />
+                      </>
+                    )}
                     <Route path="/admin" element={<AdminLoginPage />} />
                     <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
                     <Route path="/reset-password" element={<AdminResetPasswordPage />} />

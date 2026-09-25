@@ -22,10 +22,10 @@ export default function ContactSection() {
             color="green"
           />
           <ContactLink
-            href="https://instagram.com/lanternlibrary"
+            href="https://instagram.com/thelanternlibraryy"
             icon={<Instagram className="h-5 w-5" />}
             title="Instagram"
-            detail="@lanternlibrary"
+            detail="@thelanternlibraryy"
             color="pink"
           />
           <ContactLink

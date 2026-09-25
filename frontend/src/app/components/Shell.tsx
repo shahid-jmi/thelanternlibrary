@@ -20,6 +20,8 @@ const navLinkClass = (active: boolean) =>
     active ? 'text-ember opacity-100 after:opacity-100' : 'opacity-70 after:opacity-0'
   }`;
 
+const COMING_SOON = import.meta.env.VITE_COMING_SOON === 'true';
+
 const mobileNavLinkClass = (active: boolean) =>
   `rounded-sm px-3 py-2 text-sm transition hover:bg-secondary hover:text-ember hover:opacity-100 ${
     active ? 'bg-secondary text-ember opacity-100' : 'opacity-80'
@@ -34,6 +36,9 @@ export default function Shell({ children }: { children: ReactNode }) {
   const isAdmin = pathname.startsWith('/admin');
   const isHome = pathname === '/';
   const isCatalog = pathname === '/catalog';
+  // The coming-soon holding page only ever renders at "/" — everywhere else
+  // (admin routes) keeps the full nav/footer regardless of the flag.
+  const isComingSoon = COMING_SOON && !isAdmin;
 
   useEffect(() => {
     if (!isHome) return;
@@ -83,38 +88,42 @@ export default function Shell({ children }: { children: ReactNode }) {
                 <Logo />
               </Link>
               <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:gap-5">
-                <a
-                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'home')}`}
-                  href="/#home"
-                  aria-current={isHome && activeSection === 'home' ? 'page' : undefined}
-                >
-                  {t('nav.home')}
-                </a>
-                <Link
-                  className={`hidden items-center rounded-full px-3 py-1 text-sm transition lg:inline-flex ${
-                    isCatalog
-                      ? 'bg-ember text-ember-foreground'
-                      : 'bg-ember/10 text-ember hover:bg-ember/20'
-                  }`}
-                  to="/catalog"
-                  aria-current={isCatalog ? 'page' : undefined}
-                >
-                  {t('nav.catalog')}
-                </Link>
-                <a
-                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'about')}`}
-                  href="/#about"
-                  aria-current={isHome && activeSection === 'about' ? 'page' : undefined}
-                >
-                  About
-                </a>
-                <a
-                  className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'contact')}`}
-                  href="/#contact"
-                  aria-current={isHome && activeSection === 'contact' ? 'page' : undefined}
-                >
-                  Contact
-                </a>
+                {!isComingSoon && (
+                  <>
+                    <a
+                      className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'home')}`}
+                      href="/#home"
+                      aria-current={isHome && activeSection === 'home' ? 'page' : undefined}
+                    >
+                      {t('nav.home')}
+                    </a>
+                    <Link
+                      className={`hidden items-center rounded-full px-3 py-1 text-sm transition lg:inline-flex ${
+                        isCatalog
+                          ? 'bg-ember text-ember-foreground'
+                          : 'bg-ember/10 text-ember hover:bg-ember/20'
+                      }`}
+                      to="/catalog"
+                      aria-current={isCatalog ? 'page' : undefined}
+                    >
+                      {t('nav.catalog')}
+                    </Link>
+                    <a
+                      className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'about')}`}
+                      href="/#about"
+                      aria-current={isHome && activeSection === 'about' ? 'page' : undefined}
+                    >
+                      About
+                    </a>
+                    <a
+                      className={`hidden lg:inline ${navLinkClass(isHome && activeSection === 'contact')}`}
+                      href="/#contact"
+                      aria-current={isHome && activeSection === 'contact' ? 'page' : undefined}
+                    >
+                      Contact
+                    </a>
+                  </>
+                )}
                 <div className="flex rounded-sm border border-border bg-card p-0.5">
                   {(['en', 'ur'] as const).map((language) => (
                     <button
@@ -141,17 +150,19 @@ export default function Shell({ children }: { children: ReactNode }) {
                     <Moon className="h-4 w-4 text-[var(--icon-color)]" />
                   )}
                 </button>
-                <button
-                  onClick={() => setIsMenuOpen((open) => !open)}
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border lg:hidden sm:h-9 sm:w-9"
-                  aria-label="Toggle menu"
-                  aria-expanded={isMenuOpen}
-                >
-                  {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                </button>
+                {!isComingSoon && (
+                  <button
+                    onClick={() => setIsMenuOpen((open) => !open)}
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border lg:hidden sm:h-9 sm:w-9"
+                    aria-label="Toggle menu"
+                    aria-expanded={isMenuOpen}
+                  >
+                    {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </button>
+                )}
               </div>
             </div>
-            {isMenuOpen && (
+            {!isComingSoon && isMenuOpen && (
               <div className="border-t border-border/80 bg-background/95 px-4 py-3 lg:hidden">
                 <div className="flex flex-col gap-1">
                   <a
@@ -192,7 +203,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           </nav>
         </div>
         {children}
-        {!isAdmin && <Footer />}
+        {!isAdmin && !isComingSoon && <Footer />}
       </div>
       {!isAdmin && (
         <a

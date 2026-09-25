@@ -73,12 +73,10 @@ Run these inside `backend/` or `frontend/`:
 
 
 ToDo:
--> featured products
--> dynamic What We Offer section with each link opening a separate page
 -> instagram link for latest posts
 -> forgot passoword and email sending make it work
 -> Users Login (Think and proceed)
--> Environment setup
+-> Environment setup(dev stg )
 -> Update all links social media , phone numbers etc
 -> Good testing overall of the product
 -> Domain name purchase

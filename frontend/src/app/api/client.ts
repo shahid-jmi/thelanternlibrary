@@ -20,12 +20,21 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): voi
   onUnauthorized = handler;
 }
 
+// The auth endpoints answer a bad password or a used/expired reset link with
+// 401 too — that's a message for the page to show, not a dead session.
+const AUTH_ENDPOINT = /^\/?admin\/auth\//;
+
+// A 401 while holding a token means the session expired or was revoked.
+// A 401 without one (e.g. a failed login) is handled by the caller.
+export function isSessionExpired(error: AxiosError): boolean {
+  if (error.response?.status !== 401 || !getToken()) return false;
+  return !AUTH_ENDPOINT.test(error.config?.url ?? '');
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // A 401 while holding a token means the session expired or was revoked.
-    // A 401 without one (e.g. a failed login) is handled by the caller.
-    if (error.response?.status === 401 && getToken()) {
+    if (isSessionExpired(error)) {
       clearToken();
       onUnauthorized?.();
     }

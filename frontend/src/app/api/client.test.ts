@@ -1,18 +1,46 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { getErrorMessage } from '@/app/api/client';
+import { getErrorMessage, isSessionExpired } from '@/app/api/client';
+import { clearToken, setToken } from '@/app/auth/authStorage';
 
-function makeAxiosError(status: number, data: unknown): AxiosError {
+function makeAxiosError(status: number, data: unknown, url = '/admin/books'): AxiosError {
   const error = new AxiosError('Request failed', String(status));
+  error.config = { url, headers: new AxiosHeaders() };
   error.response = {
     status,
     statusText: '',
     headers: {},
-    config: { headers: new AxiosHeaders() },
+    config: error.config,
     data,
   };
   return error;
 }
+
+describe('isSessionExpired', () => {
+  afterEach(() => clearToken());
+
+  it('treats a 401 on a normal endpoint while logged in as an expired session', () => {
+    setToken('some-token');
+    expect(isSessionExpired(makeAxiosError(401, {}))).toBe(true);
+  });
+
+  it('ignores a 401 when not logged in', () => {
+    expect(isSessionExpired(makeAxiosError(401, {}))).toBe(false);
+  });
+
+  it('ignores non-401 errors', () => {
+    setToken('some-token');
+    expect(isSessionExpired(makeAxiosError(403, {}))).toBe(false);
+  });
+
+  it.each(['/admin/auth/reset-password', '/admin/auth/change-password', '/admin/auth/login'])(
+    'leaves a 401 from %s for the page to show, even while logged in',
+    (url) => {
+      setToken('some-token');
+      expect(isSessionExpired(makeAxiosError(401, {}, url))).toBe(false);
+    }
+  );
+});
 
 describe('getErrorMessage', () => {
   it('joins validation detail messages', () => {

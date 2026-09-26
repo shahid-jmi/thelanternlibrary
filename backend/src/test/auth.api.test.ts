@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
@@ -26,6 +27,20 @@ const login = async (email: string, password: string) =>
 
 const extractTokenFromResetUrl = (resetUrl: string): string =>
   new URL(resetUrl).searchParams.get('token') as string;
+
+// forgot-password responds before the email goes out (see
+// requestPasswordReset), so wait for the background send to land.
+const requestResetToken = async (email: string): Promise<string> => {
+  sendPasswordResetEmailMock.mockClear();
+
+  const response = await request(app).post('/api/v1/admin/auth/forgot-password').send({ email });
+  expect(response.status).toBe(200);
+
+  await vi.waitFor(() => expect(sendPasswordResetEmailMock).toHaveBeenCalledTimes(1));
+
+  const [, resetUrl] = sendPasswordResetEmailMock.mock.calls[0] as [string, string];
+  return extractTokenFromResetUrl(resetUrl);
+};
 
 beforeAll(async () => {
   await startTestDatabase();
@@ -220,6 +235,19 @@ describe('POST /api/v1/admin/auth/change-password', () => {
       .send({ currentPassword: CHANGE_PASSWORD_ADMIN.password, newPassword: 'brand-new-pass-1' });
 
     expect(response.status).toBe(200);
+    expect(typeof response.body.token).toBe('string');
+
+    // The session used to change the password is replaced, not kept...
+    const staleSessionResponse = await request(app)
+      .get('/api/v1/admin/books')
+      .set('Authorization', `Bearer ${body.token}`);
+    expect(staleSessionResponse.status).toBe(401);
+
+    // ...by the fresh token returned in the response.
+    const freshSessionResponse = await request(app)
+      .get('/api/v1/admin/books')
+      .set('Authorization', `Bearer ${response.body.token}`);
+    expect(freshSessionResponse.status).toBe(200);
 
     const oldPasswordLogin = await login(
       CHANGE_PASSWORD_ADMIN.email,
@@ -260,13 +288,17 @@ describe('forgot / reset password flow', () => {
   });
 
   it('does not send an email for an account that does not exist', async () => {
-    sendPasswordResetEmailMock.mockClear();
-
     await request(app)
       .post('/api/v1/admin/auth/forgot-password')
       .send({ email: 'still-nobody@test.com' });
 
-    expect(sendPasswordResetEmailMock).not.toHaveBeenCalled();
+    // The lookup runs after the response, so give it time to (not) send.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    expect(sendPasswordResetEmailMock).not.toHaveBeenCalledWith(
+      'still-nobody@test.com',
+      expect.anything()
+    );
   });
 
   it('rejects an invalid or unknown reset token', async () => {
@@ -278,17 +310,9 @@ describe('forgot / reset password flow', () => {
   });
 
   it('resets the password with a valid token and single-uses it', async () => {
-    sendPasswordResetEmailMock.mockClear();
+    const { body: preResetLogin } = await login(RESET_ADMIN.email, RESET_ADMIN.password);
 
-    const forgotResponse = await request(app)
-      .post('/api/v1/admin/auth/forgot-password')
-      .send({ email: RESET_ADMIN.email });
-
-    expect(forgotResponse.status).toBe(200);
-    expect(sendPasswordResetEmailMock).toHaveBeenCalledTimes(1);
-
-    const [, resetUrl] = sendPasswordResetEmailMock.mock.calls[0] as [string, string];
-    const token = extractTokenFromResetUrl(resetUrl);
+    const token = await requestResetToken(RESET_ADMIN.email);
 
     const resetResponse = await request(app)
       .post('/api/v1/admin/auth/reset-password')
@@ -299,6 +323,12 @@ describe('forgot / reset password flow', () => {
     const oldPasswordLogin = await login(RESET_ADMIN.email, RESET_ADMIN.password);
     expect(oldPasswordLogin.status).toBe(401);
 
+    // Sessions held before the reset are invalidated (tokenVersion bumped).
+    const staleSessionResponse = await request(app)
+      .get('/api/v1/admin/books')
+      .set('Authorization', `Bearer ${preResetLogin.token}`);
+    expect(staleSessionResponse.status).toBe(401);
+
     const newPasswordLogin = await login(RESET_ADMIN.email, 'freshly-reset-1');
     expect(newPasswordLogin.status).toBe(200);
 
@@ -308,6 +338,42 @@ describe('forgot / reset password flow', () => {
       .send({ token, newPassword: 'another-password-1' });
 
     expect(reuseResponse.status).toBe(401);
+  });
+
+  it('lets only one of two concurrent requests redeem the same token', async () => {
+    const token = await requestResetToken(RESET_ADMIN.email);
+
+    const responses = await Promise.all(
+      ['racing-pass-a1', 'racing-pass-b1'].map((newPassword) =>
+        request(app).post('/api/v1/admin/auth/reset-password').send({ token, newPassword })
+      )
+    );
+
+    expect(responses.map((r) => r.status).sort()).toEqual([200, 401]);
+  });
+
+  it('rejects a link redeemed after the admin was deactivated', async () => {
+    // Planted directly: this suite has already used up the forgot-password
+    // rate limit (5 per window).
+    const token = 'deactivated-admin-reset-token';
+    await Admin.updateOne(
+      { email: RESET_ADMIN.email },
+      {
+        isActive: false,
+        passwordResetTokenHash: crypto.createHash('sha256').update(token).digest('hex'),
+        passwordResetExpiresAt: new Date(Date.now() + 60_000),
+      }
+    );
+
+    try {
+      const response = await request(app)
+        .post('/api/v1/admin/auth/reset-password')
+        .send({ token, newPassword: 'while-inactive-1' });
+
+      expect(response.status).toBe(401);
+    } finally {
+      await Admin.updateOne({ email: RESET_ADMIN.email }, { isActive: true });
+    }
   });
 });
 

@@ -15,13 +15,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
   const { currentPassword, newPassword } = req.body as ChangePasswordInput;
-  await authService.changePassword(req.admin!.id, currentPassword, newPassword);
-  res.json({ message: 'Password changed successfully' });
+  const token = await authService.changePassword(req.admin!.id, currentPassword, newPassword);
+  res.json({ message: 'Password changed successfully', token });
 };
 
 export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body as ForgotPasswordInput;
-  await authService.requestPasswordReset(email);
+  authService.requestPasswordReset(email);
   res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
 };
 

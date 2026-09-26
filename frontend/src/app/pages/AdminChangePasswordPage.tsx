@@ -35,8 +35,8 @@ export default function AdminChangePasswordPage() {
     setError('');
     setSubmitting(true);
     try {
-      await changePassword(currentPassword.value, newPassword.value);
-      completePasswordChange();
+      const token = await changePassword(currentPassword.value, newPassword.value);
+      completePasswordChange(token);
       navigate('/admin/dashboard', { replace: true });
     } catch (requestError) {
       setError(getErrorMessage(requestError) || t('admin.login.error'));

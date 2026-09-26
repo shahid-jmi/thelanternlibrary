@@ -670,6 +670,8 @@ const openApiDocument = {
       post: {
         tags: ['Auth'],
         summary: "Change the authenticated admin's own password",
+        description:
+          'Invalidates every existing session for this admin, including the one making the request. The response carries a fresh token that replaces it.',
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -690,7 +692,19 @@ const openApiDocument = {
           200: {
             description: 'Password changed',
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    token: {
+                      type: 'string',
+                      description: 'Replacement JWT; the one used for this request is now invalid',
+                    },
+                  },
+                  required: ['message', 'token'],
+                },
+              },
             },
           },
           400: errorResponse(

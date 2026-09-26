@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, Loader2 } from 'lucide-react';
@@ -13,8 +13,16 @@ import { FieldInput } from '@/app/components/FormField';
 
 export default function AdminResetPasswordPage() {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Captured once, then scrubbed from the address bar so the token doesn't
+  // linger in browser history or leak via the Referer header.
+  const [token] = useState(() => searchParams.get('token'));
+
+  useEffect(() => {
+    if (searchParams.has('token')) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const newPassword = useValidatedField(validatePassword);
   const confirmPassword = useValidatedField(validateConfirmPassword(newPassword.value));

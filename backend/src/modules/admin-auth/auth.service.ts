@@ -78,7 +78,7 @@ export const changePassword = async (
   adminId: string,
   currentPassword: string,
   newPassword: string
-): Promise<void> => {
+): Promise<string> => {
   const admin = await adminRepository.findById(adminId);
 
   if (!admin) {
@@ -100,15 +100,21 @@ export const changePassword = async (
   admin.mustChangePassword = false;
   admin.passwordResetTokenHash = null;
   admin.passwordResetExpiresAt = null;
+  // Log out every other session (e.g. a stolen token), then hand the caller
+  // a fresh token so the session they changed it from keeps working.
+  admin.tokenVersion += 1;
   await admin.save();
+
+  return signToken({
+    sub: admin._id.toString(),
+    role: admin.role,
+    tv: admin.tokenVersion,
+  });
 };
 
-export const requestPasswordReset = async (email: string): Promise<void> => {
+const issuePasswordReset = async (email: string): Promise<void> => {
   const admin = await adminRepository.findByEmail(email);
 
-  // Do the same amount of work either way and never branch the HTTP
-  // response on whether the account exists — that's the caller's job
-  // (the controller always returns the same generic message).
   if (!admin || !admin.isActive) {
     return;
   }
@@ -132,17 +138,21 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
   }
 };
 
+// Deliberately not awaited: for a real account the token write and SMTP send
+// take far longer than the early return for an unknown one, so awaiting here
+// would let response timing reveal which emails belong to admins. Running it
+// off the request path makes every response equally fast.
+export const requestPasswordReset = (email: string): void => {
+  issuePasswordReset(email).catch((error: unknown) => {
+    logger.error({ err: error }, 'Failed to issue password reset');
+  });
+};
+
 export const resetPassword = async (rawToken: string, newPassword: string): Promise<void> => {
-  const admin = await adminRepository.findByResetTokenHash(hashResetToken(rawToken));
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  const admin = await adminRepository.redeemResetToken(hashResetToken(rawToken), passwordHash);
 
   if (!admin) {
     throw new UnauthorizedError('This reset link is invalid or has expired');
   }
-
-  admin.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  admin.passwordChangedAt = new Date();
-  admin.mustChangePassword = false;
-  admin.passwordResetTokenHash = null;
-  admin.passwordResetExpiresAt = null;
-  await admin.save();
 };

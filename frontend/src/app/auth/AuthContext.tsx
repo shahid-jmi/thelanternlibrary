@@ -19,7 +19,7 @@ interface AuthContextValue {
   mustChangePassword: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  completePasswordChange: () => void;
+  completePasswordChange: (token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,7 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMustChangePasswordState(false);
         navigate('/admin', { replace: true });
       },
-      completePasswordChange() {
+      completePasswordChange(token: string) {
+        setToken(token);
+        setAdmin(decodeAdminToken(token));
         setMustChangePassword(false);
         setMustChangePasswordState(false);
       },

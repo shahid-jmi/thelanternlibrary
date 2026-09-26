@@ -28,6 +28,9 @@ import openApiDocument from './docs/openapi.js';
 const createApp = (): Express => {
   const app = express();
 
+  // 0 keeps Express's default (trust nothing, use the socket address).
+  app.set('trust proxy', env.trustProxy || false);
+
   app.use(helmet());
   app.use(cors(createCorsOptions()));
   app.use(compression());

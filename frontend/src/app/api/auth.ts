@@ -16,8 +16,17 @@ export async function loginAdmin(email: string, password: string): Promise<Login
   return data;
 }
 
-export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-  await api.post('/admin/auth/change-password', { currentPassword, newPassword });
+// Resolves with a replacement token — changing the password invalidates
+// every existing session, including the one that made this request.
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<string> {
+  const { data } = await api.post<{ token: string }>('/admin/auth/change-password', {
+    currentPassword,
+    newPassword,
+  });
+  return data.token;
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {

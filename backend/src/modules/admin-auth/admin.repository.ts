@@ -18,11 +18,33 @@ export const findById = async (id: string): Promise<AdminDocument | null> =>
 export const findByIdLean = async (id: string): Promise<AdminLean | null> =>
   Admin.findById(id).lean<AdminLean>().exec();
 
-export const findByResetTokenHash = async (tokenHash: string): Promise<AdminDocument | null> =>
-  Admin.findOne({
-    passwordResetTokenHash: tokenHash,
-    passwordResetExpiresAt: { $gt: new Date() },
-  }).exec();
+// Matches the token and clears it in a single atomic update, so two
+// concurrent requests carrying the same link can't both redeem it. Bumping
+// tokenVersion logs out any sessions held before the reset — the admin
+// forgot their password, so an existing session may not be theirs.
+// Deactivated admins can't redeem a link issued before deactivation.
+export const redeemResetToken = async (
+  tokenHash: string,
+  passwordHash: string
+): Promise<AdminLean | null> =>
+  Admin.findOneAndUpdate(
+    {
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpiresAt: { $gt: new Date() },
+      isActive: true,
+    },
+    {
+      passwordHash,
+      mustChangePassword: false,
+      passwordChangedAt: new Date(),
+      passwordResetTokenHash: null,
+      passwordResetExpiresAt: null,
+      $inc: { tokenVersion: 1 },
+    },
+    { new: true, runValidators: true }
+  )
+    .lean<AdminLean>()
+    .exec();
 
 export const findAll = async (): Promise<AdminLean[]> =>
   Admin.find().sort({ createdAt: -1 }).lean<AdminLean[]>().exec();

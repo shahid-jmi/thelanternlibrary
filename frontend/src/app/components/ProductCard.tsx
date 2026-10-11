@@ -9,7 +9,7 @@ export default function ProductCard({ product }: { product: PublicProduct }) {
   const { t } = useTranslation();
 
   return (
-    <div className="block overflow-hidden rounded-sm border border-border/70 bg-card p-3 backdrop-blur-md">
+    <div className="block overflow-hidden rounded-sm border border-border/70 bg-card p-2 backdrop-blur-md sm:p-3">
       <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-background">
         {product.coverImage?.url ? (
           <img
@@ -18,23 +18,23 @@ export default function ProductCard({ product }: { product: PublicProduct }) {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center opacity-60">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center opacity-60 sm:gap-3 sm:p-6">
             <Package className="h-8 w-8" />
-            <span className="text-sm">{product.name}</span>
+            <span className="line-clamp-3 text-xs sm:text-sm">{product.name}</span>
           </div>
         )}
         {!product.isAvailable && (
-          <span className="absolute left-2 top-2 rounded-sm bg-destructive px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-destructive-foreground shadow-sm">
+          <span className="absolute left-1.5 top-1.5 rounded-sm bg-destructive px-1.5 py-0.5 text-[9px] sm:left-2 sm:top-2 sm:px-2 sm:py-1 sm:text-[10px] uppercase tracking-[0.16em] text-destructive-foreground shadow-sm">
             {t('admin.dashboard.unavailable')}
           </span>
         )}
       </div>
-      <div className="px-1 pb-1 pt-4">
+      <div className="px-0.5 pb-0.5 pt-3 sm:px-1 sm:pb-1 sm:pt-4">
         <span className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] opacity-65">
           {product.category.name}
         </span>
-        <h2 className="mt-2 text-lg leading-snug">{product.name}</h2>
-        <p className="mt-2 text-base">{formatPrice(product.price)}</p>
+        <h2 className="mt-2 line-clamp-2 text-sm leading-snug sm:text-lg">{product.name}</h2>
+        <p className="mt-1.5 text-sm sm:mt-2 sm:text-base">{formatPrice(product.price)}</p>
       </div>
     </div>
   );

@@ -86,7 +86,7 @@ export default function CatalogPage() {
           </div>
         )}
 
-        <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-7 lg:grid-cols-4">
           {loading
             ? Array.from({ length: 8 }).map((_, index) => <CardSkeleton key={index} />)
             : books.map((book) => <BookCard key={book._id} book={book} />)}

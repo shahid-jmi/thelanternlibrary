@@ -83,7 +83,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         <div className="sticky top-0 z-40">
           <OfflineBanner />
           <nav className="border-b border-border/80 bg-background/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between lg:h-20 px-3 sm:px-6 lg:px-8">
               <Link to="/" className="min-w-0" onClick={closeMenu}>
                 <Logo />
               </Link>

@@ -1,4 +1,17 @@
-import logo from '@/assets/logo.png';
+import logoFull from '@/assets/logo-full.png';
+
+// The PNG is used as a mask so the logo takes the theme's foreground colour
+// (brown in light mode, cream in dark mode) instead of its baked-in ink.
+const maskStyle = {
+  maskImage: `url(${logoFull})`,
+  WebkitMaskImage: `url(${logoFull})`,
+  maskSize: 'contain',
+  WebkitMaskSize: 'contain',
+  maskRepeat: 'no-repeat',
+  WebkitMaskRepeat: 'no-repeat',
+  maskPosition: 'left center',
+  WebkitMaskPosition: 'left center',
+};
 
 export function Logo({
   variant = 'inline',
@@ -10,45 +23,11 @@ export function Logo({
   const isMark = variant === 'mark';
 
   return (
-    <div
-      className={`flex items-center ${isMark ? 'gap-3' : 'gap-2 sm:gap-3'} ${isMark ? '' : 'min-w-0 overflow-hidden'} ${className}`.trim()}
-    >
-      <img
-        src={logo}
-        alt="The Lantern Library logo"
-        className={`${isMark ? 'h-16 w-16 sm:h-20 sm:w-20' : 'h-10 w-10 sm:h-14 sm:w-14'} shrink-0 object-contain`}
-      />
-      <div
-        className={`text-center leading-none ${isMark ? '' : 'hidden min-[340px]:block shrink-0'}`}
-      >
-        <p
-          className={
-            isMark
-              ? 'text-xs uppercase tracking-[0.4em] opacity-70'
-              : 'text-[8px] font-semibold uppercase tracking-[0.15em] opacity-80 sm:text-[10px] sm:tracking-[0.25em]'
-          }
-        >
-          The
-        </p>
-        <p
-          className={
-            isMark
-              ? 'mt-1 text-2xl uppercase tracking-[0.08em] sm:text-3xl'
-              : '-mt-1 text-xs uppercase tracking-[0.04em] sm:text-sm sm:tracking-[0.08em]'
-          }
-        >
-          Lantern
-        </p>
-        <p
-          className={
-            isMark
-              ? 'mt-1 text-2xl uppercase tracking-[0.08em] sm:text-3xl'
-              : '-mt-1 text-xs uppercase tracking-[0.04em] sm:text-sm sm:tracking-[0.08em]'
-          }
-        >
-          Library
-        </p>
-      </div>
-    </div>
+    <span
+      role="img"
+      aria-label="The Lantern Library"
+      style={maskStyle}
+      className={`block aspect-[559/360] shrink-0 bg-foreground ${isMark ? 'h-24 sm:h-28' : 'h-12 sm:h-14 lg:h-16'} ${className}`.trim()}
+    />
   );
 }

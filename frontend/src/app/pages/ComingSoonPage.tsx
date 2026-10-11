@@ -6,7 +6,7 @@ export default function ComingSoonPage() {
   const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-20 sm:px-6">
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center lg:min-h-[calc(100vh-5rem)] px-4 py-20 sm:px-6">
       <Reveal className="mx-auto max-w-xl text-center">
         <LanternMark className="mx-auto h-20 w-auto text-accent opacity-90 sm:h-24" />
         <p className="mt-8 text-[10px] uppercase tracking-widest text-accent">

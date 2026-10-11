@@ -1,6 +1,6 @@
-import logoFull from '@/assets/logo-full.png';
+import logoFull from '@/assets/logo-full.webp';
 
-// The PNG is used as a mask so the logo takes the theme's foreground colour
+// The image is used as a mask so the logo takes the theme's foreground colour
 // (brown in light mode, cream in dark mode) instead of its baked-in ink.
 const maskStyle = {
   maskImage: `url(${logoFull})`,

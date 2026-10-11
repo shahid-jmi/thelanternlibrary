@@ -6,6 +6,7 @@ import { Logo } from '@/app/components/Logo';
 import GrainTexture from '@/app/components/GrainTexture';
 import Bokeh from '@/app/components/Bokeh';
 import Footer from '@/app/components/Footer';
+import BackToTop from '@/app/components/BackToTop';
 import OfflineBanner from '@/app/components/OfflineBanner';
 import { useTheme } from '@/app/theme/ThemeContext';
 
@@ -83,7 +84,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         <div className="sticky top-0 z-40">
           <OfflineBanner />
           <nav className="border-b border-border/80 bg-background/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between lg:h-20 px-3 sm:px-6 lg:px-8">
               <Link to="/" className="min-w-0" onClick={closeMenu}>
                 <Logo />
               </Link>
@@ -206,20 +207,26 @@ export default function Shell({ children }: { children: ReactNode }) {
         {!isAdmin && !isComingSoon && <Footer />}
       </div>
       {!isAdmin && (
-        <a
-          href={`https://wa.me/${whatsappNumber}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Chat on WhatsApp"
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm text-white shadow-lg transition hover:brightness-105 rtl:right-auto rtl:left-5"
-        >
-          <span
-            aria-hidden="true"
-            className="whatsapp-pulse-ring absolute inset-0 rounded-full bg-[#25D366]"
-          />
-          <MessageCircle className="relative h-5 w-5 shrink-0" />
-          <span className="relative hidden sm:inline">Chat with us</span>
-        </a>
+        // One fixed stack for the floating buttons, so back-to-top always sits
+        // just above WhatsApp without a hand-tuned offset. The stack ignores
+        // clicks itself; only the buttons inside take them.
+        <div className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 rtl:left-5 rtl:right-auto">
+          {!isComingSoon && <BackToTop />}
+          <a
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Chat on WhatsApp"
+            className="pointer-events-auto relative flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm text-white shadow-lg transition hover:brightness-105"
+          >
+            <span
+              aria-hidden="true"
+              className="whatsapp-pulse-ring absolute inset-0 rounded-full bg-[#25D366]"
+            />
+            <MessageCircle className="relative h-5 w-5 shrink-0" />
+            <span className="relative hidden sm:inline">Chat with us</span>
+          </a>
+        </div>
       )}
     </div>
   );

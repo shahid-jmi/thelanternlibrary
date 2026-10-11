@@ -9,6 +9,7 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1, 'MONGO_URI must be set'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   CORS_ORIGIN: z.string().optional(),
+  TRUST_PROXY: z.coerce.number().int().min(0).optional(),
   LOG_LEVEL: z.enum(LOG_LEVELS).optional(),
   SENTRY_DSN: z.string().optional(),
   R2_ACCOUNT_ID: z.string().min(1, 'R2_ACCOUNT_ID must be set'),
@@ -76,6 +77,10 @@ const env = {
   mongoUri: raw.MONGO_URI,
   jwtSecret: raw.JWT_SECRET,
   corsOrigins,
+  // Number of reverse proxies in front of the app, so req.ip (and with it the
+  // rate limiters) sees the real client instead of the last proxy. On Render
+  // every request passes Cloudflare → Render edge → Render internal proxy.
+  trustProxy: raw.TRUST_PROXY ?? (raw.NODE_ENV === 'production' ? 3 : 0),
   logLevel: raw.LOG_LEVEL ?? (raw.NODE_ENV === 'test' ? 'silent' : 'info'),
   sentryDsn: raw.SENTRY_DSN,
   r2AccountId: raw.R2_ACCOUNT_ID,

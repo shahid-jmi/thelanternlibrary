@@ -14,6 +14,7 @@ import Loader from '@/app/components/Loader';
 import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
 import { Button, Toggle } from '@/app/components/ui';
+import { focusFirstInvalid } from '@/app/lib/scroll';
 
 export default function AdminProductFormPage() {
   const { t } = useTranslation();
@@ -132,7 +133,10 @@ function ProductForm({
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const errors = [nameEn.validateNow(), descEn.validateNow(), price.validateNow()];
-    if (errors.some(Boolean)) return;
+    if (errors.some(Boolean)) {
+      focusFirstInvalid(event.currentTarget);
+      return;
+    }
 
     setSaving(true);
     setError('');

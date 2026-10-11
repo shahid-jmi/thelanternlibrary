@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Loader2, MessageCircle } from 'lucide-react';
 import { INDIAN_STATES } from '@/app/api/types';
@@ -8,6 +8,7 @@ import { validatePincode, validateRequired } from '@/app/lib/validation';
 import { useValidatedField } from '@/app/lib/useValidatedField';
 import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import StatusMessage from '@/app/components/StatusMessage';
+import { focusFirstInvalid, scrollIntoViewCentered } from '@/app/lib/scroll';
 
 export default function OrderForm({
   bookId,
@@ -37,6 +38,13 @@ export default function OrderForm({
   const [error, setError] = useState('');
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const createOrder = useCreateOrder();
+  const successRef = useRef<HTMLDivElement>(null);
+
+  // The long form collapses to a one-line message on success, which can leave
+  // a phone scrolled past it — bring the message (and its WhatsApp link) into view.
+  useEffect(() => {
+    if (whatsappUrl && successRef.current) scrollIntoViewCentered(successRef.current);
+  }, [whatsappUrl]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -49,7 +57,10 @@ export default function OrderForm({
       state.validateNow(),
       pincode.validateNow(),
     ];
-    if (errors.some(Boolean)) return;
+    if (errors.some(Boolean)) {
+      focusFirstInvalid(event.currentTarget);
+      return;
+    }
 
     // Open the tab synchronously, in direct response to the click, so
     // browsers don't treat it as a blocked popup once the await below
@@ -98,7 +109,7 @@ export default function OrderForm({
 
   if (whatsappUrl) {
     return (
-      <div className="mt-6">
+      <div ref={successRef} className="mt-6">
         <StatusMessage>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>{t('order.success')}</span>
@@ -118,11 +129,7 @@ export default function OrderForm({
   }
 
   return (
-    <form
-      onSubmit={submit}
-      noValidate
-      className="mt-6 rounded-sm border border-border bg-card p-6"
-    >
+    <form onSubmit={submit} noValidate className="mt-6 rounded-sm border border-border bg-card p-6">
       <h2 className="mb-5 text-lg tracking-[0.05em]">{t('order.title')}</h2>
 
       <FieldInput

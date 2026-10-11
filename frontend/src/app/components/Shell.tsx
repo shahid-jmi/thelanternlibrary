@@ -6,6 +6,7 @@ import { Logo } from '@/app/components/Logo';
 import GrainTexture from '@/app/components/GrainTexture';
 import Bokeh from '@/app/components/Bokeh';
 import Footer from '@/app/components/Footer';
+import BackToTop from '@/app/components/BackToTop';
 import OfflineBanner from '@/app/components/OfflineBanner';
 import { useTheme } from '@/app/theme/ThemeContext';
 
@@ -205,6 +206,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         {children}
         {!isAdmin && !isComingSoon && <Footer />}
       </div>
+      {!isAdmin && !isComingSoon && <BackToTop />}
       {!isAdmin && (
         <a
           href={`https://wa.me/${whatsappNumber}`}

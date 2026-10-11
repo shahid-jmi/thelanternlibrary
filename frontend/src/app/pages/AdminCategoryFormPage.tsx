@@ -14,6 +14,7 @@ import Loader from '@/app/components/Loader';
 import { FieldInput, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
 import { Button, Toggle } from '@/app/components/ui';
+import { focusFirstInvalid } from '@/app/lib/scroll';
 
 export default function AdminCategoryFormPage() {
   const { t } = useTranslation();
@@ -144,7 +145,10 @@ function CategoryForm({
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const errors = [nameEn.validateNow(), slug.validateNow()];
-    if (errors.some(Boolean)) return;
+    if (errors.some(Boolean)) {
+      focusFirstInvalid(event.currentTarget);
+      return;
+    }
 
     setSaving(true);
     setError('');

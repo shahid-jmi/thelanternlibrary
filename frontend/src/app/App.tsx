@@ -7,6 +7,7 @@ import { AuthProvider } from '@/app/auth/AuthContext';
 import { ThemeProvider } from '@/app/theme/ThemeContext';
 import RequireAdmin from '@/app/auth/RequireAdmin';
 import Shell from '@/app/components/Shell';
+import ScrollToTop from '@/app/components/ScrollToTop';
 import ErrorBoundary from '@/app/components/ErrorBoundary';
 import Loader from '@/app/components/Loader';
 import HomePage from '@/app/pages/HomePage';
@@ -62,6 +63,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <Shell>
               <ErrorBoundary>

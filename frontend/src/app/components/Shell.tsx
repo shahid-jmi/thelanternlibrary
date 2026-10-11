@@ -206,22 +206,27 @@ export default function Shell({ children }: { children: ReactNode }) {
         {children}
         {!isAdmin && !isComingSoon && <Footer />}
       </div>
-      {!isAdmin && !isComingSoon && <BackToTop />}
       {!isAdmin && (
-        <a
-          href={`https://wa.me/${whatsappNumber}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Chat on WhatsApp"
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm text-white shadow-lg transition hover:brightness-105 rtl:right-auto rtl:left-5"
-        >
-          <span
-            aria-hidden="true"
-            className="whatsapp-pulse-ring absolute inset-0 rounded-full bg-[#25D366]"
-          />
-          <MessageCircle className="relative h-5 w-5 shrink-0" />
-          <span className="relative hidden sm:inline">Chat with us</span>
-        </a>
+        // One fixed stack for the floating buttons, so back-to-top always sits
+        // just above WhatsApp without a hand-tuned offset. The stack ignores
+        // clicks itself; only the buttons inside take them.
+        <div className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 rtl:left-5 rtl:right-auto">
+          {!isComingSoon && <BackToTop />}
+          <a
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Chat on WhatsApp"
+            className="pointer-events-auto relative flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3.5 text-sm text-white shadow-lg transition hover:brightness-105"
+          >
+            <span
+              aria-hidden="true"
+              className="whatsapp-pulse-ring absolute inset-0 rounded-full bg-[#25D366]"
+            />
+            <MessageCircle className="relative h-5 w-5 shrink-0" />
+            <span className="relative hidden sm:inline">Chat with us</span>
+          </a>
+        </div>
       )}
     </div>
   );

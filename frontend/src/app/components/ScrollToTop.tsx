@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
 
 // BrowserRouter keeps the previous page's scroll offset on navigation, so a
@@ -9,7 +9,8 @@ export default function ScrollToTop() {
   const { pathname, hash } = useLocation();
   const navigationType = useNavigationType();
 
-  useEffect(() => {
+  // Layout effect: reset before paint, so the new page never flashes at the old offset.
+  useLayoutEffect(() => {
     if (navigationType === 'POP' || hash) return;
     window.scrollTo(0, 0);
   }, [pathname, hash, navigationType]);

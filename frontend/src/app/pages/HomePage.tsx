@@ -16,11 +16,11 @@ export default function HomePage() {
     <main id="home">
       <HeroSection />
       <Divider />
+      <OfferSection />
+      <Divider />
       <FeaturedBooksSection />
       <Divider />
       <FeaturedProductsSection />
-      <Divider />
-      <OfferSection />
       <LibraryCabinetBanner />
       <FeelingSection />
       <TestimonialsSection />

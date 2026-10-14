@@ -27,7 +27,7 @@ export default function FeaturedBooksSection() {
       <Reveal>
         <div className="mb-10 flex items-end justify-between gap-4">
           <div>
-            <Eyebrow className="mb-3">i.</Eyebrow>
+            <Eyebrow className="mb-3">ii.</Eyebrow>
             <h2 className="text-3xl tracking-tight">Featured Books</h2>
           </div>
           <div className="flex items-center gap-3">

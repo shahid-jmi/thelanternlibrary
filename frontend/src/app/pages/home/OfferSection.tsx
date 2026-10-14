@@ -19,7 +19,7 @@ export default function OfferSection() {
   return (
     <section id="offer" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:px-6 lg:px-8">
       <Reveal>
-        <Eyebrow className="mb-3 text-center">ii.</Eyebrow>
+        <Eyebrow className="mb-3 text-center">i.</Eyebrow>
         <h2 className="mb-4 text-center text-3xl tracking-tight">What We Offer</h2>
         <p className="mx-auto mb-12 max-w-xl text-center italic leading-7 opacity-70">
           Books first — and the quiet objects that belong beside them.

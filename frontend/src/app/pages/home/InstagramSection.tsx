@@ -2,6 +2,7 @@ import { Heart, Instagram } from 'lucide-react';
 import ImageTile from '@/app/components/ImageTile';
 import Reveal from '@/app/components/Reveal';
 import { Eyebrow } from '@/app/components/ui';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/app/lib/site';
 import { INSTAGRAM_POSTS } from './data';
 
 export default function InstagramSection() {
@@ -11,7 +12,7 @@ export default function InstagramSection() {
         <Eyebrow className="mb-3 text-center">viii.</Eyebrow>
         <h2 className="mb-4 text-center text-3xl tracking-tight">Follow Along</h2>
         <p className="mx-auto mb-12 max-w-xl text-center italic leading-7 opacity-70">
-          Glimpses from the shop, shared as they happen — @lanternlibrary
+          Glimpses from the shop, shared as they happen — @{INSTAGRAM_HANDLE}
         </p>
       </Reveal>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -37,13 +38,13 @@ export default function InstagramSection() {
       </div>
       <div className="mt-10 text-center">
         <a
-          href="https://instagram.com/lanternlibrary"
+          href={INSTAGRAM_URL}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-sm border border-[var(--button-border)] px-8 py-3.5 text-xs uppercase tracking-label transition hover:border-ember hover:text-ember"
         >
           <Instagram className="h-4 w-4" />
-          Follow @lanternlibrary
+          Follow @{INSTAGRAM_HANDLE}
         </a>
       </div>
     </section>

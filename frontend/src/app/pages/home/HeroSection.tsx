@@ -3,6 +3,7 @@ import { MessageCircle, Sparkles, Truck } from 'lucide-react';
 import ImageTile from '@/app/components/ImageTile';
 import LanternMark from '@/app/components/LanternMark';
 import Reveal from '@/app/components/Reveal';
+import { LOCATION } from '@/app/lib/site';
 
 export default function HeroSection() {
   return (
@@ -25,12 +26,14 @@ export default function HeroSection() {
       <Reveal delay={120}>
         <div className="text-center lg:text-start">
           <p className="mb-5 text-[10px] uppercase tracking-widest text-accent">
-            · A Curated Catalog — Srinagar, Kashmir ·
+            · A Curated Catalog — {LOCATION} ·
           </p>
           <h1 className="mb-6 text-5xl leading-tight tracking-normal sm:text-6xl">
             The Lantern <span className="italic text-accent">Library</span>
           </h1>
-          <p className="mb-3 text-xs uppercase tracking-label text-ember">From Kashmir to Kashmir</p>
+          <p className="mb-3 text-xs uppercase tracking-label text-ember">
+            From Kashmir to Kashmir
+          </p>
           <p className="mb-8 text-sm italic tracking-normal opacity-75">
             Where books and memory live together.
           </p>

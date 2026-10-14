@@ -8,12 +8,12 @@ import PageFrame from '@/app/components/PageFrame';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
 import OrderForm from '@/app/components/OrderForm';
+import { WHATSAPP_NUMBER } from '@/app/lib/site';
 
 export default function OrderPage() {
   const { id } = useParams();
   const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 
   const bookQuery = useBook(id, i18n.language);
   const book = bookQuery.data ?? null;
@@ -70,7 +70,7 @@ export default function OrderPage() {
           bookTitle={book.title}
           bookAuthor={book.author}
           priceLabel={formatPrice(book.price)}
-          whatsappNumber={whatsappNumber}
+          whatsappNumber={WHATSAPP_NUMBER}
           onCancel={() => navigate(`/book/${book._id}`)}
         />
       </div>

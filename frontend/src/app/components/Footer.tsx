@@ -2,6 +2,13 @@ import { Link } from 'react-router';
 import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
 import { Logo } from '@/app/components/Logo';
 import { BotanicalCorner } from '@/app/components/Botanicals';
+import {
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+  CONTACT_EMAIL,
+  LOCATION,
+  WHATSAPP_URL,
+} from '@/app/lib/site';
 
 const QUICK_LINKS: { label: string; href: string; isRoute?: boolean }[] = [
   { label: 'Home', href: '/#home' },
@@ -59,7 +66,7 @@ export default function Footer() {
           <ul className="space-y-3.5">
             <li>
               <a
-                href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || ''}`}
+                href={WHATSAPP_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-3 text-sm opacity-70 transition hover:text-ember hover:opacity-100"
@@ -70,27 +77,26 @@ export default function Footer() {
             </li>
             <li>
               <a
-                href="https://instagram.com/lanternlibrary"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-3 text-sm opacity-70 transition hover:text-ember hover:opacity-100"
               >
-                <Instagram className="h-4 w-4 text-accent" strokeWidth={1.5} />
-                @lanternlibrary
+                <Instagram className="h-4 w-4 text-accent" strokeWidth={1.5} />@{INSTAGRAM_HANDLE}
               </a>
             </li>
             <li>
               <a
-                href="mailto:hello@lanternlibrary.com"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="flex items-center gap-3 text-sm opacity-70 transition hover:text-ember hover:opacity-100"
               >
                 <Mail className="h-4 w-4 text-accent" strokeWidth={1.5} />
-                hello@lanternlibrary.com
+                {CONTACT_EMAIL}
               </a>
             </li>
             <li className="flex items-center gap-3 text-sm opacity-70">
               <MapPin className="h-4 w-4 text-accent" strokeWidth={1.5} />
-              Srinagar, Kashmir
+              {LOCATION}
             </li>
           </ul>
         </div>

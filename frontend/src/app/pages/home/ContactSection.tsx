@@ -2,11 +2,21 @@ import type { ReactNode } from 'react';
 import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
 import Reveal from '@/app/components/Reveal';
 import { Eyebrow } from '@/app/components/ui';
+import {
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+  CONTACT_EMAIL,
+  LOCATION,
+  WHATSAPP_URL,
+} from '@/app/lib/site';
 import { CONTACT_ICON_COLORS } from './data';
 
 export default function ContactSection() {
   return (
-    <section id="contact" className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 pb-20 sm:px-6 lg:px-8">
+    <section
+      id="contact"
+      className="mx-auto scroll-mt-24 max-w-4xl px-4 py-12 pb-20 sm:px-6 lg:px-8"
+    >
       <Reveal>
         <Eyebrow className="mb-3 text-center">ix.</Eyebrow>
         <h2 className="mb-4 text-center text-4xl tracking-snug">Get in Touch</h2>
@@ -15,24 +25,24 @@ export default function ContactSection() {
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <ContactLink
-            href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER || ''}`}
+            href={WHATSAPP_URL}
             icon={<MessageCircle className="h-5 w-5" />}
             title="WhatsApp"
             detail="Order and availability"
             color="green"
           />
           <ContactLink
-            href="https://instagram.com/thelanternlibraryy"
+            href={INSTAGRAM_URL}
             icon={<Instagram className="h-5 w-5" />}
             title="Instagram"
-            detail="@thelanternlibraryy"
+            detail={`@${INSTAGRAM_HANDLE}`}
             color="pink"
           />
           <ContactLink
-            href="mailto:hello@lanternlibrary.com"
+            href={`mailto:${CONTACT_EMAIL}`}
             icon={<Mail className="h-5 w-5" />}
             title="Email"
-            detail="hello@lanternlibrary.com"
+            detail={CONTACT_EMAIL}
             color="blue"
           />
           <div className="flex items-center gap-5 rounded-sm border border-border bg-card p-5">
@@ -41,7 +51,7 @@ export default function ContactSection() {
             </span>
             <div>
               <h3 className="text-lg">Location</h3>
-              <p className="text-sm opacity-70">Srinagar, Kashmir</p>
+              <p className="text-sm opacity-70">{LOCATION}</p>
             </div>
           </div>
         </div>

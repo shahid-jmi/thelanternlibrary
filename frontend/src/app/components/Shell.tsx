@@ -9,6 +9,7 @@ import Footer from '@/app/components/Footer';
 import BackToTop from '@/app/components/BackToTop';
 import OfflineBanner from '@/app/components/OfflineBanner';
 import { useTheme } from '@/app/theme/ThemeContext';
+import { COMING_SOON, WHATSAPP_URL } from '@/app/lib/site';
 
 type HomeSection = 'home' | 'about' | 'contact';
 // "home" has no section of its own to observe — id="home" sits on the
@@ -20,8 +21,6 @@ const navLinkClass = (active: boolean) =>
   `relative text-sm transition after:absolute after:-bottom-2.5 after:left-1/2 after:h-1.5 after:w-1.5 after:-translate-x-1/2 after:rounded-full after:bg-ember after:transition-opacity after:content-[''] hover:text-ember hover:opacity-100 ${
     active ? 'text-ember opacity-100 after:opacity-100' : 'opacity-70 after:opacity-0'
   }`;
-
-const COMING_SOON = import.meta.env.VITE_COMING_SOON === 'true';
 
 const mobileNavLinkClass = (active: boolean) =>
   `rounded-sm px-3 py-2 text-sm transition hover:bg-secondary hover:text-ember hover:opacity-100 ${
@@ -66,7 +65,6 @@ export default function Shell({ children }: { children: ReactNode }) {
   };
 
   const closeMenu = () => setIsMenuOpen(false);
-  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 
   return (
     <div className="min-h-screen relative text-foreground">
@@ -213,7 +211,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         <div className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 rtl:left-5 rtl:right-auto">
           {!isComingSoon && <BackToTop />}
           <a
-            href={`https://wa.me/${whatsappNumber}`}
+            href={WHATSAPP_URL}
             target="_blank"
             rel="noreferrer"
             aria-label="Chat on WhatsApp"

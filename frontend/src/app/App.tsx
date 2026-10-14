@@ -16,12 +16,7 @@ import CategoryPage from '@/app/pages/CategoryPage';
 import BookDetailPage from '@/app/pages/BookDetailPage';
 import OrderPage from '@/app/pages/OrderPage';
 import ComingSoonPage from '@/app/pages/ComingSoonPage';
-
-// Storefront is still being built out — set VITE_COMING_SOON=true (Production
-// scope only, e.g. on Vercel) to show a holding page to public visitors
-// instead. The admin panel stays fully reachable either way, so the site can
-// keep being populated/managed while it isn't publicly launched yet.
-const COMING_SOON = import.meta.env.VITE_COMING_SOON === 'true';
+import { COMING_SOON } from '@/app/lib/site';
 
 // Admin-only pages are lazy-loaded — a public visitor browsing the catalog
 // should never have to download the admin dashboard/forms bundle.
@@ -91,7 +86,10 @@ export default function App() {
                       <Route path="/admin/products/new" element={<AdminProductFormPage />} />
                       <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
                       <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
-                      <Route path="/admin/categories/:id/edit" element={<AdminCategoryFormPage />} />
+                      <Route
+                        path="/admin/categories/:id/edit"
+                        element={<AdminCategoryFormPage />}
+                      />
                       <Route path="/admin/admins" element={<AdminManagementPage />} />
                       <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
                     </Route>

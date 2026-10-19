@@ -9,7 +9,7 @@ export default function GrainTexture() {
         backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(GRAIN_SVG)}")`,
         backgroundSize: '200px 200px',
         mixBlendMode: 'multiply',
-        opacity: 0.82,
+        opacity: 0.35,
       }}
     />
   );

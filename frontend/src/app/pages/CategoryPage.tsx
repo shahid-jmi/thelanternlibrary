@@ -83,7 +83,7 @@ export default function CategoryPage() {
         <StatusMessage>No products in this category yet — check back soon.</StatusMessage>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-7 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5 xl:grid-cols-6">
         {productsLoading
           ? Array.from({ length: 8 }).map((_, index) => (
               <CardSkeleton key={index} aspect="aspect-[4/5]" />

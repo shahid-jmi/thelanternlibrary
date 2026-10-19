@@ -58,16 +58,16 @@ export default function FeaturedBooksSection() {
       <div
         ref={carousel.ref}
         onWheel={carousel.onWheel}
-        className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2"
+        className="no-scrollbar flex snap-x gap-3 overflow-x-auto sm:gap-5 pb-2"
       >
         {loading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="w-60 shrink-0 snap-start">
+              <div key={index} className="w-40 shrink-0 snap-start sm:w-48 lg:w-52">
                 <CardSkeleton />
               </div>
             ))
           : featuredBooks.map((book, index) => (
-              <Reveal key={book._id} delay={index * 60} className="w-60 shrink-0 snap-start">
+              <Reveal key={book._id} delay={index * 60} className="w-40 shrink-0 snap-start sm:w-48 lg:w-52">
                 <BookCard book={book} />
               </Reveal>
             ))}

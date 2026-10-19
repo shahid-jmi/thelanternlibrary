@@ -9,7 +9,7 @@ export default function ProductCard({ product }: { product: PublicProduct }) {
   const { t } = useTranslation();
 
   return (
-    <div className="block overflow-hidden rounded-sm border border-border/70 bg-card p-2 backdrop-blur-md sm:p-3">
+    <div className="block overflow-hidden rounded-sm border border-border/70 bg-card p-2 shadow-[0_1px_2px_rgba(46,26,8,0.06),0_6px_18px_rgba(46,26,8,0.07)] backdrop-blur-md sm:p-3">
       <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-background">
         {product.coverImage?.url ? (
           <img

@@ -29,13 +29,13 @@ export default function OfferSection() {
       {!loading && !error && categories.length === 0 && (
         <StatusMessage>More categories are on the way — check back soon.</StatusMessage>
       )}
-      <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-5">
         {loading
-          ? Array.from({ length: 4 }).map((_, index) => (
+          ? Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="shimmer aspect-[4/5] rounded-sm" />
             ))
           : categories.map((category, index) => (
-              <Reveal key={category._id} delay={(index % 4) * 70}>
+              <Reveal key={category._id} delay={(index % 5) * 70}>
                 <Link to={`/category/${category.slug}`} className="group block">
                   <ImageTile
                     className="aspect-[4/5]"
@@ -43,7 +43,7 @@ export default function OfferSection() {
                     alt={category.name}
                     placeholder={<Tag className="h-10 w-10 text-tile-accent" strokeWidth={1.25} />}
                   />
-                  <h3 className="mt-4 text-lg leading-snug transition group-hover:text-ember">
+                  <h3 className="mt-3 text-base leading-snug transition group-hover:text-ember sm:text-lg">
                     {category.name}
                   </h3>
                   {category.tagline && (

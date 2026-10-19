@@ -49,16 +49,16 @@ export default function FeaturedProductsSection() {
       <div
         ref={carousel.ref}
         onWheel={carousel.onWheel}
-        className="no-scrollbar flex snap-x gap-7 overflow-x-auto pb-2"
+        className="no-scrollbar flex snap-x gap-3 overflow-x-auto sm:gap-5 pb-2"
       >
         {productsLoading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="w-60 shrink-0 snap-start">
+              <div key={index} className="w-40 shrink-0 snap-start sm:w-48 lg:w-52">
                 <CardSkeleton aspect="aspect-[4/5]" />
               </div>
             ))
           : featuredProducts.map((product, index) => (
-              <Reveal key={product._id} delay={index * 60} className="w-60 shrink-0 snap-start">
+              <Reveal key={product._id} delay={index * 60} className="w-40 shrink-0 snap-start sm:w-48 lg:w-52">
                 <ProductCard product={product} />
               </Reveal>
             ))}

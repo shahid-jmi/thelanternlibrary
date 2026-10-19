@@ -30,7 +30,7 @@ export default function ProductCard({ product }: { product: PublicProduct }) {
         )}
       </div>
       <div className="px-0.5 pb-0.5 pt-3 sm:px-1 sm:pb-1 sm:pt-4">
-        <span className="rounded-sm border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.14em] opacity-65">
+        <span className="inline-block rounded-full bg-ember px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-ember-foreground sm:px-2.5">
           {product.category.name}
         </span>
         <h2 className="mt-2 line-clamp-2 text-sm leading-snug sm:text-lg">{product.name}</h2>

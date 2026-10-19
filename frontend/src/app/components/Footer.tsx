@@ -103,6 +103,8 @@ export default function Footer() {
       </div>
       <div className="border-t border-border/60 py-5 text-center text-[10px] uppercase tracking-[0.3em] opacity-55">
         © {new Date().getFullYear()} The Lantern Library
+        <span className="mx-2" aria-hidden="true">·</span>
+        From Kashmir to Kashmir
       </div>
     </footer>
   );

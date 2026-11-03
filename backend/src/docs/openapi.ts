@@ -74,6 +74,7 @@ const openApiDocument = {
     { name: 'Products', description: 'Public non-book catalogue (postcards, totes, etc.)' },
     { name: 'Categories', description: 'Public product categories for storefront navigation' },
     { name: 'Orders', description: 'Public order placement' },
+    { name: 'Instagram', description: "Recent posts from the shop's Instagram account" },
     { name: 'Auth', description: 'Admin authentication' },
     { name: 'Admin Books', description: 'Book management (admin token required)' },
     { name: 'Admin Products', description: 'Product management (admin token required)' },
@@ -221,6 +222,22 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
         },
+      },
+      InstagramPost: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          caption: { type: 'string', nullable: true },
+          mediaType: { type: 'string', enum: ['IMAGE', 'VIDEO', 'CAROUSEL_ALBUM'] },
+          imageUrl: {
+            type: 'string',
+            description: 'Photo, first carousel slide, or video cover frame',
+          },
+          permalink: { type: 'string', description: 'Link to the post on Instagram' },
+          likeCount: { type: 'integer', nullable: true },
+          timestamp: { type: 'string', format: 'date-time' },
+        },
+        required: ['id', 'mediaType', 'imageUrl', 'permalink', 'timestamp'],
       },
       AdminCategory: {
         type: 'object',
@@ -608,6 +625,30 @@ const openApiDocument = {
           },
           400: errorResponse('Validation failed'),
           404: errorResponse('Category not found (or inactive)'),
+        },
+      },
+    },
+    '/instagram': {
+      get: {
+        tags: ['Instagram'],
+        summary: 'List the most recent Instagram posts for the homepage feed',
+        description:
+          'Cached server-side for 30 minutes. Returns an empty list when no token is configured or Instagram is unreachable with nothing cached.',
+        responses: {
+          200: {
+            description: 'Up to 8 recent posts, newest first',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    posts: { type: 'array', items: { $ref: '#/components/schemas/InstagramPost' } },
+                  },
+                  required: ['posts'],
+                },
+              },
+            },
+          },
         },
       },
     },

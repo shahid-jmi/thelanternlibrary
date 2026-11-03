@@ -23,6 +23,7 @@ import {
 } from './modules/categories/category.routes.js';
 import { createAdminManagementRouter } from './modules/admins/admin.routes.js';
 import { createAdminOrderRouter, createPublicOrderRouter } from './modules/orders/order.routes.js';
+import { createPublicInstagramRouter } from './modules/instagram/instagram.routes.js';
 import openApiDocument from './docs/openapi.js';
 
 const createApp = (): Express => {
@@ -50,6 +51,7 @@ const createApp = (): Express => {
     router.use('/products', createPublicProductRouter());
     router.use('/categories', createPublicCategoryRouter());
     router.use('/orders', createPublicOrderRouter());
+    router.use('/instagram', createPublicInstagramRouter());
     router.use('/admin/auth', authRouter);
     router.use('/admin/books', authenticateAdmin, createAdminBookRouter());
     router.use('/admin/products', authenticateAdmin, createAdminProductRouter());

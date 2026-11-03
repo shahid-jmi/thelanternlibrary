@@ -67,8 +67,9 @@ export const TESTIMONIALS = [
   },
 ];
 
-// Placeholder posts for the Instagram preview section — swap for real posts
-// once the Graph API integration is wired up.
+// Fallback tiles for the Instagram section, shown when the live feed
+// (GET /instagram) is unavailable or returns nothing — e.g. before
+// INSTAGRAM_ACCESS_TOKEN is set on the backend.
 export const INSTAGRAM_POSTS = [
   {
     id: 1,

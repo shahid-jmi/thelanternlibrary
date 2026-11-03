@@ -3,9 +3,52 @@ import ImageTile from '@/app/components/ImageTile';
 import Reveal from '@/app/components/Reveal';
 import { Eyebrow } from '@/app/components/ui';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/app/lib/site';
+import { useInstagramPosts } from '@/app/queries/instagram';
 import { INSTAGRAM_POSTS } from './data';
 
+interface FeedTile {
+  id: string;
+  caption: string;
+  image?: string;
+  likes: number | null;
+  href: string;
+}
+
+const FALLBACK_TILES: FeedTile[] = INSTAGRAM_POSTS.map((post) => ({
+  id: String(post.id),
+  caption: post.caption,
+  image: post.image,
+  likes: post.likes,
+  href: INSTAGRAM_URL,
+}));
+
+// Image-less tiles (line-art placeholder) while the live feed loads, so the
+// fallback photos never flash in before the real posts replace them.
+const LOADING_TILES: FeedTile[] = FALLBACK_TILES.map((tile) => ({
+  ...tile,
+  caption: '',
+  image: undefined,
+  likes: null,
+}));
+
+function useFeedTiles(): FeedTile[] {
+  const { data: posts, isPending } = useInstagramPosts();
+
+  if (isPending) return LOADING_TILES;
+  if (!posts?.length) return FALLBACK_TILES;
+
+  return posts.map((post) => ({
+    id: post.id,
+    caption: post.caption ?? '',
+    image: post.imageUrl,
+    likes: post.likeCount,
+    href: post.permalink,
+  }));
+}
+
 export default function InstagramSection() {
+  const tiles = useFeedTiles();
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <Reveal>
@@ -16,23 +59,37 @@ export default function InstagramSection() {
         </p>
       </Reveal>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {INSTAGRAM_POSTS.map((post, index) => (
-          <Reveal key={post.id} delay={index * 70}>
-            <ImageTile
-              className="aspect-square"
-              src={post.image}
-              alt={post.caption}
-              placeholder={<Instagram className="h-8 w-8 text-tile-accent" strokeWidth={1.25} />}
-              overlay={
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3 text-white opacity-0 transition group-hover/tile:opacity-100">
-                  <p className="mb-1 text-xs leading-4">{post.caption}</p>
-                  <span className="inline-flex items-center gap-1 text-xs">
-                    <Heart className="h-3.5 w-3.5" />
-                    {post.likes}
-                  </span>
-                </div>
-              }
-            />
+        {tiles.map((tile, index) => (
+          <Reveal key={tile.id} delay={index * 70}>
+            <a
+              href={tile.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={tile.caption || `View on Instagram @${INSTAGRAM_HANDLE}`}
+              className="block"
+            >
+              <ImageTile
+                className="aspect-square"
+                src={tile.image}
+                alt={tile.caption}
+                placeholder={<Instagram className="h-8 w-8 text-tile-accent" strokeWidth={1.25} />}
+                overlay={
+                  tile.caption || tile.likes !== null ? (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-3 text-white opacity-0 transition group-hover/tile:opacity-100">
+                      {tile.caption && (
+                        <p className="mb-1 line-clamp-3 text-xs leading-4">{tile.caption}</p>
+                      )}
+                      {tile.likes !== null && (
+                        <span className="inline-flex items-center gap-1 text-xs">
+                          <Heart className="h-3.5 w-3.5" />
+                          {tile.likes}
+                        </span>
+                      )}
+                    </div>
+                  ) : undefined
+                }
+              />
+            </a>
           </Reveal>
         ))}
       </div>

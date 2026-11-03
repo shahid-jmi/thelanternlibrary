@@ -257,3 +257,15 @@ export interface CreateAdminPayload {
   password: string;
   role: AdminRole;
 }
+
+export type InstagramMediaType = 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
+
+export interface InstagramPost {
+  id: string;
+  caption: string | null;
+  mediaType: InstagramMediaType;
+  imageUrl: string;
+  permalink: string;
+  likeCount: number | null;
+  timestamp: string;
+}

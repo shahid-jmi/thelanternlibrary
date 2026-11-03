@@ -23,6 +23,8 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.string().optional(),
+  INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
+  INSTAGRAM_USER_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -90,6 +92,12 @@ const env = {
   r2PublicUrl: raw.R2_PUBLIC_URL,
   frontendUrl: raw.FRONTEND_URL ?? 'http://localhost:5173',
   smtp,
+  // Homepage Instagram feed. Both values are needed; with either unset the
+  // feed endpoint returns no posts and the storefront shows placeholder tiles.
+  instagram:
+    raw.INSTAGRAM_ACCESS_TOKEN && raw.INSTAGRAM_USER_ID
+      ? { accessToken: raw.INSTAGRAM_ACCESS_TOKEN, userId: raw.INSTAGRAM_USER_ID }
+      : null,
 } as const;
 
 export type Env = typeof env;

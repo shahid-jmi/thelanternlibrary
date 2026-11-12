@@ -21,6 +21,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.60.0",
     "axios": "^1.18.1",
+    "heic-to": "1.6.7",
     "i18next": "^26.3.3",
     "lucide-react": "0.487.0",
     "react": "18.3.1",

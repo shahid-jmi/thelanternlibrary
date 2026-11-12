@@ -141,6 +141,7 @@ function CategoryForm({
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [imagePreparing, setImagePreparing] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -239,6 +240,7 @@ function CategoryForm({
           label={t('admin.form.coverImage')}
           file={coverImageFile}
           onFileChange={setCoverImageFile}
+          onPreparingChange={setImagePreparing}
           existingUrl={coverImageUrl}
         />
         <div className="flex items-center gap-6 pt-6">
@@ -252,7 +254,9 @@ function CategoryForm({
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       <div className="mt-5 flex gap-3">
-        <Button disabled={saving}>{t('admin.form.saveCategory')}</Button>
+        <Button loading={saving} disabled={imagePreparing}>
+          {saving ? t('admin.form.saving') : t('admin.form.saveCategory')}
+        </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           {t('admin.form.cancel')}
         </Button>

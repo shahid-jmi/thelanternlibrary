@@ -9,9 +9,8 @@ import Reveal from '@/app/components/Reveal';
 import { Eyebrow } from '@/app/components/ui';
 
 // Widths account for the gaps below: 1 gap at 2 columns (1rem), 2 at 3
-// columns (2 × 2rem), 3 at 4 columns (3 × 2.5rem).
-const TILE_WIDTH =
-  'w-[calc((100%-1rem)/2)] sm:w-[calc((100%-4rem)/3)] lg:w-[calc((100%-7.5rem)/4)]';
+// columns (2 × 2rem), 4 at 5 columns (4 × 2.5rem).
+const TILE_WIDTH = 'w-[calc((100%-1rem)/2)] sm:w-[calc((100%-4rem)/3)] lg:w-[calc((100%-10rem)/5)]';
 
 export default function OfferSection() {
   const { i18n } = useTranslation();
@@ -40,13 +39,13 @@ export default function OfferSection() {
           neighbouring tiles from blurring into one block. */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-10 sm:gap-x-8 sm:gap-y-14 lg:gap-x-10">
         {loading
-          ? Array.from({ length: 4 }).map((_, index) => (
+          ? Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className={TILE_WIDTH}>
                 <div className="shimmer aspect-[4/5] rounded-sm" />
               </div>
             ))
           : categories.map((category, index) => (
-              <Reveal key={category._id} delay={(index % 4) * 70} className={TILE_WIDTH}>
+              <Reveal key={category._id} delay={(index % 5) * 70} className={TILE_WIDTH}>
                 <Link to={`/category/${category.slug}`} className="group block text-center">
                   <div className="rounded-sm border border-border/70 bg-card p-1.5 shadow-[0_1px_2px_rgba(46,26,8,0.06),0_6px_18px_rgba(46,26,8,0.08)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_2px_4px_rgba(46,26,8,0.08),0_12px_28px_rgba(46,26,8,0.14)] sm:p-2">
                     <ImageTile

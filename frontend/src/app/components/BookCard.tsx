@@ -4,15 +4,22 @@ import { BookOpen } from 'lucide-react';
 import type { PublicBook } from '@/app/api/types';
 import { formatPrice } from '@/app/lib/format';
 
-export default function BookCard({ book }: { book: PublicBook }) {
+export default function BookCard({
+  book,
+  aspect = 'aspect-[2/3]',
+}: {
+  book: PublicBook;
+  /** Cover shape; the mixed featured row uses one shape for books and products. */
+  aspect?: string;
+}) {
   const { t } = useTranslation();
 
   return (
     <Link
       to={`/book/${book._id}`}
-      className="group block overflow-hidden rounded-sm border border-border/70 bg-card p-2 shadow-[0_1px_2px_rgba(46,26,8,0.06),0_6px_18px_rgba(46,26,8,0.07)] backdrop-blur-md sm:p-3 transition duration-300 hover:-translate-y-1 hover:border-ember/60 hover:shadow-[0_2px_4px_rgba(46,26,8,0.08),0_14px_30px_rgba(46,26,8,0.12)]"
+      className="group flex h-full flex-col overflow-hidden rounded-sm border border-border/70 bg-card p-2 shadow-[0_1px_2px_rgba(46,26,8,0.06),0_6px_18px_rgba(46,26,8,0.07)] backdrop-blur-md sm:p-3 transition duration-300 hover:-translate-y-1 hover:border-ember/60 hover:shadow-[0_2px_4px_rgba(46,26,8,0.08),0_14px_30px_rgba(46,26,8,0.12)]"
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-sm bg-background">
+      <div className={`relative ${aspect} overflow-hidden rounded-sm bg-background`}>
         {book.coverImage?.url ? (
           <img
             src={book.coverImage.url}
@@ -31,7 +38,7 @@ export default function BookCard({ book }: { book: PublicBook }) {
           </span>
         )}
       </div>
-      <div className="px-0.5 pb-0.5 pt-3 sm:px-1 sm:pb-1 sm:pt-4">
+      <div className="flex flex-1 flex-col px-0.5 pb-0.5 pt-3 sm:px-1 sm:pb-1 sm:pt-4">
         <div className="flex flex-wrap gap-1 sm:gap-1.5">
           <span className="rounded-full bg-ember px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-ember-foreground sm:px-2.5">
             {book.genre}
@@ -44,7 +51,7 @@ export default function BookCard({ book }: { book: PublicBook }) {
           {book.title}
         </h2>
         <p className="mt-1 truncate text-xs italic opacity-75 sm:text-sm">{book.author}</p>
-        <p className="mt-1.5 text-sm sm:mt-2 sm:text-base">{formatPrice(book.price)}</p>
+        <p className="mt-auto pt-1.5 text-sm sm:pt-2 sm:text-base">{formatPrice(book.price)}</p>
       </div>
     </Link>
   );

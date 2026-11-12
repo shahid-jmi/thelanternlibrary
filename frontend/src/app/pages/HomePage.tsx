@@ -1,7 +1,6 @@
 import Divider from '@/app/components/Divider';
 import HeroSection from './home/HeroSection';
-import FeaturedBooksSection from './home/FeaturedBooksSection';
-import FeaturedProductsSection from './home/FeaturedProductsSection';
+import FeaturedSection from './home/FeaturedSection';
 import OfferSection from './home/OfferSection';
 import LibraryCabinetBanner from './home/LibraryCabinetBanner';
 import FeelingSection from './home/FeelingSection';
@@ -18,9 +17,7 @@ export default function HomePage() {
       <Divider />
       <OfferSection />
       <Divider />
-      <FeaturedBooksSection />
-      <Divider />
-      <FeaturedProductsSection />
+      <FeaturedSection />
       <LibraryCabinetBanner />
       <FeelingSection />
       <TestimonialsSection />

@@ -47,6 +47,12 @@ function buildBookFormData(payload: BookPayload, coverImageFile: File | null): F
   formData.append('language', payload.language);
   formData.append('isAvailable', String(payload.isAvailable));
   formData.append('isFeatured', String(payload.isFeatured));
+  formData.append('stock', payload.stock === null ? '' : String(payload.stock));
+  formData.append(
+    'lowStockThreshold',
+    payload.lowStockThreshold === null ? '' : String(payload.lowStockThreshold)
+  );
+  formData.append('shippingClass', payload.shippingClass ?? '');
   if (coverImageFile) {
     formData.append('coverImage', coverImageFile);
   }

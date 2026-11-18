@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as bookService from './book.service.js';
+import { actorOf } from '../../common/utils/actor.js';
 import type {
   GetPublicBookQuery,
   ListPublicBooksQuery,
@@ -26,7 +27,7 @@ export const listAdminBooks = async (req: Request, res: Response): Promise<void>
 };
 
 export const createBook = async (req: Request, res: Response): Promise<void> => {
-  const book = await bookService.createBook(req.body as UpsertBookInput, req.file);
+  const book = await bookService.createBook(req.body as UpsertBookInput, req.file, actorOf(req));
   res.status(201).json(book);
 };
 
@@ -34,7 +35,8 @@ export const updateBook = async (req: Request, res: Response): Promise<void> => 
   const book = await bookService.updateBook(
     req.params.id as string,
     req.body as UpsertBookInput,
-    req.file
+    req.file,
+    actorOf(req)
   );
   res.json(book);
 };

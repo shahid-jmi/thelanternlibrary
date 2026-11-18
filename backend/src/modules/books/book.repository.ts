@@ -32,9 +32,7 @@ export const findById = async (id: string): Promise<BookLean | null> =>
 export const findAdminBooks = async (): Promise<BookLean[]> =>
   Book.find().sort({ createdAt: -1 }).lean<BookLean[]>().exec();
 
-export const createBook = async (
-  payload: BookAttrs | Omit<BookAttrs, 'isAvailable'>
-): Promise<BookLean> => {
+export const createBook = async (payload: BookAttrs): Promise<BookLean> => {
   const created = await Book.create(payload);
   return created.toObject() as unknown as BookLean;
 };

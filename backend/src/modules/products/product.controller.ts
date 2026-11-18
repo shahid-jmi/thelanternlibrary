@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as productService from './product.service.js';
+import { actorOf } from '../../common/utils/actor.js';
 import type {
   GetPublicProductQuery,
   ListPublicProductsQuery,
@@ -26,7 +27,11 @@ export const listAdminProducts = async (req: Request, res: Response): Promise<vo
 };
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
-  const product = await productService.createProduct(req.body as UpsertProductInput, req.file);
+  const product = await productService.createProduct(
+    req.body as UpsertProductInput,
+    req.file,
+    actorOf(req)
+  );
   res.status(201).json(product);
 };
 
@@ -34,7 +39,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
   const product = await productService.updateProduct(
     req.params.id as string,
     req.body as UpsertProductInput,
-    req.file
+    req.file,
+    actorOf(req)
   );
   res.json(product);
 };

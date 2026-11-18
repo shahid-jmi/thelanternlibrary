@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock3, Package, Wallet } from 'lucide-react';
 import { useAdminBooks } from '@/app/queries/books';
 import { useAdminProducts } from '@/app/queries/products';
-import { useAdminOrders } from '@/app/queries/orders';
+import { useAdminDashboard } from '@/app/queries/orders';
 import { formatPrice } from '@/app/lib/format';
 
 const STAT_STYLES = {
@@ -28,7 +28,9 @@ function StatCard({
 }) {
   return (
     <div className="flex items-center gap-4 rounded-sm border border-border bg-card p-5">
-      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_STYLES[color]}`}>
+      <div
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_STYLES[color]}`}
+      >
         <Icon className="h-5 w-5" />
       </div>
       <div>
@@ -47,16 +49,11 @@ export default function DashboardStats() {
   const { t } = useTranslation();
   const booksQuery = useAdminBooks();
   const productsQuery = useAdminProducts();
-  const ordersQuery = useAdminOrders({});
+  const dashboardQuery = useAdminDashboard();
 
   const books = booksQuery.data ?? [];
   const products = productsQuery.data ?? [];
-  const orders = ordersQuery.data ?? [];
-
-  const pendingOrders = orders.filter((order) => order.status === 'pending').length;
-  const revenue = orders
-    .filter((order) => order.status === 'paid')
-    .reduce((sum, order) => sum + order.price + order.deliveryCharge, 0);
+  const dashboard = dashboardQuery.data;
 
   return (
     <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -76,17 +73,17 @@ export default function DashboardStats() {
       />
       <StatCard
         icon={Clock3}
-        label={t('admin.dashboard.stats.pendingOrders')}
-        value={String(pendingOrders)}
+        label={t('admin.dashboard.stats.toShip')}
+        value={String(dashboard?.orders.toShip ?? 0)}
         color="amber"
-        loading={ordersQuery.isPending}
+        loading={dashboardQuery.isPending}
       />
       <StatCard
         icon={Wallet}
-        label={t('admin.dashboard.stats.revenue')}
-        value={formatPrice(revenue)}
+        label={t('admin.dashboard.stats.revenueMonth')}
+        value={formatPrice(dashboard?.revenue.thisMonth ?? 0)}
         color="emerald"
-        loading={ordersQuery.isPending}
+        loading={dashboardQuery.isPending}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectId } from '../../common/validation/objectId.js';
 import { booleanFromString } from '../../common/validation/booleanFromString.js';
+import { stockFormFields } from '../../common/validation/stockFields.js';
 import { BOOK_GENRES, BOOK_LANGUAGES, TRANSLATION_LANGUAGES } from './book.constants.js';
 
 const localizedText = (label: string) =>
@@ -49,6 +50,7 @@ export const upsertBookBodySchema = z.object({
   language: z.enum(BOOK_LANGUAGES, { message: 'Language is invalid' }),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),
   isFeatured: booleanFromString('isFeatured must be a boolean').optional(),
+  ...stockFormFields,
 });
 
 export const updateAvailabilityBodySchema = z.object({

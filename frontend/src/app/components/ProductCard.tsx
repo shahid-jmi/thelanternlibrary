@@ -3,7 +3,9 @@ import { Package } from 'lucide-react';
 import type { PublicProduct } from '@/app/api/types';
 import { formatPrice } from '@/app/lib/format';
 
-// TODO: once product detail pages / ordering exist, wrap this in a <Link>
+import AddToCartButton, { StockLabel } from '@/app/cart/AddToCartButton';
+
+// TODO: once product detail pages exist, wrap the image/title in a <Link>
 // to the product route (mirroring BookCard -> /book/:id).
 export default function ProductCard({
   product,
@@ -42,6 +44,25 @@ export default function ProductCard({
         </span>
         <h2 className="mt-2 line-clamp-2 text-sm leading-snug sm:text-lg">{product.name}</h2>
         <p className="mt-auto pt-1.5 text-sm sm:pt-2 sm:text-base">{formatPrice(product.price)}</p>
+        <StockLabel
+          stockStatus={product.stockStatus}
+          stockRemaining={product.stockRemaining}
+          className="mt-1 text-xs"
+        />
+        <AddToCartButton
+          size="sm"
+          className="mt-2 w-full"
+          item={{
+            itemType: 'product',
+            itemId: product._id,
+            title: product.name,
+            subtitle: product.category.name,
+            price: product.price,
+            coverImageUrl: product.coverImage?.url ?? null,
+            isAvailable: product.isAvailable,
+            stockStatus: product.stockStatus,
+          }}
+        />
       </div>
     </div>
   );

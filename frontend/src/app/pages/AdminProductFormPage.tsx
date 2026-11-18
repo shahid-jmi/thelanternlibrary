@@ -14,6 +14,12 @@ import Loader from '@/app/components/Loader';
 import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
 import { Button, Toggle } from '@/app/components/ui';
+import StockFormFields, {
+  toStockFormValues,
+  toStockPayload,
+  validateStockForm,
+  type StockFormValues,
+} from '@/app/components/admin/StockFormFields';
 import { focusFirstInvalid } from '@/app/lib/scroll';
 
 export default function AdminProductFormPage() {
@@ -70,6 +76,7 @@ export default function AdminProductFormPage() {
           price: product ? String(product.price) : '',
           isAvailable: product?.isAvailable ?? true,
           isFeatured: product?.isFeatured ?? false,
+          stock: toStockFormValues(product),
         }}
         coverImageUrl={product?.coverImage?.url}
         categories={categories}
@@ -92,6 +99,7 @@ interface ProductFormInitial {
   price: string;
   isAvailable: boolean;
   isFeatured: boolean;
+  stock: StockFormValues;
 }
 
 function ProductForm({
@@ -113,7 +121,7 @@ function ProductForm({
       price: number;
       isAvailable: boolean;
       isFeatured: boolean;
-    },
+    } & ReturnType<typeof toStockPayload>,
     coverImageFile: File | null
   ) => Promise<void>;
 }) {
@@ -126,6 +134,8 @@ function ProductForm({
   const price = useValidatedField(validatePrice, initial.price);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
   const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
+  const [stock, setStock] = useState<StockFormValues>(initial.stock);
+  const [showStockErrors, setShowStockErrors] = useState(false);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -133,7 +143,15 @@ function ProductForm({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const errors = [nameEn.validateNow(), descEn.validateNow(), price.validateNow()];
+    const stockErrors = validateStockForm(stock);
+    setShowStockErrors(true);
+    const errors = [
+      nameEn.validateNow(),
+      descEn.validateNow(),
+      price.validateNow(),
+      stockErrors.stock,
+      stockErrors.lowStockThreshold,
+    ];
     if (errors.some(Boolean)) {
       focusFirstInvalid(event.currentTarget);
       return;
@@ -150,6 +168,7 @@ function ProductForm({
           price: Number(price.value),
           isAvailable,
           isFeatured,
+          ...toStockPayload(stock),
         },
         coverImageFile
       );
@@ -218,6 +237,13 @@ function ProductForm({
           onChange={price.onChange}
           onBlur={price.onBlur}
           error={price.error ? t(price.error) : undefined}
+        />
+        <StockFormFields
+          idPrefix="product"
+          values={stock}
+          onChange={setStock}
+          showErrors={showStockErrors}
+          inheritLabel={t('admin.stock.classFromCategory')}
         />
         <ImageUploadField
           label={t('admin.form.coverImage')}

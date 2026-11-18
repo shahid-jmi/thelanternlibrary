@@ -42,7 +42,7 @@ const authenticateAdmin = async (
     return;
   }
 
-  req.admin = { id: admin._id.toString(), role: admin.role };
+  req.admin = { id: admin._id.toString(), role: admin.role, email: admin.email };
   next();
 };
 

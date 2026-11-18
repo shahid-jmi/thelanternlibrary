@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Menu, MessageCircle, Moon, Sun, X } from 'lucide-react';
+import { Menu, MessageCircle, Moon, ShoppingBag, Sun, X } from 'lucide-react';
+import { useCart } from '@/app/cart/CartContext';
 import { Logo } from '@/app/components/Logo';
 import GrainTexture from '@/app/components/GrainTexture';
 import Bokeh from '@/app/components/Bokeh';
@@ -32,6 +33,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { itemCount } = useCart();
   const [activeSection, setActiveSection] = useState<HomeSection>('home');
   const isAdmin = pathname.startsWith('/admin');
   const isHome = pathname === '/';
@@ -138,6 +140,21 @@ export default function Shell({ children }: { children: ReactNode }) {
                     </button>
                   ))}
                 </div>
+                {!isComingSoon && (
+                  <Link
+                    to="/cart"
+                    onClick={closeMenu}
+                    className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border transition hover:bg-secondary sm:h-9 sm:w-9"
+                    aria-label={t('cart.openCart', { count: itemCount })}
+                  >
+                    <ShoppingBag className="h-4 w-4 text-[var(--icon-color)]" />
+                    {itemCount > 0 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ember px-1 text-[10px] leading-none text-ember-foreground">
+                        {itemCount > 99 ? '99+' : itemCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 <button
                   onClick={toggleTheme}
                   className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border transition hover:bg-secondary sm:h-9 sm:w-9"

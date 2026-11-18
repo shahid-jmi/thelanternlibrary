@@ -24,6 +24,12 @@ import {
 import { createAdminManagementRouter } from './modules/admins/admin.routes.js';
 import { createAdminOrderRouter, createPublicOrderRouter } from './modules/orders/order.routes.js';
 import { createPublicInstagramRouter } from './modules/instagram/instagram.routes.js';
+import { createAdminInventoryRouter } from './modules/inventory/inventory.routes.js';
+import {
+  createAdminSettingsRouter,
+  createPublicSettingsRouter,
+} from './modules/settings/settings.routes.js';
+import { createAdminDashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import openApiDocument from './docs/openapi.js';
 
 const createApp = (): Express => {
@@ -52,14 +58,25 @@ const createApp = (): Express => {
     router.use('/categories', createPublicCategoryRouter());
     router.use('/orders', createPublicOrderRouter());
     router.use('/instagram', createPublicInstagramRouter());
+    router.use('/settings', createPublicSettingsRouter());
     router.use('/admin/auth', authRouter);
     router.use('/admin/books', authenticateAdmin, createAdminBookRouter());
     router.use('/admin/products', authenticateAdmin, createAdminProductRouter());
     // Category reads are open to any admin; mutations are guarded per-route
     // with requireSuperAdmin inside the router.
     router.use('/admin/categories', authenticateAdmin, createAdminCategoryRouter());
-    router.use('/admin/admins', authenticateAdmin, requireSuperAdmin, createAdminManagementRouter());
+    router.use(
+      '/admin/admins',
+      authenticateAdmin,
+      requireSuperAdmin,
+      createAdminManagementRouter()
+    );
     router.use('/admin/orders', authenticateAdmin, createAdminOrderRouter());
+    router.use('/admin/inventory', authenticateAdmin, createAdminInventoryRouter());
+    // Reading settings is open to any admin; saving is super-admin only
+    // (guarded inside the router).
+    router.use('/admin/settings', authenticateAdmin, createAdminSettingsRouter());
+    router.use('/admin/dashboard', authenticateAdmin, createAdminDashboardRouter());
 
     router.get('/docs.json', (req, res) => {
       res.json(openApiDocument);

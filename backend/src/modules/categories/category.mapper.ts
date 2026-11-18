@@ -5,6 +5,7 @@ import type { TranslationLanguage } from '../../common/constants/languages.js';
 import { getLocalizedField } from '../../common/utils/localize.js';
 import { PLACEHOLDER_COVER_URL } from '../../common/services/cover-image.service.js';
 import type { CategoryLean } from './category.model.js';
+import { DEFAULT_SHIPPING_CLASS, type ShippingClass } from '../../common/constants/catalog.js';
 
 // Defensive default for categories created before coverImage existed.
 const coverImageOf = (category: CategoryLean): CoverImage =>
@@ -27,6 +28,7 @@ export interface AdminCategoryDto {
   description: LocalizedText | null;
   coverImage: CoverImage;
   isActive: boolean;
+  shippingClass: ShippingClass;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +53,7 @@ export const toAdminCategoryDto = (category: CategoryLean): AdminCategoryDto => 
   description: category.description ?? null,
   coverImage: coverImageOf(category),
   isActive: category.isActive,
+  shippingClass: category.shippingClass ?? DEFAULT_SHIPPING_CLASS,
   createdAt: category.createdAt,
   updatedAt: category.updatedAt,
 });

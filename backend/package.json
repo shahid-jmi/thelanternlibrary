@@ -23,7 +23,8 @@
     "migrate-cover-images": "tsx src/scripts/migrateCoverImages.ts",
     "remove-stale-persian-fields": "tsx src/scripts/removeStalePersianFields.ts",
     "rename-cover-image-public-id-to-key": "tsx src/scripts/renameCoverImagePublicIdToKey.ts",
-    "migrate-auth-fields": "tsx src/scripts/migrateAuthFields.ts"
+    "migrate-auth-fields": "tsx src/scripts/migrateAuthFields.ts",
+    "migrate-orders-to-items": "tsx src/scripts/migrateOrdersToItems.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1087.0",

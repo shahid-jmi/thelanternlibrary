@@ -2,6 +2,7 @@ import mongoose, { Schema, type Types } from 'mongoose';
 import { localizedTextSchema, type LocalizedText } from '../../common/models/localizedText.js';
 import { coverImageSchema, type CoverImage } from '../../common/models/coverImage.js';
 import type { CategoryLean } from '../categories/category.model.js';
+import { SHIPPING_CLASSES, type ShippingClass } from '../../common/constants/catalog.js';
 
 export interface ProductAttrs {
   name: LocalizedText;
@@ -11,6 +12,12 @@ export interface ProductAttrs {
   coverImage: CoverImage;
   isAvailable: boolean;
   isFeatured: boolean;
+  // null = not tracking stock for this product yet (always orderable).
+  stock: number | null;
+  // null = use the store-wide default from settings.
+  lowStockThreshold: number | null;
+  // null = inherit the category's shipping class.
+  shippingClass: ShippingClass | null;
 }
 
 // Repository reads always populate `category`, so lean products carry the full
@@ -31,6 +38,9 @@ const productSchema = new Schema<ProductAttrs>(
     coverImage: { type: coverImageSchema, required: true },
     isAvailable: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: false },
+    stock: { type: Number, default: null, min: 0 },
+    lowStockThreshold: { type: Number, default: null, min: 0 },
+    shippingClass: { type: String, enum: [...SHIPPING_CLASSES, null], default: null },
   },
   {
     timestamps: true,
@@ -41,6 +51,7 @@ const productSchema = new Schema<ProductAttrs>(
 productSchema.index({ category: 1, isAvailable: 1 });
 productSchema.index({ isFeatured: 1 });
 productSchema.index({ 'name.en': 1 });
+productSchema.index({ stock: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 

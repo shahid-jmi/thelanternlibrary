@@ -1,7 +1,16 @@
 import type { ComponentType } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, ClipboardList, KeyRound, LogOut, Package, Tags, Users } from 'lucide-react';
+import {
+  BookOpen,
+  Boxes,
+  ClipboardList,
+  KeyRound,
+  LogOut,
+  Package,
+  Tags,
+  Users,
+} from 'lucide-react';
 import { useAuth } from '@/app/auth/AuthContext';
 import PageFrame from '@/app/components/PageFrame';
 import BooksPanel from '@/app/components/admin/BooksPanel';
@@ -9,18 +18,38 @@ import ProductsPanel from '@/app/components/admin/ProductsPanel';
 import CategoriesPanel from '@/app/components/admin/CategoriesPanel';
 import OrdersPanel from '@/app/components/admin/OrdersPanel';
 import DashboardStats from '@/app/components/admin/DashboardStats';
+import StockPanel from '@/app/components/admin/StockPanel';
 
-const DASHBOARD_TABS = ['books', 'products', 'categories', 'orders'] as const;
+const DASHBOARD_TABS = ['books', 'products', 'categories', 'orders', 'stock'] as const;
 type DashboardTab = (typeof DASHBOARD_TABS)[number];
 
 const isDashboardTab = (value: string | null): value is DashboardTab =>
   DASHBOARD_TABS.includes(value as DashboardTab);
 
-const TAB_STYLES: Record<DashboardTab, { icon: ComponentType<{ className?: string }>; active: string }> = {
-  books: { icon: BookOpen, active: 'border-transparent bg-blue-500/15 text-blue-600 dark:text-blue-400' },
-  products: { icon: Package, active: 'border-transparent bg-violet-500/15 text-violet-600 dark:text-violet-400' },
-  categories: { icon: Tags, active: 'border-transparent bg-teal-500/15 text-teal-600 dark:text-teal-400' },
-  orders: { icon: ClipboardList, active: 'border-transparent bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+const TAB_STYLES: Record<
+  DashboardTab,
+  { icon: ComponentType<{ className?: string }>; active: string }
+> = {
+  books: {
+    icon: BookOpen,
+    active: 'border-transparent bg-blue-500/15 text-blue-600 dark:text-blue-400',
+  },
+  products: {
+    icon: Package,
+    active: 'border-transparent bg-violet-500/15 text-violet-600 dark:text-violet-400',
+  },
+  categories: {
+    icon: Tags,
+    active: 'border-transparent bg-teal-500/15 text-teal-600 dark:text-teal-400',
+  },
+  orders: {
+    icon: ClipboardList,
+    active: 'border-transparent bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  },
+  stock: {
+    icon: Boxes,
+    active: 'border-transparent bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  },
 };
 
 export default function AdminDashboardPage() {
@@ -35,6 +64,7 @@ export default function AdminDashboardPage() {
     { id: 'products', label: t('admin.dashboard.tab.products') },
     { id: 'categories', label: t('admin.dashboard.tab.categories') },
     { id: 'orders', label: t('admin.dashboard.tab.orders') },
+    { id: 'stock', label: t('admin.dashboard.tab.stock') },
   ];
 
   return (
@@ -95,6 +125,7 @@ export default function AdminDashboardPage() {
       {tab === 'products' && <ProductsPanel />}
       {tab === 'categories' && <CategoriesPanel />}
       {tab === 'orders' && <OrdersPanel />}
+      {tab === 'stock' && <StockPanel />}
     </PageFrame>
   );
 }

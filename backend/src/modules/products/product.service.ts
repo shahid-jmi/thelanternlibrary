@@ -19,6 +19,13 @@ import {
 } from './product.mapper.js';
 import type { ProductAttrs } from './product.model.js';
 import type { ListPublicProductsQuery, UpsertProductInput } from './product.validators.js';
+import { getDefaultLowStockThreshold } from '../settings/settings.service.js';
+import { applyStockFromForm } from '../inventory/inventory.service.js';
+import type { Actor } from '../../common/utils/actor.js';
+
+const toAdminDto = async (
+  product: Parameters<typeof toAdminProductDto>[0]
+): Promise<AdminProductDto> => toAdminProductDto(product, await getDefaultLowStockThreshold());
 
 interface UploadedFile {
   buffer: Buffer;
@@ -72,8 +79,11 @@ export const listPublicProducts = async (
     ];
   }
 
-  const products = await productRepository.findPublicProducts(query);
-  return products.map((product) => toPublicProductDto(product, filters.lang));
+  const [products, threshold] = await Promise.all([
+    productRepository.findPublicProducts(query),
+    getDefaultLowStockThreshold(),
+  ]);
+  return products.map((product) => toPublicProductDto(product, filters.lang, threshold));
 };
 
 export const getPublicProductById = async (
@@ -86,19 +96,24 @@ export const getPublicProductById = async (
     throw new NotFoundError('Product not found');
   }
 
-  return toPublicProductDto(product, lang);
+  return toPublicProductDto(product, lang, await getDefaultLowStockThreshold());
 };
 
 export const listAdminProducts = async (): Promise<AdminProductDto[]> => {
-  const products = await productRepository.findAdminProducts();
-  return products.map(toAdminProductDto);
+  const [products, threshold] = await Promise.all([
+    productRepository.findAdminProducts(),
+    getDefaultLowStockThreshold(),
+  ]);
+  return products.map((product) => toAdminProductDto(product, threshold));
 };
 
 export const createProduct = async (
   payload: UpsertProductInput,
-  file: UploadedFile | undefined
+  file: UploadedFile | undefined,
+  actor: Actor
 ): Promise<AdminProductDto> => {
-  await assertAssignableCategory(payload.category);
+  const { stock = null, ...fields } = payload;
+  await assertAssignableCategory(fields.category);
 
   let coverImage: CoverImage = { url: PLACEHOLDER_COVER_URL, key: null };
 
@@ -108,29 +123,44 @@ export const createProduct = async (
   }
 
   const product = await productRepository.createProduct({
-    ...payload,
-    isAvailable: payload.isAvailable ?? true,
-    isFeatured: payload.isFeatured ?? false,
+    ...fields,
+    lowStockThreshold: fields.lowStockThreshold ?? null,
+    shippingClass: fields.shippingClass ?? null,
+    stock: null,
+    isAvailable: fields.isAvailable ?? true,
+    isFeatured: fields.isFeatured ?? false,
     coverImage,
   });
 
-  return toAdminProductDto(product);
+  if (stock !== null) {
+    await applyStockFromForm(
+      { itemType: 'product', _id: product._id, title: product.name.en },
+      null,
+      stock,
+      actor
+    );
+    product.stock = stock;
+  }
+
+  return toAdminDto(product);
 };
 
 export const updateProduct = async (
   id: string,
   payload: UpsertProductInput,
-  file: UploadedFile | undefined
+  file: UploadedFile | undefined,
+  actor: Actor
 ): Promise<AdminProductDto> => {
+  const { stock, ...fields } = payload;
   const existingProduct = await productRepository.findById(id);
 
   if (!existingProduct) {
     throw new NotFoundError('Product not found');
   }
 
-  await assertAssignableCategory(payload.category);
+  await assertAssignableCategory(fields.category);
 
-  const updatePayload: productRepository.UpdateProductPayload = { ...payload };
+  const updatePayload: productRepository.UpdateProductPayload = { ...fields };
   let previousKey: string | null = null;
 
   if (file) {
@@ -149,7 +179,19 @@ export const updateProduct = async (
     await deleteCoverImageAsset(previousKey);
   }
 
-  return toAdminProductDto(updatedProduct);
+  // Stock goes through the inventory service so the change is recorded in
+  // the item's stock history. Left out of the form = unchanged.
+  if (stock !== undefined && stock !== (existingProduct.stock ?? null)) {
+    await applyStockFromForm(
+      { itemType: 'product', _id: updatedProduct._id, title: updatedProduct.name.en },
+      existingProduct.stock ?? null,
+      stock,
+      actor
+    );
+    updatedProduct.stock = stock;
+  }
+
+  return toAdminDto(updatedProduct);
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
@@ -183,18 +225,15 @@ export const updateAvailability = async (
     throw new NotFoundError('Product not found');
   }
 
-  return toAdminProductDto(updatedProduct);
+  return toAdminDto(updatedProduct);
 };
 
-export const updateFeatured = async (
-  id: string,
-  isFeatured: boolean
-): Promise<AdminProductDto> => {
+export const updateFeatured = async (id: string, isFeatured: boolean): Promise<AdminProductDto> => {
   const updatedProduct = await productRepository.updateFeaturedById(id, isFeatured);
 
   if (!updatedProduct) {
     throw new NotFoundError('Product not found');
   }
 
-  return toAdminProductDto(updatedProduct);
+  return toAdminDto(updatedProduct);
 };

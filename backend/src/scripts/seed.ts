@@ -5,7 +5,8 @@ import { PLACEHOLDER_COVER_URL } from '../common/services/cover-image.service.js
 
 const placeholderCover = { url: PLACEHOLDER_COVER_URL, key: null };
 
-const sampleBooks: BookAttrs[] = [
+// Stock fields are left to their schema defaults (untracked).
+const sampleBooks: Array<Omit<BookAttrs, 'stock' | 'lowStockThreshold' | 'shippingClass'>> = [
   {
     title: { en: 'The Alchemist', ur: 'کیمیا گر' },
     description: {

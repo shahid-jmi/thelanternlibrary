@@ -16,6 +16,9 @@ import {
 import type { TranslationLanguage } from './book.constants.js';
 import type { BookAttrs, CoverImage } from './book.model.js';
 import type { ListPublicBooksQuery, UpsertBookInput } from './book.validators.js';
+import { getDefaultLowStockThreshold } from '../settings/settings.service.js';
+import { applyStockFromForm } from '../inventory/inventory.service.js';
+import type { Actor } from '../../common/utils/actor.js';
 
 interface UploadedFile {
   buffer: Buffer;
@@ -58,8 +61,11 @@ const buildPublicBookQuery = ({
 
 export const listPublicBooks = async (filters: ListPublicBooksQuery): Promise<PublicBookDto[]> => {
   const query = buildPublicBookQuery(filters);
-  const books = await bookRepository.findPublicBooks(query);
-  return books.map((book) => toPublicBookDto(book, filters.lang));
+  const [books, threshold] = await Promise.all([
+    bookRepository.findPublicBooks(query),
+    getDefaultLowStockThreshold(),
+  ]);
+  return books.map((book) => toPublicBookDto(book, filters.lang, threshold));
 };
 
 export const getPublicBookById = async (
@@ -72,18 +78,26 @@ export const getPublicBookById = async (
     throw new NotFoundError('Book not found');
   }
 
-  return toPublicBookDto(book, lang);
+  return toPublicBookDto(book, lang, await getDefaultLowStockThreshold());
 };
 
 export const listAdminBooks = async (): Promise<AdminBookDto[]> => {
-  const books = await bookRepository.findAdminBooks();
-  return books.map(toAdminBookDto);
+  const [books, threshold] = await Promise.all([
+    bookRepository.findAdminBooks(),
+    getDefaultLowStockThreshold(),
+  ]);
+  return books.map((book) => toAdminBookDto(book, threshold));
 };
+
+const toAdminDto = async (book: Parameters<typeof toAdminBookDto>[0]): Promise<AdminBookDto> =>
+  toAdminBookDto(book, await getDefaultLowStockThreshold());
 
 export const createBook = async (
   payload: UpsertBookInput,
-  file: UploadedFile | undefined
+  file: UploadedFile | undefined,
+  actor: Actor
 ): Promise<AdminBookDto> => {
+  const { stock = null, ...fields } = payload;
   let coverImage: CoverImage = { url: PLACEHOLDER_COVER_URL, key: null };
 
   if (file) {
@@ -92,26 +106,42 @@ export const createBook = async (
   }
 
   const book = await bookRepository.createBook({
-    ...payload,
-    isAvailable: payload.isAvailable ?? true,
-    isFeatured: payload.isFeatured ?? false,
+    ...fields,
+    lowStockThreshold: fields.lowStockThreshold ?? null,
+    shippingClass: fields.shippingClass ?? null,
+    stock: null,
+    isAvailable: fields.isAvailable ?? true,
+    isFeatured: fields.isFeatured ?? false,
     coverImage,
   });
-  return toAdminBookDto(book);
+
+  if (stock !== null) {
+    await applyStockFromForm(
+      { itemType: 'book', _id: book._id, title: book.title.en },
+      null,
+      stock,
+      actor
+    );
+    book.stock = stock;
+  }
+
+  return toAdminDto(book);
 };
 
 export const updateBook = async (
   id: string,
   payload: UpsertBookInput,
-  file: UploadedFile | undefined
+  file: UploadedFile | undefined,
+  actor: Actor
 ): Promise<AdminBookDto> => {
+  const { stock, ...fields } = payload;
   const existingBook = await bookRepository.findById(id);
 
   if (!existingBook) {
     throw new NotFoundError('Book not found');
   }
 
-  const updatePayload: Partial<BookAttrs> = { ...payload };
+  const updatePayload: Partial<BookAttrs> = { ...fields };
   let previousKey: string | null = null;
 
   if (file) {
@@ -130,7 +160,19 @@ export const updateBook = async (
     await deleteCoverImageAsset(previousKey);
   }
 
-  return toAdminBookDto(updatedBook);
+  // Stock goes through the inventory service so the change is recorded in
+  // the item's stock history. Left out of the form = unchanged.
+  if (stock !== undefined && stock !== (existingBook.stock ?? null)) {
+    await applyStockFromForm(
+      { itemType: 'book', _id: updatedBook._id, title: updatedBook.title.en },
+      existingBook.stock ?? null,
+      stock,
+      actor
+    );
+    updatedBook.stock = stock;
+  }
+
+  return toAdminDto(updatedBook);
 };
 
 export const deleteBook = async (id: string): Promise<void> => {
@@ -161,7 +203,7 @@ export const updateAvailability = async (
     throw new NotFoundError('Book not found');
   }
 
-  return toAdminBookDto(updatedBook);
+  return toAdminDto(updatedBook);
 };
 
 export const updateFeatured = async (id: string, isFeatured: boolean): Promise<AdminBookDto> => {
@@ -171,5 +213,5 @@ export const updateFeatured = async (id: string, isFeatured: boolean): Promise<A
     throw new NotFoundError('Book not found');
   }
 
-  return toAdminBookDto(updatedBook);
+  return toAdminDto(updatedBook);
 };

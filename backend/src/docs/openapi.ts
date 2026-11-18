@@ -4,7 +4,14 @@ import {
   BOOK_LANGUAGES,
   TRANSLATION_LANGUAGES,
 } from '../modules/books/book.constants.js';
-import { ORDER_STATUSES } from '../modules/orders/order.model.js';
+import {
+  ORDER_STATUSES,
+  PAYMENT_METHODS,
+  PAYMENT_STATUSES,
+} from '../modules/orders/order.model.js';
+import { ORDER_VIEWS } from '../modules/orders/order.validators.js';
+import { ITEM_TYPES, SHIPPING_CLASSES, STOCK_STATUSES } from '../common/constants/catalog.js';
+import { MANUAL_STOCK_REASONS, STOCK_REASONS } from '../modules/inventory/stockMovement.model.js';
 import { INDIAN_STATES } from '../modules/orders/order.constants.js';
 
 const errorResponse = (description: string) => ({
@@ -52,6 +59,76 @@ const orderIdParam = {
   description: 'MongoDB ObjectId of the order',
 };
 
+const itemParams = [
+  {
+    name: 'itemType',
+    in: 'path',
+    required: true,
+    schema: { type: 'string', enum: [...ITEM_TYPES] },
+  },
+  { ...bookIdParam, description: 'MongoDB ObjectId of the book or product' },
+];
+
+const bearer = [{ bearerAuth: [] }];
+
+const jsonBody = (ref: string) => ({
+  required: true,
+  content: { 'application/json': { schema: { $ref: `#/components/schemas/${ref}` } } },
+});
+
+const jsonResponse = (description: string, ref: string) => ({
+  description,
+  content: { 'application/json': { schema: { $ref: `#/components/schemas/${ref}` } } },
+});
+
+const adminOrderAction = (summary: string, bodyRef: string | null, errors: string) => ({
+  tags: ['Admin Orders'],
+  summary,
+  security: bearer,
+  parameters: [orderIdParam],
+  ...(bodyRef ? { requestBody: jsonBody(bodyRef) } : {}),
+  responses: {
+    200: jsonResponse('Updated order', 'AdminOrder'),
+    400: errorResponse(errors),
+    401: errorResponse('Missing or invalid token'),
+    404: errorResponse('Order not found'),
+    409: errorResponse('The order changed meanwhile, or there is not enough stock'),
+  },
+});
+
+const stockStatusProps = {
+  stockStatus: {
+    type: 'string',
+    enum: [...STOCK_STATUSES],
+    description: '"untracked" = stock is not counted for this item; always orderable',
+  },
+  stockRemaining: {
+    type: 'integer',
+    nullable: true,
+    description: 'Copies left, only when stock is low',
+  },
+};
+
+const adminStockProps = {
+  ...stockStatusProps,
+  stock: { type: 'integer', nullable: true, description: 'null = not tracked' },
+  lowStockThreshold: {
+    type: 'integer',
+    nullable: true,
+    description: 'null = store default',
+  },
+  shippingClass: { type: 'string', enum: [...SHIPPING_CLASSES], nullable: true },
+};
+
+const stockFormProps = {
+  stock: { type: 'string', description: 'Whole number, or empty to stop tracking stock' },
+  lowStockThreshold: {
+    type: 'string',
+    description: 'Whole number, or empty for the store default',
+  },
+  shippingClass: { type: 'string', enum: ['', ...SHIPPING_CLASSES] },
+};
+
 const langQueryParam = {
   name: 'lang',
   in: 'query',
@@ -86,8 +163,15 @@ const openApiDocument = {
     { name: 'Admins', description: 'Admin account management (super admin token required)' },
     {
       name: 'Admin Orders',
-      description: 'Order management, status updates, and invoicing (admin token required)',
+      description:
+        'Order management, payments, status updates, and receipts (admin token required)',
     },
+    {
+      name: 'Admin Inventory',
+      description: 'Stock levels and stock history (admin token required)',
+    },
+    { name: 'Admin Settings', description: 'Store, delivery, and inventory settings' },
+    { name: 'Admin Dashboard', description: 'Summary numbers for the admin home page' },
   ],
   components: {
     securitySchemes: {
@@ -140,6 +224,7 @@ const openApiDocument = {
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
           isFeatured: { type: 'boolean' },
+          ...stockStatusProps,
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -157,6 +242,7 @@ const openApiDocument = {
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
           isFeatured: { type: 'boolean' },
+          ...adminStockProps,
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -218,7 +304,8 @@ const openApiDocument = {
           description: {
             type: 'string',
             nullable: true,
-            description: 'Longer copy for the category detail page, localized to the requested lang',
+            description:
+              'Longer copy for the category detail page, localized to the requested lang',
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
         },
@@ -255,6 +342,7 @@ const openApiDocument = {
           },
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isActive: { type: 'boolean' },
+          shippingClass: { type: 'string', enum: [...SHIPPING_CLASSES] },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -300,6 +388,7 @@ const openApiDocument = {
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
           isFeatured: { type: 'boolean' },
+          ...stockStatusProps,
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -323,6 +412,7 @@ const openApiDocument = {
           coverImage: { $ref: '#/components/schemas/CoverImage' },
           isAvailable: { type: 'boolean' },
           isFeatured: { type: 'boolean' },
+          ...adminStockProps,
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -342,6 +432,7 @@ const openApiDocument = {
           price: { type: 'integer', minimum: 0 },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
           isFeatured: { type: 'string', enum: ['true', 'false'] },
+          ...stockFormProps,
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -363,6 +454,7 @@ const openApiDocument = {
           language: { type: 'string', enum: [...BOOK_LANGUAGES] },
           isAvailable: { type: 'string', enum: ['true', 'false'] },
           isFeatured: { type: 'string', enum: ['true', 'false'] },
+          ...stockFormProps,
           coverImage: {
             type: 'string',
             format: 'binary',
@@ -371,17 +463,30 @@ const openApiDocument = {
         },
         required: ['title', 'description', 'author', 'price', 'genre', 'language'],
       },
-      OrderPayload: {
+      OrderLine: {
         type: 'object',
         properties: {
-          book: {
-            type: 'string',
-            pattern: '^[a-fA-F\\d]{24}$',
-            description: 'ObjectId of the book being ordered',
+          itemType: { type: 'string', enum: [...ITEM_TYPES] },
+          itemId: { type: 'string', pattern: '^[a-fA-F\\d]{24}$' },
+          quantity: { type: 'integer', minimum: 1, maximum: 20 },
+        },
+        required: ['itemType', 'itemId', 'quantity'],
+      },
+      OrderPayload: {
+        type: 'object',
+        description:
+          'Prices and delivery are calculated on the server. A legacy `book` id (single copy) is also accepted instead of `items`.',
+        properties: {
+          items: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 20,
+            items: { $ref: '#/components/schemas/OrderLine' },
           },
           customerName: { type: 'string' },
           customerPhone: { type: 'string' },
           customerAltPhone: { type: 'string' },
+          customerEmail: { type: 'string', format: 'email' },
           addressLine: { type: 'string' },
           locality: { type: 'string' },
           city: { type: 'string' },
@@ -390,7 +495,7 @@ const openApiDocument = {
           note: { type: 'string' },
         },
         required: [
-          'book',
+          'items',
           'customerName',
           'customerPhone',
           'addressLine',
@@ -400,12 +505,74 @@ const openApiDocument = {
           'pincode',
         ],
       },
+      QuotePayload: {
+        type: 'object',
+        properties: {
+          items: { type: 'array', items: { $ref: '#/components/schemas/OrderLine' } },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+        },
+        required: ['items'],
+      },
+      OrderQuote: {
+        type: 'object',
+        properties: {
+          lines: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                itemType: { type: 'string', enum: [...ITEM_TYPES] },
+                itemId: { type: 'string' },
+                title: { type: 'string' },
+                subtitle: { type: 'string' },
+                coverImageUrl: { type: 'string', nullable: true },
+                unitPrice: { type: 'integer' },
+                quantity: { type: 'integer' },
+                lineTotal: { type: 'integer' },
+                shippingClass: { type: 'string', enum: [...SHIPPING_CLASSES] },
+                available: { type: 'integer', nullable: true },
+                problem: { type: 'string', nullable: true },
+              },
+            },
+          },
+          subtotal: { type: 'integer' },
+          deliveryCharge: { type: 'integer', nullable: true },
+          freeDelivery: { type: 'boolean' },
+          deliveryRegion: { type: 'string', enum: ['local', 'domestic'], nullable: true },
+          deliveryEstimate: { type: 'string', nullable: true },
+          freeDeliveryRemaining: { type: 'integer', nullable: true },
+          total: { type: 'integer', nullable: true },
+          canOrder: { type: 'boolean' },
+        },
+      },
+      OrderItem: {
+        type: 'object',
+        properties: {
+          itemType: { type: 'string', enum: [...ITEM_TYPES] },
+          itemId: { type: 'string' },
+          title: { type: 'string' },
+          subtitle: { type: 'string' },
+          unitPrice: { type: 'integer' },
+          quantity: { type: 'integer' },
+          lineTotal: { type: 'integer' },
+          coverImageUrl: { type: 'string', nullable: true },
+          shippingClass: { type: 'string', enum: [...SHIPPING_CLASSES] },
+          stockDeducted: { type: 'boolean' },
+        },
+      },
       PublicOrder: {
         type: 'object',
-        description: 'Returned after placing an order — the full order is only visible to admins.',
+        description: 'Returned after placing an order — used to build the WhatsApp message.',
         properties: {
           _id: { type: 'string' },
+          orderNumber: { type: 'string', example: 'LL-1001' },
+          items: { type: 'array', items: { $ref: '#/components/schemas/OrderItem' } },
+          subtotal: { type: 'integer' },
+          deliveryCharge: { type: 'integer' },
+          total: { type: 'integer' },
+          deliveryEstimate: { type: 'string' },
           status: { type: 'string', enum: [...ORDER_STATUSES] },
+          paymentStatus: { type: 'string', enum: [...PAYMENT_STATUSES] },
           createdAt: { type: 'string', format: 'date-time' },
         },
       },
@@ -413,27 +580,20 @@ const openApiDocument = {
         type: 'object',
         properties: {
           _id: { type: 'string' },
-          book: {
-            type: 'object',
-            nullable: true,
-            description: 'Null if the book has since been deleted',
-            properties: {
-              _id: { type: 'string' },
-              title: { type: 'string' },
-              coverImage: { $ref: '#/components/schemas/CoverImage' },
-            },
-          },
-          bookTitle: { type: 'string' },
-          bookAuthor: { type: 'string' },
-          price: { type: 'integer', minimum: 0, description: 'Snapshot of the book price at order time' },
-          deliveryCharge: {
-            type: 'integer',
-            minimum: 0,
-            description: 'Set once, when the admin marks the order paid',
-          },
+          orderNumber: { type: 'string' },
+          channel: { type: 'string', enum: ['whatsapp'] },
+          items: { type: 'array', items: { $ref: '#/components/schemas/OrderItem' } },
+          itemCount: { type: 'integer' },
+          subtotal: { type: 'integer', minimum: 0 },
+          deliveryCharge: { type: 'integer', minimum: 0 },
+          total: { type: 'integer', minimum: 0 },
+          deliveryRegion: { type: 'string', enum: ['local', 'domestic'] },
+          deliveryEstimate: { type: 'string' },
+          customerId: { type: 'string', nullable: true },
           customerName: { type: 'string' },
           customerPhone: { type: 'string' },
           customerAltPhone: { type: 'string', nullable: true },
+          customerEmail: { type: 'string', nullable: true },
           addressLine: { type: 'string' },
           locality: { type: 'string' },
           city: { type: 'string' },
@@ -441,23 +601,224 @@ const openApiDocument = {
           pincode: { type: 'string' },
           note: { type: 'string', nullable: true },
           status: { type: 'string', enum: [...ORDER_STATUSES] },
-          invoiceNumber: { type: 'string', nullable: true },
-          invoiceGeneratedAt: { type: 'string', format: 'date-time', nullable: true },
+          statusHistory: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                status: { type: 'string', enum: [...ORDER_STATUSES] },
+                at: { type: 'string', format: 'date-time' },
+                byEmail: { type: 'string', nullable: true },
+                note: { type: 'string', nullable: true },
+              },
+            },
+          },
+          paymentStatus: { type: 'string', enum: [...PAYMENT_STATUSES] },
+          paymentMethod: { type: 'string', enum: [...PAYMENT_METHODS], nullable: true },
+          paidAt: { type: 'string', format: 'date-time', nullable: true },
+          stockPending: { type: 'boolean' },
+          shipment: {
+            type: 'object',
+            properties: {
+              courier: { type: 'string', nullable: true },
+              trackingNumber: { type: 'string', nullable: true },
+              trackingUrl: { type: 'string', nullable: true },
+              shippedAt: { type: 'string', format: 'date-time', nullable: true },
+              deliveredAt: { type: 'string', format: 'date-time', nullable: true },
+            },
+          },
+          internalNotes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                text: { type: 'string' },
+                byEmail: { type: 'string', nullable: true },
+                at: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+          needsAttention: { type: 'boolean' },
+          attentionReason: { type: 'string', nullable: true },
+          receiptNumber: { type: 'string', nullable: true },
+          receiptGeneratedAt: { type: 'string', format: 'date-time', nullable: true },
+          isLegacy: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      AdminOrderPage: {
+        type: 'object',
+        properties: {
+          orders: { type: 'array', items: { $ref: '#/components/schemas/AdminOrder' } },
+          total: { type: 'integer' },
+          page: { type: 'integer' },
+          pageSize: { type: 'integer' },
         },
       },
       OrderStatusUpdate: {
         type: 'object',
         properties: {
           status: { type: 'string', enum: [...ORDER_STATUSES] },
-          deliveryCharge: {
-            type: 'integer',
-            minimum: 0,
-            description: 'Required when status is "paid"',
-          },
+          courier: { type: 'string', description: 'Required when status is "shipped"' },
+          trackingNumber: { type: 'string' },
+          trackingUrl: { type: 'string', format: 'uri' },
+          note: { type: 'string' },
         },
         required: ['status'],
+      },
+      PaymentUpdate: {
+        type: 'object',
+        properties: {
+          paymentStatus: { type: 'string', enum: [...PAYMENT_STATUSES] },
+          method: {
+            type: 'string',
+            enum: [...PAYMENT_METHODS],
+            description: 'Required when paymentStatus is "paid"',
+          },
+          note: { type: 'string' },
+        },
+        required: ['paymentStatus'],
+      },
+      DeliveryChargeUpdate: {
+        type: 'object',
+        properties: { deliveryCharge: { type: 'integer', minimum: 0 } },
+        required: ['deliveryCharge'],
+      },
+      OrderNote: {
+        type: 'object',
+        properties: { text: { type: 'string', maxLength: 1000 } },
+        required: ['text'],
+      },
+      ResolveAttention: {
+        type: 'object',
+        properties: {
+          skipStock: {
+            type: 'boolean',
+            description: 'Clear the flag without taking the missing stock',
+          },
+          note: { type: 'string' },
+        },
+      },
+      InventoryItem: {
+        type: 'object',
+        properties: {
+          itemType: { type: 'string', enum: [...ITEM_TYPES] },
+          _id: { type: 'string' },
+          title: { type: 'string' },
+          subtitle: { type: 'string' },
+          price: { type: 'integer' },
+          coverImageUrl: { type: 'string', nullable: true },
+          isAvailable: { type: 'boolean' },
+          stock: { type: 'integer', nullable: true },
+          lowStockThreshold: { type: 'integer', nullable: true },
+          effectiveLowStockThreshold: { type: 'integer' },
+          stockStatus: { type: 'string', enum: [...STOCK_STATUSES] },
+        },
+      },
+      StockAdjustment: {
+        type: 'object',
+        properties: {
+          mode: { type: 'string', enum: ['add', 'remove', 'set', 'untrack'] },
+          quantity: { type: 'integer', description: 'Not used with "untrack"' },
+          reason: { type: 'string', enum: [...MANUAL_STOCK_REASONS] },
+          note: { type: 'string' },
+        },
+        required: ['mode'],
+      },
+      StockMovement: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          delta: { type: 'integer' },
+          stockAfter: { type: 'integer', nullable: true },
+          reason: { type: 'string', enum: [...STOCK_REASONS] },
+          note: { type: 'string', nullable: true },
+          orderId: { type: 'string', nullable: true },
+          orderNumber: { type: 'string', nullable: true },
+          byEmail: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      DeliveryRegion: {
+        type: 'object',
+        properties: {
+          rates: {
+            type: 'object',
+            properties: {
+              light: { type: 'integer', minimum: 0 },
+              standard: { type: 'integer', minimum: 0 },
+              heavy: { type: 'integer', minimum: 0 },
+            },
+          },
+          itemsIncluded: { type: 'integer', minimum: 1 },
+          extraItemCharge: { type: 'integer', minimum: 0 },
+          estimate: { type: 'string' },
+        },
+      },
+      StoreSettings: {
+        type: 'object',
+        properties: {
+          store: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              address: { type: 'string' },
+              phone: { type: 'string' },
+              email: { type: 'string', nullable: true },
+            },
+          },
+          notificationEmail: { type: 'string', nullable: true },
+          delivery: {
+            type: 'object',
+            properties: {
+              localStates: { type: 'array', items: { type: 'string', enum: [...INDIAN_STATES] } },
+              local: { $ref: '#/components/schemas/DeliveryRegion' },
+              domestic: { $ref: '#/components/schemas/DeliveryRegion' },
+              freeDeliveryThreshold: { type: 'integer', nullable: true },
+              processingTime: { type: 'string' },
+            },
+          },
+          inventory: {
+            type: 'object',
+            properties: { defaultLowStockThreshold: { type: 'integer', minimum: 0 } },
+          },
+        },
+      },
+      PublicSettings: {
+        type: 'object',
+        properties: {
+          storeName: { type: 'string' },
+          freeDeliveryThreshold: { type: 'integer', nullable: true },
+          processingTime: { type: 'string' },
+          localStates: { type: 'array', items: { type: 'string' } },
+          estimates: {
+            type: 'object',
+            properties: { local: { type: 'string' }, domestic: { type: 'string' } },
+          },
+        },
+      },
+      Dashboard: {
+        type: 'object',
+        properties: {
+          orders: {
+            type: 'object',
+            properties: {
+              toShip: { type: 'integer' },
+              needsAttention: { type: 'integer' },
+              unpaid: { type: 'integer' },
+              placedToday: { type: 'integer' },
+            },
+          },
+          revenue: {
+            type: 'object',
+            properties: { today: { type: 'integer' }, thisMonth: { type: 'integer' } },
+          },
+          stock: {
+            type: 'object',
+            properties: { lowStock: { type: 'integer' }, outOfStock: { type: 'integer' } },
+          },
+        },
       },
     },
   },
@@ -655,22 +1016,33 @@ const openApiDocument = {
     '/orders': {
       post: {
         tags: ['Orders'],
-        summary: 'Place an order for a book',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/OrderPayload' } },
-          },
-        },
+        summary: 'Place an order (completed over WhatsApp)',
+        description: 'Rate limited to 10 orders per 15 minutes per connection.',
+        requestBody: jsonBody('OrderPayload'),
         responses: {
-          201: {
-            description: 'Order placed',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/PublicOrder' } },
-            },
-          },
-          400: errorResponse('Validation failed, or the referenced book does not exist'),
+          201: jsonResponse('Order placed', 'PublicOrder'),
+          400: errorResponse('Validation failed, or an item no longer exists / is hidden'),
+          409: errorResponse('An item is out of stock or not available in that quantity'),
+          429: errorResponse('Too many orders'),
         },
+      },
+    },
+    '/orders/quote': {
+      post: {
+        tags: ['Orders'],
+        summary: 'Price a cart (subtotal, delivery, problems per line)',
+        requestBody: jsonBody('QuotePayload'),
+        responses: {
+          200: jsonResponse('Quote', 'OrderQuote'),
+          400: errorResponse('Validation failed'),
+        },
+      },
+    },
+    '/settings': {
+      get: {
+        tags: ['Orders'],
+        summary: 'Public delivery information (free-delivery threshold, estimates)',
+        responses: { 200: jsonResponse('Public settings', 'PublicSettings') },
       },
     },
     '/admin/auth/login': {
@@ -748,9 +1120,7 @@ const openApiDocument = {
               },
             },
           },
-          400: errorResponse(
-            'Validation failed, or new password same as current password'
-          ),
+          400: errorResponse('Validation failed, or new password same as current password'),
           401: errorResponse('Missing/invalid token, or current password is incorrect'),
         },
       },
@@ -1366,21 +1736,21 @@ const openApiDocument = {
     '/admin/orders': {
       get: {
         tags: ['Admin Orders'],
-        summary: 'List orders',
-        security: [{ bearerAuth: [] }],
+        summary: 'List orders (paginated)',
+        security: bearer,
         parameters: [
+          {
+            name: 'view',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: [...ORDER_VIEWS], default: 'all' },
+          },
           {
             name: 'search',
             in: 'query',
             required: false,
             schema: { type: 'string' },
-            description: 'Matches against book title or customer phone number',
-          },
-          {
-            name: 'status',
-            in: 'query',
-            required: false,
-            schema: { type: 'string', enum: [...ORDER_STATUSES] },
+            description: 'Matches order number, customer name/phone, or item title',
           },
           {
             name: 'sort',
@@ -1388,64 +1758,193 @@ const openApiDocument = {
             required: false,
             schema: { type: 'string', enum: ['newest', 'oldest'], default: 'newest' },
           },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          {
+            name: 'pageSize',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', default: 25, maximum: 100 },
+          },
         ],
         responses: {
+          200: jsonResponse('A page of orders', 'AdminOrderPage'),
+          401: errorResponse('Missing or invalid token'),
+        },
+      },
+    },
+    '/admin/orders/counts': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'Number of orders in each view (for tab badges)',
+        security: bearer,
+        responses: {
           200: {
-            description: 'Orders matching the filters',
+            description: 'Counts keyed by view',
             content: {
               'application/json': {
-                schema: { type: 'array', items: { $ref: '#/components/schemas/AdminOrder' } },
+                schema: { type: 'object', additionalProperties: { type: 'integer' } },
               },
             },
           },
-          401: errorResponse('Missing or invalid token'),
+        },
+      },
+    },
+    '/admin/orders/{id}': {
+      get: {
+        tags: ['Admin Orders'],
+        summary: 'Get one order',
+        security: bearer,
+        parameters: [orderIdParam],
+        responses: {
+          200: jsonResponse('Order', 'AdminOrder'),
+          404: errorResponse('Order not found'),
         },
       },
     },
     '/admin/orders/{id}/status': {
-      patch: {
+      patch: adminOrderAction(
+        'Move an order along (packed, shipped, delivered, returned, cancelled)',
+        'OrderStatusUpdate',
+        'Transition not allowed, unpaid order shipped, or courier missing'
+      ),
+    },
+    '/admin/orders/{id}/payment': {
+      patch: adminOrderAction(
+        'Record, revert, or refund a payment (takes / returns stock)',
+        'PaymentUpdate',
+        'Payment change not allowed in the current state'
+      ),
+    },
+    '/admin/orders/{id}/delivery-charge': {
+      patch: adminOrderAction(
+        'Override the delivery charge (before payment only)',
+        'DeliveryChargeUpdate',
+        'Order already paid or cancelled'
+      ),
+    },
+    '/admin/orders/{id}/notes': {
+      post: adminOrderAction('Add an internal note', 'OrderNote', 'Validation failed'),
+    },
+    '/admin/orders/{id}/resolve': {
+      post: adminOrderAction(
+        'Clear "needs attention", taking any stock still owed',
+        'ResolveAttention',
+        'Validation failed'
+      ),
+    },
+    '/admin/orders/{id}/receipt': {
+      get: {
         tags: ['Admin Orders'],
-        summary: 'Update an order\'s status',
+        summary: 'Download the receipt PDF for a paid order',
         description:
-          'deliveryCharge is required when setting status to "paid" — it varies per order and is only known at that point.',
-        security: [{ bearerAuth: [] }],
+          'Issues a receipt number (LL/<financial year>/0001…) on first request; later requests reuse it.',
+        security: bearer,
         parameters: [orderIdParam],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/OrderStatusUpdate' } },
-          },
-        },
         responses: {
           200: {
-            description: 'Updated order',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/AdminOrder' } },
-            },
+            description: 'Receipt PDF',
+            content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
           },
-          400: errorResponse('Validation failed, or deliveryCharge missing while marking paid'),
+          400: errorResponse('Payment not recorded yet'),
           401: errorResponse('Missing or invalid token'),
           404: errorResponse('Order not found'),
         },
       },
     },
-    '/admin/orders/{id}/invoice': {
+    '/admin/inventory': {
       get: {
-        tags: ['Admin Orders'],
-        summary: 'Download the invoice PDF for a paid order',
-        description:
-          'Generates and persists an invoice number on first request; subsequent requests reuse it and re-render the same PDF.',
-        security: [{ bearerAuth: [] }],
-        parameters: [orderIdParam],
+        tags: ['Admin Inventory'],
+        summary: 'List books and products with their stock',
+        security: bearer,
+        parameters: [
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['all', 'low', 'out', 'attention', 'untracked'],
+              default: 'all',
+            },
+          },
+          {
+            name: 'itemType',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: [...ITEM_TYPES] },
+          },
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' } },
+        ],
         responses: {
           200: {
-            description: 'Invoice PDF',
-            content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+            description: 'Items',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/InventoryItem' } },
+              },
+            },
           },
-          400: errorResponse('Order is not marked paid yet'),
-          401: errorResponse('Missing or invalid token'),
-          404: errorResponse('Order not found'),
         },
+      },
+    },
+    '/admin/inventory/{itemType}/{id}/adjustments': {
+      post: {
+        tags: ['Admin Inventory'],
+        summary: 'Add, remove, set, or stop tracking stock',
+        security: bearer,
+        parameters: itemParams,
+        requestBody: jsonBody('StockAdjustment'),
+        responses: {
+          200: jsonResponse('Updated item', 'InventoryItem'),
+          400: errorResponse('Validation failed'),
+          404: errorResponse('Item not found'),
+          409: errorResponse('Not enough stock to remove, or stock not tracked'),
+        },
+      },
+    },
+    '/admin/inventory/{itemType}/{id}/movements': {
+      get: {
+        tags: ['Admin Inventory'],
+        summary: 'Stock history for an item (newest first, last 200)',
+        security: bearer,
+        parameters: itemParams,
+        responses: {
+          200: {
+            description: 'Movements',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/StockMovement' } },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/admin/settings': {
+      get: {
+        tags: ['Admin Settings'],
+        summary: 'Store, delivery, and inventory settings',
+        security: bearer,
+        responses: { 200: jsonResponse('Settings', 'StoreSettings') },
+      },
+      put: {
+        tags: ['Admin Settings'],
+        summary: 'Save settings (super admin only)',
+        security: bearer,
+        requestBody: jsonBody('StoreSettings'),
+        responses: {
+          200: jsonResponse('Saved settings', 'StoreSettings'),
+          400: errorResponse('Validation failed'),
+          403: errorResponse('Super admin access required'),
+        },
+      },
+    },
+    '/admin/dashboard': {
+      get: {
+        tags: ['Admin Dashboard'],
+        summary: 'Orders to ship, revenue, and stock alerts',
+        security: bearer,
+        responses: { 200: jsonResponse('Dashboard', 'Dashboard') },
       },
     },
   },

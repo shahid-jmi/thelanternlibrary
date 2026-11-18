@@ -32,9 +32,9 @@ export default function BookCard({
             <span className="line-clamp-3 text-xs sm:text-sm">{book.title}</span>
           </div>
         )}
-        {!book.isAvailable && (
+        {(!book.isAvailable || book.stockStatus === 'out_of_stock') && (
           <span className="absolute left-1.5 top-1.5 rounded-sm bg-destructive px-1.5 py-0.5 text-[9px] sm:left-2 sm:top-2 sm:px-2 sm:py-1 sm:text-[10px] uppercase tracking-[0.16em] text-destructive-foreground shadow-sm">
-            {t('admin.dashboard.unavailable')}
+            {book.isAvailable ? t('cart.outOfStock') : t('admin.dashboard.unavailable')}
           </span>
         )}
       </div>

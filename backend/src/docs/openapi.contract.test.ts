@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import openApiDocument from './openapi.js';
 import { upsertBookBodySchema } from '../modules/books/book.validators.js';
 import { upsertProductBodySchema } from '../modules/products/product.validators.js';
-import { updateOrderStatusBodySchema } from '../modules/orders/order.validators.js';
+import { updateDeliveryChargeBodySchema } from '../modules/orders/order.validators.js';
 
 // The OpenAPI spec is hand-written rather than generated from the Zod
 // validators, so nothing else catches it if the two drift apart — that
@@ -44,13 +44,10 @@ describe('OpenAPI spec matches validator constraints', () => {
   });
 
   it('rejects a decimal deliveryCharge the same way the Order validator does', () => {
-    const result = updateOrderStatusBodySchema.safeParse({
-      status: 'paid',
-      deliveryCharge: 10.5,
-    });
-    expect(result.success).toBe(false);
+    expect(updateDeliveryChargeBodySchema.safeParse({ deliveryCharge: 10 }).success).toBe(true);
+    expect(updateDeliveryChargeBodySchema.safeParse({ deliveryCharge: 10.5 }).success).toBe(false);
 
-    expect(schemas.OrderStatusUpdate.properties.deliveryCharge.type).toBe('integer');
+    expect(schemas.DeliveryChargeUpdate.properties.deliveryCharge.type).toBe('integer');
     expect(schemas.AdminOrder.properties.deliveryCharge.type).toBe('integer');
   });
 });

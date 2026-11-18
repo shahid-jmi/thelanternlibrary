@@ -2,12 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import {
-  BOOK_GENRES,
-  BOOK_LANGUAGES,
-  type BookGenre,
-  type BookLanguage,
-} from '@/app/api/types';
+import { BOOK_GENRES, BOOK_LANGUAGES, type BookGenre, type BookLanguage } from '@/app/api/types';
 import { getErrorMessage } from '@/app/api/client';
 import { useAdminBooks, useSaveBook } from '@/app/queries/books';
 import { validatePrice, validateRequired } from '@/app/lib/validation';
@@ -19,6 +14,12 @@ import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormFie
 import ImageUploadField from '@/app/components/ImageUploadField';
 import { Button, Toggle } from '@/app/components/ui';
 import { focusFirstInvalid } from '@/app/lib/scroll';
+import StockFormFields, {
+  toStockFormValues,
+  toStockPayload,
+  validateStockForm,
+  type StockFormValues,
+} from '@/app/components/admin/StockFormFields';
 
 export default function AdminBookFormPage() {
   const { t } = useTranslation();
@@ -83,6 +84,7 @@ export default function AdminBookFormPage() {
           language,
           isAvailable,
           isFeatured,
+          stock: toStockFormValues(book),
         }}
         coverImageUrl={book?.coverImage?.url}
         onCancel={goBack}
@@ -106,6 +108,7 @@ interface BookFormInitial {
   language: BookLanguage;
   isAvailable: boolean;
   isFeatured: boolean;
+  stock: StockFormValues;
 }
 
 function BookForm({
@@ -127,7 +130,7 @@ function BookForm({
       language: BookLanguage;
       isAvailable: boolean;
       isFeatured: boolean;
-    },
+    } & ReturnType<typeof toStockPayload>,
     coverImageFile: File | null
   ) => Promise<void>;
 }) {
@@ -142,6 +145,8 @@ function BookForm({
   const [language, setLanguage] = useState<BookLanguage>(initial.language);
   const [isAvailable, setIsAvailable] = useState(initial.isAvailable);
   const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
+  const [stock, setStock] = useState<StockFormValues>(initial.stock);
+  const [showStockErrors, setShowStockErrors] = useState(false);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -149,7 +154,16 @@ function BookForm({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const errors = [titleEn.validateNow(), author.validateNow(), descEn.validateNow(), price.validateNow()];
+    const stockErrors = validateStockForm(stock);
+    setShowStockErrors(true);
+    const errors = [
+      titleEn.validateNow(),
+      author.validateNow(),
+      descEn.validateNow(),
+      price.validateNow(),
+      stockErrors.stock,
+      stockErrors.lowStockThreshold,
+    ];
     if (errors.some(Boolean)) {
       focusFirstInvalid(event.currentTarget);
       return;
@@ -168,6 +182,7 @@ function BookForm({
           language,
           isAvailable,
           isFeatured,
+          ...toStockPayload(stock),
         },
         coverImageFile
       );
@@ -256,6 +271,13 @@ function BookForm({
             </option>
           ))}
         </FieldSelect>
+        <StockFormFields
+          idPrefix="book"
+          values={stock}
+          onChange={setStock}
+          showErrors={showStockErrors}
+          inheritLabel={t('admin.stock.classDefault')}
+        />
         <ImageUploadField
           label={t('admin.form.coverImage')}
           file={coverImageFile}

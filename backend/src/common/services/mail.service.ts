@@ -14,6 +14,24 @@ const transporter = env.smtp
     })
   : null;
 
+export interface MailMessage {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
+export const sendMail = async (message: MailMessage): Promise<void> => {
+  if (!transporter) {
+    logger.warn(
+      { to: message.to, subject: message.subject },
+      'SMTP is not configured; skipping email'
+    );
+    return;
+  }
+  await transporter.sendMail({ from: env.smtp!.from, ...message });
+};
+
 export const sendPasswordResetEmail = async (to: string, resetUrl: string): Promise<void> => {
   if (!transporter) {
     logger.warn(

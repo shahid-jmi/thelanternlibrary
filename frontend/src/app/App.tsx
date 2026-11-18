@@ -14,7 +14,9 @@ import HomePage from '@/app/pages/HomePage';
 import CatalogPage from '@/app/pages/CatalogPage';
 import CategoryPage from '@/app/pages/CategoryPage';
 import BookDetailPage from '@/app/pages/BookDetailPage';
-import OrderPage from '@/app/pages/OrderPage';
+import CartPage from '@/app/pages/CartPage';
+import CheckoutPage from '@/app/pages/CheckoutPage';
+import { CartProvider } from '@/app/cart/CartContext';
 import ComingSoonPage from '@/app/pages/ComingSoonPage';
 import { COMING_SOON } from '@/app/lib/site';
 
@@ -60,44 +62,52 @@ export default function App() {
         <BrowserRouter>
           <ScrollToTop />
           <AuthProvider>
-            <Shell>
-              <ErrorBoundary>
-                <Suspense fallback={<Loader />}>
-                  <Routes>
-                    {COMING_SOON ? (
-                      <Route path="/" element={<ComingSoonPage />} />
-                    ) : (
-                      <>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/catalog" element={<CatalogPage />} />
-                        <Route path="/category/:slug" element={<CategoryPage />} />
-                        <Route path="/book/:id" element={<BookDetailPage />} />
-                        <Route path="/book/:id/order" element={<OrderPage />} />
-                      </>
-                    )}
-                    <Route path="/admin" element={<AdminLoginPage />} />
-                    <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
-                    <Route path="/reset-password" element={<AdminResetPasswordPage />} />
-                    <Route element={<RequireAdmin />}>
-                      <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
-                      <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-                      <Route path="/admin/books/new" element={<AdminBookFormPage />} />
-                      <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />
-                      <Route path="/admin/products/new" element={<AdminProductFormPage />} />
-                      <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
-                      <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
-                      <Route
-                        path="/admin/categories/:id/edit"
-                        element={<AdminCategoryFormPage />}
-                      />
-                      <Route path="/admin/admins" element={<AdminManagementPage />} />
-                      <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
-                    </Route>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </Shell>
+            <CartProvider>
+              <Shell>
+                <ErrorBoundary>
+                  <Suspense fallback={<Loader />}>
+                    <Routes>
+                      {COMING_SOON ? (
+                        <Route path="/" element={<ComingSoonPage />} />
+                      ) : (
+                        <>
+                          <Route path="/" element={<HomePage />} />
+                          <Route path="/catalog" element={<CatalogPage />} />
+                          <Route path="/category/:slug" element={<CategoryPage />} />
+                          <Route path="/book/:id" element={<BookDetailPage />} />
+                          {/* Old single-book order links now go through the cart. */}
+                          <Route path="/book/:id/order" element={<Navigate to="/cart" replace />} />
+                          <Route path="/cart" element={<CartPage />} />
+                          <Route path="/checkout" element={<CheckoutPage />} />
+                        </>
+                      )}
+                      <Route path="/admin" element={<AdminLoginPage />} />
+                      <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+                      <Route path="/reset-password" element={<AdminResetPasswordPage />} />
+                      <Route element={<RequireAdmin />}>
+                        <Route
+                          path="/admin/change-password"
+                          element={<AdminChangePasswordPage />}
+                        />
+                        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                        <Route path="/admin/books/new" element={<AdminBookFormPage />} />
+                        <Route path="/admin/books/:id/edit" element={<AdminBookFormPage />} />
+                        <Route path="/admin/products/new" element={<AdminProductFormPage />} />
+                        <Route path="/admin/products/:id/edit" element={<AdminProductFormPage />} />
+                        <Route path="/admin/categories/new" element={<AdminCategoryFormPage />} />
+                        <Route
+                          path="/admin/categories/:id/edit"
+                          element={<AdminCategoryFormPage />}
+                        />
+                        <Route path="/admin/admins" element={<AdminManagementPage />} />
+                        <Route path="/admin/admins/new" element={<AdminCreateAdminPage />} />
+                      </Route>
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Suspense>
+                </ErrorBoundary>
+              </Shell>
+            </CartProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

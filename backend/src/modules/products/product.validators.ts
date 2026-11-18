@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectId } from '../../common/validation/objectId.js';
 import { booleanFromString } from '../../common/validation/booleanFromString.js';
+import { stockFormFields } from '../../common/validation/stockFields.js';
 import { localizedText } from '../../common/validation/localizedText.js';
 import { TRANSLATION_LANGUAGES } from '../../common/constants/languages.js';
 import { CATEGORY_SLUG_MAX_LENGTH } from '../categories/category.constants.js';
@@ -42,6 +43,7 @@ export const upsertProductBodySchema = z.object({
     .int('Price must be a whole number of rupees'),
   isAvailable: booleanFromString('isAvailable must be a boolean').optional(),
   isFeatured: booleanFromString('isFeatured must be a boolean').optional(),
+  ...stockFormFields,
 });
 
 export const updateAvailabilityBodySchema = z.object({

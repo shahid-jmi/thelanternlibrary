@@ -3,6 +3,7 @@ import { objectId } from '../../common/validation/objectId.js';
 import { booleanFromString } from '../../common/validation/booleanFromString.js';
 import { localizedText } from '../../common/validation/localizedText.js';
 import { TRANSLATION_LANGUAGES } from '../../common/constants/languages.js';
+import { SHIPPING_CLASSES } from '../../common/constants/catalog.js';
 import { CATEGORY_SLUG_MAX_LENGTH, CATEGORY_SLUG_PATTERN } from './category.constants.js';
 
 export const categoryIdParamsSchema = z.object({
@@ -42,6 +43,9 @@ export const upsertCategoryBodySchema = z.object({
   tagline: localizedText('tagline').optional(),
   description: localizedText('description').optional(),
   isActive: booleanFromString('isActive must be a boolean').optional(),
+  shippingClass: z
+    .enum(SHIPPING_CLASSES, { message: 'Shipping class must be light, standard or heavy' })
+    .optional(),
 });
 
 export type ListPublicCategoriesQuery = z.infer<typeof listPublicCategoriesQuerySchema>;

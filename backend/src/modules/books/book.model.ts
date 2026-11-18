@@ -5,6 +5,7 @@ import {
   type BookGenre,
   type BookLanguage,
 } from './book.constants.js';
+import { SHIPPING_CLASSES, type ShippingClass } from '../../common/constants/catalog.js';
 
 export interface LocalizedText {
   en: string;
@@ -26,6 +27,12 @@ export interface BookAttrs {
   isAvailable: boolean;
   isFeatured: boolean;
   language: BookLanguage;
+  // null = not tracking stock for this book yet (always orderable).
+  stock: number | null;
+  // null = use the store-wide default from settings.
+  lowStockThreshold: number | null;
+  // null = the default ("standard").
+  shippingClass: ShippingClass | null;
 }
 
 export interface BookLean extends BookAttrs {
@@ -61,6 +68,9 @@ const bookSchema = new Schema<BookAttrs>(
     isAvailable: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: false },
     language: { type: String, enum: BOOK_LANGUAGES, required: true },
+    stock: { type: Number, default: null, min: 0 },
+    lowStockThreshold: { type: Number, default: null, min: 0 },
+    shippingClass: { type: String, enum: [...SHIPPING_CLASSES, null], default: null },
   },
   {
     timestamps: true,
@@ -71,6 +81,7 @@ const bookSchema = new Schema<BookAttrs>(
 bookSchema.index({ genre: 1, language: 1, isAvailable: 1 });
 bookSchema.index({ isFeatured: 1 });
 bookSchema.index({ 'title.en': 1 });
+bookSchema.index({ stock: 1 });
 
 const Book = mongoose.model('Book', bookSchema);
 

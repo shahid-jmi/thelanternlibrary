@@ -2,6 +2,7 @@ import type { FilterQuery } from 'mongoose';
 import Product, { type ProductAttrs, type ProductLean } from './product.model.js';
 import type { CoverImage } from '../../common/models/coverImage.js';
 import type { LocalizedText } from '../../common/models/localizedText.js';
+import type { ShippingClass } from '../../common/constants/catalog.js';
 
 export interface CreateProductPayload {
   name: LocalizedText;
@@ -11,6 +12,9 @@ export interface CreateProductPayload {
   coverImage: CoverImage;
   isAvailable: boolean;
   isFeatured: boolean;
+  stock?: number | null;
+  lowStockThreshold?: number | null;
+  shippingClass?: ShippingClass | null;
 }
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;

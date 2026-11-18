@@ -2,6 +2,7 @@ import mongoose, { Schema, type Types } from 'mongoose';
 import { localizedTextSchema, type LocalizedText } from '../../common/models/localizedText.js';
 import { coverImageSchema, type CoverImage } from '../../common/models/coverImage.js';
 import { CATEGORY_SLUG_PATTERN } from './category.constants.js';
+import { SHIPPING_CLASSES, type ShippingClass } from '../../common/constants/catalog.js';
 
 export interface CategoryAttrs {
   name: LocalizedText;
@@ -16,6 +17,9 @@ export interface CategoryAttrs {
   // category.mapper.ts). New categories always get one, real or placeholder.
   coverImage?: CoverImage;
   isActive: boolean;
+  // Default parcel size for products in this category. Optional because
+  // categories created before this field existed have none stored.
+  shippingClass?: ShippingClass;
 }
 
 export interface CategoryLean extends CategoryAttrs {
@@ -39,6 +43,7 @@ const categorySchema = new Schema<CategoryAttrs>(
     description: { type: localizedTextSchema },
     coverImage: { type: coverImageSchema },
     isActive: { type: Boolean, default: true },
+    shippingClass: { type: String, enum: SHIPPING_CLASSES, default: 'standard' },
   },
   {
     timestamps: true,

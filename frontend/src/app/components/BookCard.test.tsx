@@ -17,6 +17,8 @@ const book: PublicBook = {
   coverImage: { url: 'https://covers.test.example.com/a.webp', key: null },
   isAvailable: true,
   isFeatured: false,
+  stockStatus: 'untracked',
+  stockRemaining: null,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
 };

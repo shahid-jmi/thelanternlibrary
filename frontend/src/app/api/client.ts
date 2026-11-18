@@ -1,13 +1,26 @@
 import type { AxiosError } from 'axios';
 import axios from 'axios';
 import { clearToken, getToken } from '@/app/auth/authStorage';
+import { clearCustomerToken, getCustomerToken } from '@/app/auth/customerStorage';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api/v1',
 });
 
+const ADMIN_URL = /^\/?admin\//;
+// Customer account endpoints, plus placing an order (which links the order
+// to the signed-in customer).
+const CUSTOMER_URL = /^\/?(customer\/|orders\/?$)/;
+
+// Each request carries only the token it is meant for, so an admin token is
+// never sent to customer endpoints or the other way round.
 api.interceptors.request.use((config) => {
-  const token = getToken();
+  const url = config.url ?? '';
+  const token = ADMIN_URL.test(url)
+    ? getToken()
+    : CUSTOMER_URL.test(url)
+      ? getCustomerToken()
+      : null;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -27,8 +40,26 @@ const AUTH_ENDPOINT = /^\/?admin\/auth\//;
 // A 401 while holding a token means the session expired or was revoked.
 // A 401 without one (e.g. a failed login) is handled by the caller.
 export function isSessionExpired(error: AxiosError): boolean {
-  if (error.response?.status !== 401 || !getToken()) return false;
-  return !AUTH_ENDPOINT.test(error.config?.url ?? '');
+  const url = error.config?.url ?? '';
+  if (error.response?.status !== 401 || !getToken() || !ADMIN_URL.test(url)) return false;
+  return !AUTH_ENDPOINT.test(url);
+}
+
+let onCustomerUnauthorized: UnauthorizedHandler | null = null;
+
+export function setCustomerUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+  onCustomerUnauthorized = handler;
+}
+
+// Sign-in, sign-up and one-time-link endpoints answer 401 for a wrong
+// password or a used link — a message for the page, not an expired session.
+const CUSTOMER_AUTH_ENDPOINT =
+  /^\/?customer\/(login|register|verify-email|forgot-password|reset-password|change-password)/;
+
+export function isCustomerSessionExpired(error: AxiosError): boolean {
+  const url = error.config?.url ?? '';
+  if (error.response?.status !== 401 || !getCustomerToken()) return false;
+  return /^\/?customer\//.test(url) && !CUSTOMER_AUTH_ENDPOINT.test(url);
 }
 
 api.interceptors.response.use(
@@ -37,6 +68,10 @@ api.interceptors.response.use(
     if (isSessionExpired(error)) {
       clearToken();
       onUnauthorized?.();
+    }
+    if (isCustomerSessionExpired(error)) {
+      clearCustomerToken();
+      onCustomerUnauthorized?.();
     }
     return Promise.reject(error);
   }

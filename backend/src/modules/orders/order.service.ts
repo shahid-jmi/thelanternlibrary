@@ -1,4 +1,4 @@
-import type { UpdateQuery } from 'mongoose';
+import { Types, type UpdateQuery } from 'mongoose';
 import NotFoundError from '../../common/errors/NotFoundError.js';
 import ValidationError from '../../common/errors/ValidationError.js';
 import ConflictError from '../../common/errors/ConflictError.js';
@@ -17,6 +17,8 @@ import { calculateDelivery, type DeliveryRegionKey } from './delivery.js';
 import {
   normalizeOrder,
   toAdminOrderDto,
+  toCustomerOrderDto,
+  type CustomerOrderDto,
   toPublicOrderDto,
   type AdminOrderDto,
   type PublicOrderDto,
@@ -167,7 +169,10 @@ const notify = (task: Promise<void>, context: string): void => {
   task.catch((error: unknown) => logger.error({ err: error }, context));
 };
 
-export const createOrder = async (payload: CreateOrderInput): Promise<PublicOrderDto> => {
+export const createOrder = async (
+  payload: CreateOrderInput,
+  customerId: string | null = null
+): Promise<PublicOrderDto> => {
   const quote = await buildQuote(payload.items, payload.state);
 
   const problems: ErrorDetail[] = quote.lines.flatMap((line, index) =>
@@ -206,7 +211,7 @@ export const createOrder = async (payload: CreateOrderInput): Promise<PublicOrde
     total: quote.total ?? quote.subtotal,
     deliveryRegion: quote.deliveryRegion ?? 'domestic',
     deliveryEstimate: quote.deliveryEstimate ?? '',
-    customer: null,
+    customer: customerId ? new Types.ObjectId(customerId) : null,
     customerName: payload.customerName,
     customerPhone: payload.customerPhone,
     customerAltPhone: payload.customerAltPhone,
@@ -631,4 +636,42 @@ export const getReceiptPdf = async (id: string): Promise<{ order: AdminOrderDto;
 
   const dto = toAdminOrderDto(order);
   return { order: dto, pdf: await buildReceiptPdf(dto, order.receipt!.store) };
+};
+
+// ── Customer account ────────────────────────────────────────────────────────
+
+export interface CustomerOrderPage {
+  orders: CustomerOrderDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export const listCustomerOrders = async (
+  customerId: string,
+  page: number,
+  pageSize: number
+): Promise<CustomerOrderPage> => {
+  const { orders, total } = await orderRepository.findCustomerOrders(customerId, page, pageSize);
+  return { orders: orders.map(toCustomerOrderDto), total, page, pageSize };
+};
+
+// Another customer's order looks exactly like a missing one.
+const loadCustomerOrder = async (customerId: string, id: string): Promise<OrderLean> => {
+  const order = await loadOrder(id);
+  if (!order.customer || order.customer.toString() !== customerId) {
+    throw new NotFoundError('Order not found');
+  }
+  return order;
+};
+
+export const getCustomerOrder = async (customerId: string, id: string): Promise<CustomerOrderDto> =>
+  toCustomerOrderDto(await loadCustomerOrder(customerId, id));
+
+export const getCustomerReceiptPdf = async (
+  customerId: string,
+  id: string
+): Promise<{ order: AdminOrderDto; pdf: Buffer }> => {
+  await loadCustomerOrder(customerId, id);
+  return getReceiptPdf(id);
 };

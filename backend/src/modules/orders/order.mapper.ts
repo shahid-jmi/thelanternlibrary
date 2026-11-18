@@ -243,3 +243,78 @@ export const toPublicOrderDto = (stored: StoredOrder): PublicOrderDto => {
     createdAt: order.createdAt,
   };
 };
+
+// What a signed-in customer sees about their own order: no internal notes,
+// no admin emails, no stock bookkeeping.
+export interface CustomerOrderDto {
+  _id: Types.ObjectId;
+  orderNumber: string;
+  items: Array<
+    Pick<
+      OrderItemDto,
+      | 'itemType'
+      | 'itemId'
+      | 'title'
+      | 'subtitle'
+      | 'unitPrice'
+      | 'quantity'
+      | 'lineTotal'
+      | 'coverImageUrl'
+    >
+  >;
+  subtotal: number;
+  deliveryCharge: number;
+  total: number;
+  deliveryEstimate: string;
+  customerName: string;
+  customerPhone: string;
+  addressLine: string;
+  locality: string;
+  city: string;
+  state: string;
+  pincode: string;
+  status: OrderStatus;
+  timeline: Array<{ status: OrderStatus; at: Date }>;
+  paymentStatus: PaymentStatus;
+  shipment: Pick<
+    Shipment,
+    'courier' | 'trackingNumber' | 'trackingUrl' | 'shippedAt' | 'deliveredAt'
+  >;
+  receiptAvailable: boolean;
+  createdAt: Date;
+}
+
+export const toCustomerOrderDto = (stored: StoredOrder): CustomerOrderDto => {
+  const order = normalizeOrder(stored);
+  return {
+    _id: order._id,
+    orderNumber: order.orderNumber,
+    items: order.items.map((item) => ({
+      itemType: item.itemType,
+      itemId: item.item,
+      title: item.title,
+      subtitle: item.subtitle ?? '',
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+      lineTotal: item.lineTotal,
+      coverImageUrl: item.coverImageUrl ?? null,
+    })),
+    subtotal: order.subtotal,
+    deliveryCharge: order.deliveryCharge ?? 0,
+    total: order.total,
+    deliveryEstimate: order.deliveryEstimate ?? '',
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    addressLine: order.addressLine,
+    locality: order.locality,
+    city: order.city,
+    state: order.state,
+    pincode: order.pincode,
+    status: order.status,
+    timeline: (order.statusHistory ?? []).map((entry) => ({ status: entry.status, at: entry.at })),
+    paymentStatus: order.paymentStatus,
+    shipment: order.shipment ?? EMPTY_SHIPMENT,
+    receiptAvailable: order.paymentStatus !== 'unpaid',
+    createdAt: order.createdAt,
+  };
+};

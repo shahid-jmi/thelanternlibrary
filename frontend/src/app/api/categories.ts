@@ -42,6 +42,7 @@ function buildCategoryFormData(payload: CategoryPayload, coverImageFile: File | 
     formData.append('description', JSON.stringify(payload.description));
   }
   formData.append('isActive', String(payload.isActive));
+  formData.append('shippingClass', payload.shippingClass);
   if (coverImageFile) {
     formData.append('coverImage', coverImageFile);
   }

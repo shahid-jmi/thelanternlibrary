@@ -172,6 +172,11 @@ const openApiDocument = {
     },
     { name: 'Admin Settings', description: 'Store, delivery, and inventory settings' },
     { name: 'Admin Dashboard', description: 'Summary numbers for the admin home page' },
+    {
+      name: 'Customer Account',
+      description: 'Customer sign-up, sign-in, addresses and own orders (customer token)',
+    },
+    { name: 'Admin Customers', description: 'Read-only customer list for the shop' },
   ],
   components: {
     securitySchemes: {
@@ -796,6 +801,68 @@ const openApiDocument = {
             type: 'object',
             properties: { local: { type: 'string' }, domestic: { type: 'string' } },
           },
+        },
+      },
+      CustomerAddress: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          label: { type: 'string' },
+          name: { type: 'string' },
+          phone: { type: 'string' },
+          altPhone: { type: 'string' },
+          addressLine: { type: 'string' },
+          locality: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string', enum: [...INDIAN_STATES] },
+          pincode: { type: 'string', pattern: '^\\d{6}$' },
+          isDefault: { type: 'boolean' },
+        },
+        required: ['name', 'phone', 'addressLine', 'locality', 'city', 'state', 'pincode'],
+      },
+      Customer: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          email: { type: 'string' },
+          name: { type: 'string' },
+          phone: { type: 'string' },
+          emailVerified: { type: 'boolean' },
+          addresses: { type: 'array', items: { $ref: '#/components/schemas/CustomerAddress' } },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CustomerSession: {
+        type: 'object',
+        properties: {
+          token: { type: 'string', description: 'Customer bearer token (30 days)' },
+          customer: { $ref: '#/components/schemas/Customer' },
+        },
+      },
+      CustomerOrder: {
+        type: 'object',
+        description: "A customer's own order — no internal notes or stock details.",
+        properties: {
+          _id: { type: 'string' },
+          orderNumber: { type: 'string' },
+          items: { type: 'array', items: { $ref: '#/components/schemas/OrderItem' } },
+          subtotal: { type: 'integer' },
+          deliveryCharge: { type: 'integer' },
+          total: { type: 'integer' },
+          status: { type: 'string', enum: [...ORDER_STATUSES] },
+          timeline: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                status: { type: 'string', enum: [...ORDER_STATUSES] },
+                at: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+          paymentStatus: { type: 'string', enum: [...PAYMENT_STATUSES] },
+          receiptAvailable: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' },
         },
       },
       Dashboard: {
@@ -1936,6 +2003,176 @@ const openApiDocument = {
           200: jsonResponse('Saved settings', 'StoreSettings'),
           400: errorResponse('Validation failed'),
           403: errorResponse('Super admin access required'),
+        },
+      },
+    },
+    '/customer/register': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Create an account (sends a verification email)',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string', minLength: 8 },
+                  name: { type: 'string' },
+                  phone: { type: 'string' },
+                },
+                required: ['email', 'password', 'name'],
+              },
+            },
+          },
+        },
+        responses: {
+          201: jsonResponse('Signed in', 'CustomerSession'),
+          409: errorResponse('Email already registered'),
+        },
+      },
+    },
+    '/customer/login': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Sign in',
+        responses: {
+          200: jsonResponse('Signed in', 'CustomerSession'),
+          401: errorResponse('Incorrect email or password'),
+        },
+      },
+    },
+    '/customer/verify-email': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Confirm the email (links earlier guest orders placed with it)',
+        responses: {
+          200: jsonResponse('Verified', 'Customer'),
+          401: errorResponse('Invalid or expired link'),
+        },
+      },
+    },
+    '/customer/forgot-password': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Email a reset link (same answer for unknown emails)',
+        responses: { 200: { description: 'Accepted' } },
+      },
+    },
+    '/customer/reset-password': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Set a new password from a reset link; signs out other devices',
+        responses: {
+          200: { description: 'Updated' },
+          401: errorResponse('Invalid or expired link'),
+        },
+      },
+    },
+    '/customer/me': {
+      get: {
+        tags: ['Customer Account'],
+        summary: 'Current customer',
+        security: bearer,
+        responses: {
+          200: jsonResponse('Customer', 'Customer'),
+          401: errorResponse('Not signed in'),
+        },
+      },
+      patch: {
+        tags: ['Customer Account'],
+        summary: 'Update name and phone',
+        security: bearer,
+        responses: { 200: jsonResponse('Customer', 'Customer') },
+      },
+    },
+    '/customer/resend-verification': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Send the verification email again',
+        security: bearer,
+        responses: { 200: { description: 'Sent' } },
+      },
+    },
+    '/customer/change-password': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Change password; returns a fresh session and signs out other devices',
+        security: bearer,
+        responses: { 200: jsonResponse('Signed in', 'CustomerSession') },
+      },
+    },
+    '/customer/addresses': {
+      post: {
+        tags: ['Customer Account'],
+        summary: 'Save an address (max 10; the first becomes the default)',
+        security: bearer,
+        requestBody: jsonBody('CustomerAddress'),
+        responses: { 201: jsonResponse('Customer', 'Customer') },
+      },
+    },
+    '/customer/addresses/{addressId}': {
+      put: {
+        tags: ['Customer Account'],
+        summary: 'Edit a saved address',
+        security: bearer,
+        requestBody: jsonBody('CustomerAddress'),
+        responses: { 200: jsonResponse('Customer', 'Customer') },
+      },
+      delete: {
+        tags: ['Customer Account'],
+        summary: 'Delete a saved address',
+        security: bearer,
+        responses: { 200: jsonResponse('Customer', 'Customer') },
+      },
+    },
+    '/customer/orders': {
+      get: {
+        tags: ['Customer Account'],
+        summary: "The signed-in customer's orders",
+        security: bearer,
+        responses: { 200: { description: '{ orders: CustomerOrder[], total, page, pageSize }' } },
+      },
+    },
+    '/customer/orders/{id}': {
+      get: {
+        tags: ['Customer Account'],
+        summary: 'One of their orders',
+        security: bearer,
+        responses: {
+          200: jsonResponse('Order', 'CustomerOrder'),
+          404: errorResponse('Not found (or not theirs)'),
+        },
+      },
+    },
+    '/customer/orders/{id}/receipt': {
+      get: {
+        tags: ['Customer Account'],
+        summary: 'Download the receipt PDF (paid orders only)',
+        security: bearer,
+        responses: {
+          200: { description: 'Receipt PDF' },
+          400: errorResponse('Not paid yet'),
+        },
+      },
+    },
+    '/admin/customers': {
+      get: {
+        tags: ['Admin Customers'],
+        summary: 'List customers with order count and total spent',
+        security: bearer,
+        responses: { 200: { description: '{ customers, total, page, pageSize }' } },
+      },
+    },
+    '/admin/customers/{id}': {
+      get: {
+        tags: ['Admin Customers'],
+        summary: 'One customer with addresses and recent orders',
+        security: bearer,
+        responses: {
+          200: { description: 'Customer with orders' },
+          404: errorResponse('Not found'),
         },
       },
     },

@@ -30,6 +30,8 @@ import {
   createPublicSettingsRouter,
 } from './modules/settings/settings.routes.js';
 import { createAdminDashboardRouter } from './modules/dashboard/dashboard.routes.js';
+import { createCustomerRouter } from './modules/customers/customer.routes.js';
+import { createAdminCustomerRouter } from './modules/customers/customer.admin.js';
 import openApiDocument from './docs/openapi.js';
 
 const createApp = (): Express => {
@@ -59,6 +61,7 @@ const createApp = (): Express => {
     router.use('/orders', createPublicOrderRouter());
     router.use('/instagram', createPublicInstagramRouter());
     router.use('/settings', createPublicSettingsRouter());
+    router.use('/customer', createCustomerRouter());
     router.use('/admin/auth', authRouter);
     router.use('/admin/books', authenticateAdmin, createAdminBookRouter());
     router.use('/admin/products', authenticateAdmin, createAdminProductRouter());
@@ -77,6 +80,7 @@ const createApp = (): Express => {
     // (guarded inside the router).
     router.use('/admin/settings', authenticateAdmin, createAdminSettingsRouter());
     router.use('/admin/dashboard', authenticateAdmin, createAdminDashboardRouter());
+    router.use('/admin/customers', authenticateAdmin, createAdminCustomerRouter());
 
     router.get('/docs.json', (req, res) => {
       res.json(openApiDocument);

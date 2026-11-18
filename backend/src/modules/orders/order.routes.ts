@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import asyncHandler from '../../common/utils/asyncHandler.js';
 import validate from '../../common/middleware/validate.js';
 import env from '../../config/env.js';
+import { optionalCustomer } from '../../common/middleware/authenticateCustomer.js';
 import {
   addOrderNoteBodySchema,
   createOrderBodySchema,
@@ -54,6 +55,7 @@ export const createPublicOrderRouter = (): Router => {
   router.post(
     '/',
     createOrderRateLimiter,
+    asyncHandler(optionalCustomer),
     validate({ body: createOrderBodySchema }),
     asyncHandler(createOrder)
   );

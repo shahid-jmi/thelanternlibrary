@@ -92,6 +92,7 @@ export interface AdminCategory {
   description: LocalizedText | null;
   coverImage: CoverImage;
   isActive: boolean;
+  shippingClass: ShippingClass;
   createdAt: string;
   updatedAt: string;
 }
@@ -102,6 +103,7 @@ export interface CategoryPayload {
   tagline?: LocalizedText;
   description?: LocalizedText;
   isActive: boolean;
+  shippingClass: ShippingClass;
 }
 
 export interface PublicProduct {
@@ -485,4 +487,111 @@ export interface PublicSettings {
   processingTime: string;
   localStates: string[];
   estimates: { local: string; domestic: string };
+}
+
+export interface CustomerAddress {
+  _id: string;
+  label: string;
+  name: string;
+  phone: string;
+  altPhone: string;
+  addressLine: string;
+  locality: string;
+  city: string;
+  state: string;
+  pincode: string;
+  isDefault: boolean;
+}
+
+export type CustomerAddressInput = Omit<CustomerAddress, '_id'>;
+
+export interface Customer {
+  _id: string;
+  email: string;
+  name: string;
+  phone: string;
+  emailVerified: boolean;
+  addresses: CustomerAddress[];
+  createdAt: string;
+}
+
+export interface CustomerSession {
+  token: string;
+  customer: Customer;
+}
+
+export interface CustomerOrder {
+  _id: string;
+  orderNumber: string;
+  items: Array<
+    Pick<
+      OrderItem,
+      | 'itemType'
+      | 'itemId'
+      | 'title'
+      | 'subtitle'
+      | 'unitPrice'
+      | 'quantity'
+      | 'lineTotal'
+      | 'coverImageUrl'
+    >
+  >;
+  subtotal: number;
+  deliveryCharge: number;
+  total: number;
+  deliveryEstimate: string;
+  customerName: string;
+  customerPhone: string;
+  addressLine: string;
+  locality: string;
+  city: string;
+  state: string;
+  pincode: string;
+  status: OrderStatus;
+  timeline: Array<{ status: OrderStatus; at: string }>;
+  paymentStatus: PaymentStatus;
+  shipment: AdminOrder['shipment'];
+  receiptAvailable: boolean;
+  createdAt: string;
+}
+
+export interface CustomerOrderPage {
+  orders: CustomerOrder[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AdminCustomerSummary extends Customer {
+  orderCount: number;
+  totalSpent: number;
+  lastOrderAt: string | null;
+  lastLoginAt: string | null;
+}
+
+export interface AdminCustomerPage {
+  customers: AdminCustomerSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface StoreSettings {
+  store: { name: string; address: string; phone: string; email: string | null };
+  notificationEmail: string | null;
+  delivery: {
+    localStates: string[];
+    local: DeliveryRegionSettings;
+    domestic: DeliveryRegionSettings;
+    freeDeliveryThreshold: number | null;
+    processingTime: string;
+  };
+  inventory: { defaultLowStockThreshold: number };
+}
+
+export interface DeliveryRegionSettings {
+  rates: Record<ShippingClass, number>;
+  itemsIncluded: number;
+  extraItemCharge: number;
+  estimate: string;
 }

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
-import type { CategoryPayload } from '@/app/api/types';
+import { SHIPPING_CLASSES, type CategoryPayload, type ShippingClass } from '@/app/api/types';
 import { getErrorMessage } from '@/app/api/client';
 import { useAdminCategories, useSaveCategory } from '@/app/queries/categories';
 import { useAuth } from '@/app/auth/AuthContext';
@@ -11,7 +11,7 @@ import { useValidatedField } from '@/app/lib/useValidatedField';
 import PageFrame from '@/app/components/PageFrame';
 import StatusMessage from '@/app/components/StatusMessage';
 import Loader from '@/app/components/Loader';
-import { FieldInput, FieldTextArea } from '@/app/components/FormField';
+import { FieldInput, FieldSelect, FieldTextArea } from '@/app/components/FormField';
 import ImageUploadField from '@/app/components/ImageUploadField';
 import { Button, Toggle } from '@/app/components/ui';
 import { focusFirstInvalid } from '@/app/lib/scroll';
@@ -71,6 +71,7 @@ export default function AdminCategoryFormPage() {
           descriptionEn: category?.description?.en ?? '',
           descriptionUr: category?.description?.ur ?? '',
           isActive: category?.isActive ?? true,
+          shippingClass: category?.shippingClass ?? 'standard',
         }}
         coverImageUrl={category?.coverImage?.url}
         onCancel={goBack}
@@ -92,6 +93,7 @@ interface CategoryFormInitial {
   descriptionEn: string;
   descriptionUr: string;
   isActive: boolean;
+  shippingClass: ShippingClass;
 }
 
 function formToPayload(
@@ -102,12 +104,14 @@ function formToPayload(
   taglineUr: string,
   descriptionEn: string,
   descriptionUr: string,
-  isActive: boolean
+  isActive: boolean,
+  shippingClass: ShippingClass
 ): CategoryPayload {
   const payload: CategoryPayload = {
     name: { en: nameEn, ur: nameUr || undefined },
     slug: slug.trim().toLowerCase(),
     isActive,
+    shippingClass,
   };
   if (taglineEn.trim()) {
     payload.tagline = { en: taglineEn, ur: taglineUr || undefined };
@@ -138,6 +142,7 @@ function CategoryForm({
   const [descriptionEn, setDescriptionEn] = useState(initial.descriptionEn);
   const [descriptionUr, setDescriptionUr] = useState(initial.descriptionUr);
   const [isActive, setIsActive] = useState(initial.isActive);
+  const [shippingClass, setShippingClass] = useState<ShippingClass>(initial.shippingClass);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -163,7 +168,8 @@ function CategoryForm({
           taglineUr,
           descriptionEn,
           descriptionUr,
-          isActive
+          isActive,
+          shippingClass
         ),
         coverImageFile
       );
@@ -234,6 +240,21 @@ function CategoryForm({
           onBlur={slug.onBlur}
           error={slug.error ? t(slug.error) : undefined}
         />
+      </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <FieldSelect
+          id="category-shipping-class"
+          label={t('admin.stock.shippingClass')}
+          hint={t('admin.stock.categoryClassHint')}
+          value={shippingClass}
+          onChange={(value) => setShippingClass(value as ShippingClass)}
+        >
+          {SHIPPING_CLASSES.map((item) => (
+            <option key={item} value={item}>
+              {t(`admin.stock.class.${item}`)}
+            </option>
+          ))}
+        </FieldSelect>
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <ImageUploadField

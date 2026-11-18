@@ -127,6 +127,7 @@ export function FieldTextArea({
 export function FieldSelect({
   id,
   label,
+  hint,
   value,
   onChange,
   error,
@@ -134,13 +135,14 @@ export function FieldSelect({
 }: {
   id: string;
   label: string;
+  hint?: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
   children: ReactNode;
 }) {
   return (
-    <FieldShell id={id} label={label} error={error}>
+    <FieldShell id={id} label={label} hint={hint} error={error}>
       <select
         id={id}
         value={value}

@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { getErrorMessage, isSessionExpired } from '@/app/api/client';
+import { getErrorMessage, isCustomerSessionExpired, isSessionExpired } from '@/app/api/client';
 import { clearToken, setToken } from '@/app/auth/authStorage';
+import { clearCustomerToken, setCustomerToken } from '@/app/auth/customerStorage';
 
 function makeAxiosError(status: number, data: unknown, url = '/admin/books'): AxiosError {
   const error = new AxiosError('Request failed', String(status));
@@ -40,6 +41,31 @@ describe('isSessionExpired', () => {
       expect(isSessionExpired(makeAxiosError(401, {}, url))).toBe(false);
     }
   );
+});
+
+describe('isCustomerSessionExpired', () => {
+  afterEach(() => {
+    clearToken();
+    clearCustomerToken();
+  });
+
+  it('treats a 401 from a customer endpoint while signed in as an expired session', () => {
+    setCustomerToken('customer-token');
+    expect(isCustomerSessionExpired(makeAxiosError(401, {}, '/customer/orders'))).toBe(true);
+  });
+
+  it('leaves sign-in and one-time-link errors for the page to show', () => {
+    setCustomerToken('customer-token');
+    expect(isCustomerSessionExpired(makeAxiosError(401, {}, '/customer/login'))).toBe(false);
+    expect(isCustomerSessionExpired(makeAxiosError(401, {}, '/customer/verify-email'))).toBe(false);
+  });
+
+  it('keeps admin and customer sessions independent', () => {
+    setToken('admin-token');
+    setCustomerToken('customer-token');
+    expect(isSessionExpired(makeAxiosError(401, {}, '/customer/me'))).toBe(false);
+    expect(isCustomerSessionExpired(makeAxiosError(401, {}, '/admin/books'))).toBe(false);
+  });
 });
 
 describe('getErrorMessage', () => {

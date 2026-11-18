@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Menu, MessageCircle, Moon, ShoppingBag, Sun, X } from 'lucide-react';
+import { Menu, MessageCircle, Moon, ShoppingBag, Sun, UserRound, X } from 'lucide-react';
+import { useCustomer } from '@/app/auth/CustomerContext';
 import { useCart } from '@/app/cart/CartContext';
 import { Logo } from '@/app/components/Logo';
 import GrainTexture from '@/app/components/GrainTexture';
@@ -34,6 +35,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { itemCount } = useCart();
+  const { isSignedIn } = useCustomer();
   const [activeSection, setActiveSection] = useState<HomeSection>('home');
   const isAdmin = pathname.startsWith('/admin');
   const isHome = pathname === '/';
@@ -140,6 +142,18 @@ export default function Shell({ children }: { children: ReactNode }) {
                     </button>
                   ))}
                 </div>
+                {!isComingSoon && (
+                  <Link
+                    to={isSignedIn ? '/account' : '/account/login'}
+                    onClick={closeMenu}
+                    className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition hover:bg-secondary sm:h-9 sm:w-9 ${
+                      isSignedIn ? 'border-ember' : 'border-border'
+                    }`}
+                    aria-label={isSignedIn ? t('account.title') : t('account.signIn')}
+                  >
+                    <UserRound className="h-4 w-4 text-[var(--icon-color)]" />
+                  </Link>
+                )}
                 {!isComingSoon && (
                   <Link
                     to="/cart"

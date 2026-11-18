@@ -20,5 +20,12 @@ export function useValidatedField<TErrorKey extends string>(
     return result;
   };
 
-  return { value, error, onChange, onBlur, validateNow };
+  // Replaces the value programmatically (e.g. filling in a saved address)
+  // and clears any error shown for the old value.
+  const set = (next: string) => {
+    setValue(next);
+    setError(undefined);
+  };
+
+  return { value, error, onChange, onBlur, validateNow, set };
 }

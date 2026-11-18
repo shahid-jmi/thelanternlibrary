@@ -15,7 +15,10 @@ import type {
 const orderId = (req: Request): string => req.params.id as string;
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
-  const order = await orderService.createOrder(req.body as CreateOrderInput);
+  const order = await orderService.createOrder(
+    req.body as CreateOrderInput,
+    req.customer?.id ?? null
+  );
   res.status(201).json(order);
 };
 

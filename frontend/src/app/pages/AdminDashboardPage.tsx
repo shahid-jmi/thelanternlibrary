@@ -8,6 +8,8 @@ import {
   KeyRound,
   LogOut,
   Package,
+  Settings,
+  UserRound,
   Tags,
   Users,
 } from 'lucide-react';
@@ -19,8 +21,18 @@ import CategoriesPanel from '@/app/components/admin/CategoriesPanel';
 import OrdersPanel from '@/app/components/admin/OrdersPanel';
 import DashboardStats from '@/app/components/admin/DashboardStats';
 import StockPanel from '@/app/components/admin/StockPanel';
+import CustomersPanel from '@/app/components/admin/CustomersPanel';
+import SettingsPanel from '@/app/components/admin/SettingsPanel';
 
-const DASHBOARD_TABS = ['books', 'products', 'categories', 'orders', 'stock'] as const;
+const DASHBOARD_TABS = [
+  'books',
+  'products',
+  'categories',
+  'orders',
+  'stock',
+  'customers',
+  'settings',
+] as const;
 type DashboardTab = (typeof DASHBOARD_TABS)[number];
 
 const isDashboardTab = (value: string | null): value is DashboardTab =>
@@ -50,6 +62,14 @@ const TAB_STYLES: Record<
     icon: Boxes,
     active: 'border-transparent bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
   },
+  customers: {
+    icon: UserRound,
+    active: 'border-transparent bg-rose-500/15 text-rose-600 dark:text-rose-400',
+  },
+  settings: {
+    icon: Settings,
+    active: 'border-transparent bg-slate-500/15 text-slate-700 dark:text-slate-300',
+  },
 };
 
 export default function AdminDashboardPage() {
@@ -65,6 +85,8 @@ export default function AdminDashboardPage() {
     { id: 'categories', label: t('admin.dashboard.tab.categories') },
     { id: 'orders', label: t('admin.dashboard.tab.orders') },
     { id: 'stock', label: t('admin.dashboard.tab.stock') },
+    { id: 'customers', label: t('admin.dashboard.tab.customers') },
+    { id: 'settings', label: t('admin.dashboard.tab.settings') },
   ];
 
   return (
@@ -126,6 +148,8 @@ export default function AdminDashboardPage() {
       {tab === 'categories' && <CategoriesPanel />}
       {tab === 'orders' && <OrdersPanel />}
       {tab === 'stock' && <StockPanel />}
+      {tab === 'customers' && <CustomersPanel />}
+      {tab === 'settings' && <SettingsPanel />}
     </PageFrame>
   );
 }

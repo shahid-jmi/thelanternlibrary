@@ -96,6 +96,24 @@ export const findAdminOrders = async (
   return { orders, total };
 };
 
+export const findCustomerOrders = async (
+  customerId: string,
+  page: number,
+  pageSize: number
+): Promise<{ orders: OrderLean[]; total: number }> => {
+  const query = { customer: customerId };
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .lean<OrderLean[]>()
+      .exec(),
+    Order.countDocuments(query).exec(),
+  ]);
+  return { orders, total };
+};
+
 export const countByView = async (view: OrderView): Promise<number> =>
   Order.countDocuments(viewQuery(view)).exec();
 
